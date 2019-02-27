@@ -1,6 +1,6 @@
 CC = gcc
 OBJS = main.o main_aux.o parser.o game.o solver.o
-EXEC = HW3
+EXEC = sudoku-console
 COMP_FLAG = -ansi -Wall -Wextra -Werror -pedantic-errors
 
 $(EXEC): $(OBJS)
