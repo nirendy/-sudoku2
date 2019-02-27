@@ -4,8 +4,8 @@
 #include "time.h"
 #include "stdlib.h"
 
-//#define N 3 /* block height*/
-//#define M 3 /* block width*/
+#define N 3 /* block height*/
+#define M 3 /* block width*/
 
 typedef enum _bool {
     false = 0,
@@ -22,6 +22,14 @@ typedef enum _error {
     EInvalidCommand,
     EFunctionFailed
 } Error;
+
+typedef enum _finish_code {
+    FC_SUCCESS=0,
+    FC_EOF,
+    FC_INVALID_RECOVERABLE,
+    FC_INVALID_TERMINATE,
+    FC_UNEXPECTED_ERROR
+} FinishCode;
 
 typedef enum _prompt {
     PEnterFixedAmount,
@@ -52,25 +60,12 @@ typedef struct _coordinate {
 Coordinate createCoordinate(int i, int j);
 
 typedef enum _command {
-	SOLVE,
-	EDIT,
-	MARK_ERRORS,
-	PRINT_BOARD,
-	SET,
-	VALIDATE,
-	GUESS,
-	GENERATE,
-	UNDO,
-	REDO,
-	SAVE,
-	HINT,
-	GUESS_HINT,
-	NUM_SOLUTIONS,
-	AUTOFILL,
-	RESET,
-	EXIT,
-	INVALID,
-
+    COMMAND_SET,
+    COMMAND_HINT,
+    COMMAND_VALIDATE,
+    COMMAND_RESTART,
+    COMMAND_EXIT,
+    COMMAND_INVALID
 } Command;
 
 typedef struct _input {
@@ -84,9 +79,9 @@ void printError(Error err, Command command);
 
 void printPrompt(Prompt prompt, int num1);
 
-Input askUserForNextTurn();
+FinishCode askUserForNextTurn(Input *input);
 
-int askUserForHintsAmount();
+FinishCode askUserForHintsAmount(int *hintsAmount);
 
 int randLimit(int limit);
 

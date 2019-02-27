@@ -6,6 +6,16 @@
 #include "solver.h"
 #include "SPBufferset.h"
 
+void terminate(Game *game, FinishCode finishCode) {
+    destroyGame(game);
+    printPrompt(PExit, COMMAND_INVALID);
+
+    if (finishCode == FC_UNEXPECTED_ERROR || finishCode == FC_INVALID_TERMINATE) {
+        exit(-1);
+    }
+    exit(0);
+}
+
 int main(int argc, char *argv[]) {
     /*
      * init
@@ -13,6 +23,7 @@ int main(int argc, char *argv[]) {
     Input input;
     Bool shouldRestart, isGameOver = false;
     Game *game;
+    FinishCode finishCode;
     int fixedAmount;
     SP_BUFF_SET();
 
@@ -26,47 +37,52 @@ int main(int argc, char *argv[]) {
     }
 
     game = createGame();
-
     /*
      * Keep doing until exit
      * */
     while (!isGameOver) {
-        fixedAmount = askUserForHintsAmount();
+        finishCode = askUserForHintsAmount(&fixedAmount);
+        if (finishCode != FC_SUCCESS) {
+            terminate(game, finishCode);
+        };
         generateGame(game, fixedAmount);
         shouldRestart = false;
-        printBoard(game->user_matrix, game->fixed_matrix , 3 , 3);
+        printBoard(game->user_matrix, game->fixed_matrix);
 
         /*
          * Keep doing until restart
          * */
         while (!shouldRestart) {
-            input = askUserForNextTurn();
+            finishCode = askUserForNextTurn(&input);
+            if (finishCode != FC_SUCCESS) {
+                terminate(game, finishCode);
+            };
 
             switch (input.command) {
-                case SET:
-                    !isSolved(game) ? setCoordinate(game, input) : printError(EInvalidCommand, INVALID);
+                case COMMAND_SET:
+                    !isSolved(game) ? setCoordinate(game, input) : printError(EInvalidCommand, COMMAND_INVALID);
                     break;
-                case HINT:
-                    !isSolved(game) ? hint(game, input.coordinate) : printError(EInvalidCommand, INVALID);
+                case COMMAND_HINT:
+                    !isSolved(game) ? hint(game, input.coordinate) : printError(EInvalidCommand, COMMAND_INVALID);
                     break;
-                case VALIDATE:
-                    !isSolved(game) ? validate(game) : printError(EInvalidCommand, INVALID);
+                case COMMAND_VALIDATE:
+                    !isSolved(game) ? validate(game) : printError(EInvalidCommand, COMMAND_INVALID);
                     break;
-//                case RESTART:
-//                    shouldRestart = true;
-//                    break;
-                case EXIT:
+                case COMMAND_RESTART:
+                    shouldRestart = true;
+                    break;
+                case COMMAND_EXIT:
                     shouldRestart = true;
                     isGameOver = true;
-                    printPrompt(PExit, INVALID);
                     break;
-                case INVALID:
-                    printf("Unreachable Code Error");
-                    exit(0);
+                case COMMAND_INVALID:
+                    printf("Unreachable Code Error\n");
+                    terminate(game, FC_UNEXPECTED_ERROR);
             }
         }
 
     }
-    destroyGame(game);
-    exit(1);
+
+    terminate(game, FC_SUCCESS);
+    return 0;
 }

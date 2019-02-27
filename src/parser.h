@@ -7,15 +7,12 @@
 #include "main_aux.h"
 
 
-void printSepRow(int size);
+void printBoard(const Board matrix, const BoolBoard fixed_matrix);
 
-void printBoard(const Board matrix, const BoolBoard fixed_matrix , int m, int n);
+FinishCode parseHintsAmount(int *hintsAmount);
 
-int parseHintsAmount();
+FinishCode parseCommand(Input *input);
 
-Input parseCommand();
-
-int ClassifyCommand(char *token , Input *returnedInputP);
 
 #endif
 

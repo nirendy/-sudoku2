@@ -7,8 +7,7 @@
 
 
 void printError(Error err, Command command) {
-	int N = 3, M = 3;
-    if (err == EFunctionFailed && command == INVALID) {
+    if (err == EFunctionFailed && command == COMMAND_INVALID) {
         printf("Unreachable Code Error");
         exit(0);
     }
@@ -34,7 +33,6 @@ void printError(Error err, Command command) {
 }
 
 void printPrompt(Prompt prompt, int num1) {
-	int N = 3, M = 3;
     switch (prompt) {
         case PEnterFixedAmount:
             printf("Please enter the number of cells to fill [0-%d]:\n", N * N * M * M - 1);
@@ -68,17 +66,20 @@ int randLimit(int limit) {
     return rand() % limit;
 }
 
-int askUserForHintsAmount() {
-    int hintsAmount;
+/*return 0 only if finished successfully*/
+FinishCode askUserForHintsAmount(int *hintsAmount) {
+    FinishCode finishCode;
     do {
-        hintsAmount = parseHintsAmount();
-    } while (hintsAmount < 0);
+        finishCode = parseHintsAmount(hintsAmount);
+        if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
+            return finishCode;
+        }
+    } while (finishCode == FC_INVALID_RECOVERABLE);
 
-    return hintsAmount;
+    return FC_SUCCESS;
 }
 
 Game *createGame() {
-	int N = 3, M = 3;
     Game *game = malloc(sizeof(Game));
     game->solved_matrix = (int **) malloc(N * M * sizeof(int *));
     game->user_matrix = (int **) malloc(N * M * sizeof(int *));
@@ -98,7 +99,6 @@ Game *createGame() {
 void destroyGame(Game *game) {
     {
         int i;
-        int N = 3, M = 3;
         for (i = 0; i < N * M; ++i) {
             free(game->solved_matrix[i]);
             free(game->user_matrix[i]);
@@ -112,12 +112,14 @@ void destroyGame(Game *game) {
     free(game);
 }
 
-Input askUserForNextTurn() {
-    Input input;
-
+FinishCode askUserForNextTurn(Input *input) {
+    FinishCode finishCode;
     do {
-        input = parseCommand();
-    } while (input.command == INVALID);
+        finishCode = parseCommand(input);
+        if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
+            return finishCode;
+        }
+    } while (finishCode == FC_INVALID_RECOVERABLE);
 
-    return input;
+    return FC_SUCCESS;
 }
