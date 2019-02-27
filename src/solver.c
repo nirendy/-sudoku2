@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include "solver.h"
 
+
 int getEmptyCells(Board board, Coordinate *emptyCells) {
     int i, j, emptyCount = 0;
+    int N = 3, M = 3;
 
     /* go over each cell of the matrix*/
     for (i = 0; i < N * M; ++i) {
@@ -18,6 +20,7 @@ int getEmptyCells(Board board, Coordinate *emptyCells) {
 }
 
 Bool isSolved(Game *game) {
+	int N = 3, M = 3;
     Coordinate emptyCells[N * N * M * M];
     int emptyCellsCount;
 
@@ -28,6 +31,7 @@ Bool isSolved(Game *game) {
 }
 
 void copyBoard(Board sourceBoard, Board targetBoard) {
+	int N = 3, M = 3;
     int i, j;
     for (i = 0; i < N * M; ++i) {
         for (j = 0; j < N * M; ++j) {
@@ -37,6 +41,7 @@ void copyBoard(Board sourceBoard, Board targetBoard) {
 }
 
 void clearBoard(Board board) {
+	int N = 3, M = 3;
     int i, j;
     for (i = 0; i < N * M; ++i) {
         for (j = 0; j < N * M; ++j) {
@@ -45,8 +50,9 @@ void clearBoard(Board board) {
     }
 }
 
-void coordinateNeighbours(Coordinate coordinate, Coordinate neighbours[3 * N * M - N - M + 1]) {
+void coordinateNeighbours(Coordinate coordinate, Coordinate neighbours[3 * 3 * 3 - 3 - 3 + 1]) {
     int i, j, k, neighboursCreated = 0;
+    int N = 3, M = 3;
 
     /* find leftmost coordinate*/
     Coordinate leftMostBlockCoordinate = createCoordinate(
@@ -80,6 +86,7 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate neighbours[3 * N * M
 }
 
 int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
+	int N = 3, M = 3;
     int i, possibleValuesCount = 0;
     Coordinate neighbours[3 * N * M - N - M - 1];
 
@@ -136,6 +143,7 @@ int randomRemoveArrayIndex(int *arr, int arrLength) {
 }
 
 Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, int emptyCellsCount, int start) {
+	int N = 3, M = 3;
     int possibleValuesCount;
     int possibleValues[N * M];
 
@@ -184,6 +192,7 @@ Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, in
 
 /*solve the second parameter based on the first parameter*/
 Bool solveBoard(Board board, Board solvedBoard, Bool isDeterministic) {
+	int N = 3, M = 3;
     Coordinate emptyCells[N * N * M * M];
     int emptyCellsCount;
 
@@ -198,6 +207,7 @@ Bool solveBoard(Board board, Board solvedBoard, Bool isDeterministic) {
 }
 
 void generateFixedBoard(BoolBoard board, int fixedAmount) {
+	int N = 3, M = 3;
     int i, j, fixedCellsFound = 0;
     clearBoard((Board) board);
 
@@ -213,6 +223,7 @@ void generateFixedBoard(BoolBoard board, int fixedAmount) {
 }
 
 void generateGame(Game *game, int fixedAmount) {
+	int N = 3, M = 3;
     int i, j;
 
     /*init the user board*/

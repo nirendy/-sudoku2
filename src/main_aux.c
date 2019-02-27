@@ -7,7 +7,8 @@
 
 
 void printError(Error err, Command command) {
-    if (err == EFunctionFailed && command == COMMAND_INVALID) {
+	int N = 3, M = 3;
+    if (err == EFunctionFailed && command == INVALID) {
         printf("Unreachable Code Error");
         exit(0);
     }
@@ -33,6 +34,7 @@ void printError(Error err, Command command) {
 }
 
 void printPrompt(Prompt prompt, int num1) {
+	int N = 3, M = 3;
     switch (prompt) {
         case PEnterFixedAmount:
             printf("Please enter the number of cells to fill [0-%d]:\n", N * N * M * M - 1);
@@ -66,20 +68,17 @@ int randLimit(int limit) {
     return rand() % limit;
 }
 
-/*return 0 only if finished successfully*/
-FinishCode askUserForHintsAmount(int *hintsAmount) {
-    FinishCode finishCode;
+int askUserForHintsAmount() {
+    int hintsAmount;
     do {
-        finishCode = parseHintsAmount(hintsAmount);
-        if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
-            return finishCode;
-        }
-    } while (finishCode == FC_INVALID_RECOVERABLE);
+        hintsAmount = parseHintsAmount();
+    } while (hintsAmount < 0);
 
-    return FC_SUCCESS;
+    return hintsAmount;
 }
 
 Game *createGame() {
+	int N = 3, M = 3;
     Game *game = malloc(sizeof(Game));
     game->solved_matrix = (int **) malloc(N * M * sizeof(int *));
     game->user_matrix = (int **) malloc(N * M * sizeof(int *));
@@ -99,6 +98,7 @@ Game *createGame() {
 void destroyGame(Game *game) {
     {
         int i;
+        int N = 3, M = 3;
         for (i = 0; i < N * M; ++i) {
             free(game->solved_matrix[i]);
             free(game->user_matrix[i]);
@@ -112,14 +112,12 @@ void destroyGame(Game *game) {
     free(game);
 }
 
-FinishCode askUserForNextTurn(Input *input) {
-    FinishCode finishCode;
-    do {
-        finishCode = parseCommand(input);
-        if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
-            return finishCode;
-        }
-    } while (finishCode == FC_INVALID_RECOVERABLE);
+Input askUserForNextTurn() {
+    Input input;
 
-    return FC_SUCCESS;
+    do {
+        input = parseCommand();
+    } while (input.command == INVALID);
+
+    return input;
 }
