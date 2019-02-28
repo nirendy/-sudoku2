@@ -7,8 +7,9 @@
 #include "main_aux.h"
 
 
-void printBoard(const Board matrix, const BoolBoard fixed_matrix);
+void printBoard(Board matrix, BoolBoard fixed_matrix);
 
+FinishCode parseDimension();
 FinishCode parseHintsAmount(int *hintsAmount);
 
 FinishCode parseCommand(Input *input);

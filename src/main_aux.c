@@ -14,7 +14,7 @@ void printError(Error err, Command command) {
 
     switch (err) {
         case EInvalidNumberOfCells:
-            printf("Error: invalid number of cells to fill (should be between 0 and %d)\n", N * N * M * M - 1);
+            printf("Error: invalid number of cells to fill (should be between 0 and %d)\n", n * n * m * m - 1);
             break;
         case ECellIsFixed:
             printf("Error: cell is fixed\n");
@@ -35,7 +35,7 @@ void printError(Error err, Command command) {
 void printPrompt(Prompt prompt, int num1) {
     switch (prompt) {
         case PEnterFixedAmount:
-            printf("Please enter the number of cells to fill [0-%d]:\n", N * N * M * M - 1);
+            printf("Please enter the number of cells to fill [0-%d]:\n", n * n * m * m - 1);
             break;
         case PExit:
             printf("Exiting...\n");
@@ -67,6 +67,11 @@ int randLimit(int limit) {
 }
 
 /*return 0 only if finished successfully*/
+FinishCode askUserForDimension() {
+    return parseDimension();
+}
+
+/*return 0 only if finished successfully*/
 FinishCode askUserForHintsAmount(int *hintsAmount) {
     FinishCode finishCode;
     do {
@@ -81,15 +86,15 @@ FinishCode askUserForHintsAmount(int *hintsAmount) {
 
 Game *createGame() {
     Game *game = malloc(sizeof(Game));
-    game->solved_matrix = (int **) malloc(N * M * sizeof(int *));
-    game->user_matrix = (int **) malloc(N * M * sizeof(int *));
-    game->fixed_matrix = (Bool **) malloc(N * M * sizeof(Bool *));
+    game->solved_matrix = (int **) malloc(n * m * sizeof(int *));
+    game->user_matrix = (int **) malloc(n * m * sizeof(int *));
+    game->fixed_matrix = (Bool **) malloc(n * m * sizeof(Bool *));
     {
         int i;
-        for (i = 0; i < N * M; ++i) {
-            game->solved_matrix[i] = (int *) malloc(N * M * sizeof(int));
-            game->user_matrix[i] = (int *) malloc(N * M * sizeof(int));
-            game->fixed_matrix[i] = (Bool *) malloc(N * M * sizeof(Bool));
+        for (i = 0; i < n * m; ++i) {
+            game->solved_matrix[i] = (int *) malloc(n * m * sizeof(int));
+            game->user_matrix[i] = (int *) malloc(n * m * sizeof(int));
+            game->fixed_matrix[i] = (Bool *) malloc(n * m * sizeof(Bool));
         }
     }
 
@@ -99,7 +104,7 @@ Game *createGame() {
 void destroyGame(Game *game) {
     {
         int i;
-        for (i = 0; i < N * M; ++i) {
+        for (i = 0; i < n * m; ++i) {
             free(game->solved_matrix[i]);
             free(game->user_matrix[i]);
             free(game->fixed_matrix[i]);

@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     } else {
         srand(0);
     }
-
+    askUserForDimension();
     game = createGame();
     /*
      * Keep doing until exit

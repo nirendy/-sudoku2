@@ -7,7 +7,7 @@ Bool isCoordinateFixed(Game *game, Coordinate coordinate) {
 }
 
 Bool isValueInNeighbours(Game *game, Coordinate coordinate, int value) {
-    int possibleValues[N * M];
+    int possibleValues[n * m];
     int i, possibleValuesCount;
 
     possibleValuesCount = getPossibleValues(game->user_matrix, coordinate, possibleValues);

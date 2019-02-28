@@ -4,6 +4,19 @@ int isFixed(BoolBoard fixed_matrix, int i, int j) {
     return fixed_matrix[i][j];
 }
 
+int getType() {
+    return 0;
+}
+
+
+/*return 0 only if finished successfully */
+FinishCode parseDimension() {
+    n = 3;
+    m = 3;
+
+    return FC_SUCCESS;
+}
+
 /*return 0 only if finished successfully */
 FinishCode parseHintsAmount(int *hintsAmount) {
     printPrompt(PEnterFixedAmount, 0);
@@ -24,7 +37,7 @@ FinishCode parseHintsAmount(int *hintsAmount) {
     /*
      * Validate input
      * */
-    if (!(0 <= *hintsAmount && *hintsAmount <= N * N * M * M - 1)) {
+    if (!(0 <= *hintsAmount && *hintsAmount <= n * n * m * m - 1)) {
         printError(EInvalidNumberOfCells, 0);
         *hintsAmount = -1;
         return FC_INVALID_RECOVERABLE;
@@ -33,40 +46,143 @@ FinishCode parseHintsAmount(int *hintsAmount) {
     return FC_SUCCESS;
 }
 
-void printBoard(const Board matrix, const BoolBoard fixed_matrix) {
-    int i = 0, j = 0;
-    char sep[35] = "----------------------------------\n";
-
-    for (i = 0; i < 9; i++) {
-        if (i % 3 == 0) {
-            printf("%s", sep);
-        }
-        for (j = 0; j < 9; j++) {
-            if (j % 3 == 0) {
-                printf("| ");
-            }
-            if (isFixed(fixed_matrix, i, j)) {
-                printf(".");
-            } else {
-                printf(" ");
-            }
-
-            if (matrix[i][j] != 0) {
-                printf("%d", matrix[i][j]);
-            } else {
-                printf(" ");
-            }
-            printf(" ");
-        }
-        printf("|");
-        printf("\n");
+void printSepRow(int len) {
+    int i = 0;
+    for (i = 0; i < len; i++) {
+        printf("-");
     }
-    printf("%s", sep);
+
+    printf("\n");
+
 }
+
+
+void printBoard(Board matrix, BoolBoard fixed_matrix) {
+    const char SPACE = ' ', PIPE = '|', ASTERISK = '*', DOT = '.', NEWLINE = '\n';
+    int N = n * m;
+    int len = 4 * N + m + 1;
+    int i = 0, j = 0, k = 0;
+    int type;
+
+    printSepRow(len);
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < m; j++) {
+            printf("%c", PIPE);
+
+            for (k = 0; k < len; k++) {
+
+                printf("%c", SPACE);
+                printf("%2d", matrix[i][j]);
+                type = getType();
+                switch (type) {
+                    case 0:
+                        printf("%c", SPACE);
+                        break;
+                    case 1:
+                        printf("%c", DOT);
+                        break;
+                    case 2:
+                        printf("%c", ASTERISK);
+                        break;
+
+                }
+
+            }
+
+            printf("%c", PIPE);
+        }
+        printf("%c", NEWLINE);
+        printSepRow(len);
+    }
+
+
+    printf("%c", SPACE);
+    printf("%s", "sep");
+}
+
+/*
+   * Categorize token to commands
+   * */
+int ClassifyCommand(char *token, Input *returnedInputP) {
+    int numOfVars = 0;
+
+    if (!strcmp(token, "solve")) {
+        numOfVars = 1;
+        returnedInputP->command = SOLVE;
+    }
+    if (!strcmp(token, "edit")) {
+        numOfVars = 1;
+        returnedInputP->command = EDIT;
+    }
+    if (!strcmp(token, "mark_errors")) {
+        numOfVars = 1;
+        returnedInputP->command = MARK_ERRORS;
+    }
+    if (!strcmp(token, "print_board")) {
+        numOfVars = 0;
+        returnedInputP->command = PRINT_BOARD;
+    }
+    if (!strcmp(token, "set")) {
+        numOfVars = 3;
+        returnedInputP->command = SET;
+    }
+    if (!strcmp(token, "validate")) {
+        numOfVars = 0;
+        returnedInputP->command = VALIDATE;
+    }
+    if (!strcmp(token, "guess")) {
+        numOfVars = 1;
+        returnedInputP->command = GUESS;
+    }
+    if (!strcmp(token, "generate")) {
+        numOfVars = 2;
+        returnedInputP->command = GENERATE;
+    }
+    if (!strcmp(token, "undo")) {
+        numOfVars = 0;
+        returnedInputP->command = UNDO;
+    }
+    if (!strcmp(token, "redo")) {
+        numOfVars = 0;
+        returnedInputP->command = REDO;
+    }
+    if (!strcmp(token, "save")) {
+        numOfVars = 1;
+        returnedInputP->command = SAVE;
+    }
+    if (!strcmp(token, "hint")) {
+        numOfVars = 2;
+        returnedInputP->command = HINT;
+    }
+    if (!strcmp(token, "guess_hint")) {
+        numOfVars = 2;
+        returnedInputP->command = GUESS_HINT;
+    }
+    if (!strcmp(token, "num_solutions")) {
+        numOfVars = 0;
+        returnedInputP->command = NUM_SOLUTIONS;
+    }
+    if (!strcmp(token, "autofill")) {
+        numOfVars = 0;
+        returnedInputP->command = AUTOFILL;
+    }
+    if (!strcmp(token, "reset")) {
+        numOfVars = 0;
+        returnedInputP->command = RESET;
+    }
+    if (!strcmp(token, "exit")) {
+        numOfVars = 0;
+        returnedInputP->command = EXIT;
+    }
+
+    return numOfVars;
+}
+
 
 FinishCode parseCommand(Input *returnedInput) {
     char str[1024];
-    char *token, command[10];
+    /* TODO: make constant */
+    char *token, command[15];
     int numOfVars = -1;
     int x = 0, y = 0, value = -1;
     int index = 0;
@@ -82,31 +198,7 @@ FinishCode parseCommand(Input *returnedInput) {
         token = strtok(str, " \t\r\n");
     } while (token == NULL);
 
-    /*
-     * Categorize token to commands
-     * */
-    if (!strcmp(token, "set")) {
-        numOfVars = 3;
-        returnedInput->command = COMMAND_SET;
-    }
-
-    if (!strcmp(token, "hint")) {
-        numOfVars = 2;
-        returnedInput->command = COMMAND_HINT;
-    }
-
-    if (!strcmp(token, "validate") || !strcmp(token, "restart") || !strcmp(token, "exit")) {
-        numOfVars = 0;
-        if (!strcmp(token, "validate")) {
-            returnedInput->command = COMMAND_VALIDATE;
-        }
-        if (!strcmp(token, "restart")) {
-            returnedInput->command = COMMAND_RESTART;
-        }
-        if (!strcmp(token, "exit")) {
-            returnedInput->command = COMMAND_EXIT;
-        }
-    }
+    numOfVars = ClassifyCommand(token, &returnedInput);
 
     if (numOfVars == -1) {
         printError(EInvalidCommand, COMMAND_INVALID);

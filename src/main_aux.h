@@ -3,10 +3,8 @@
 
 #include "time.h"
 #include "stdlib.h"
-
-#define N 3 /* block height*/
-#define M 3 /* block width*/
-
+int n;
+int m;
 typedef enum _bool {
     false = 0,
     true = 1
@@ -65,7 +63,25 @@ typedef enum _command {
     COMMAND_VALIDATE,
     COMMAND_RESTART,
     COMMAND_EXIT,
-    COMMAND_INVALID
+    COMMAND_INVALID,
+    SOLVE,
+    EDIT,
+    MARK_ERRORS,
+    PRINT_BOARD,
+    SET,
+    VALIDATE,
+    GUESS,
+    GENERATE,
+    UNDO,
+    REDO,
+    SAVE,
+    HINT,
+    GUESS_HINT,
+    NUM_SOLUTIONS,
+    AUTOFILL,
+    RESET,
+    EXIT,
+    INVALID
 } Command;
 
 typedef struct _input {
@@ -80,6 +96,8 @@ void printError(Error err, Command command);
 void printPrompt(Prompt prompt, int num1);
 
 FinishCode askUserForNextTurn(Input *input);
+
+FinishCode askUserForDimension();
 
 FinishCode askUserForHintsAmount(int *hintsAmount);
 
