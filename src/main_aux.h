@@ -13,6 +13,13 @@ typedef enum _bool {
 typedef int **Board;
 typedef Bool **BoolBoard;
 
+typedef enum _mode {
+    Init,
+    Solve,
+    Edit,
+    Exit
+} Mode;
+
 typedef enum _error {
     EInvalidNumberOfCells,
     ECellIsFixed,
@@ -30,6 +37,9 @@ typedef enum _finish_code {
 } FinishCode;
 
 typedef enum _prompt {
+    PTitle,
+
+
     PEnterFixedAmount,
     PExit,
     PSuccess,
@@ -39,6 +49,7 @@ typedef enum _prompt {
 
 } Prompt;
 
+/*TODO: add more fields*/
 typedef struct _game {
     Board solved_matrix;
     Board user_matrix;
@@ -61,7 +72,6 @@ typedef enum _command {
     COMMAND_SET,
     COMMAND_HINT,
     COMMAND_VALIDATE,
-    COMMAND_RESTART,
     COMMAND_EXIT,
     COMMAND_INVALID,
     SOLVE,
@@ -84,6 +94,7 @@ typedef enum _command {
     INVALID
 } Command;
 
+
 typedef struct _input {
     Command command;
     Coordinate coordinate;
@@ -95,7 +106,9 @@ void printError(Error err, Command command);
 
 void printPrompt(Prompt prompt, int num1);
 
-FinishCode askUserForNextTurn(Input *input);
+FinishCode askUserForNextTurn(Mode mode, Input *input);
+
+FinishCode executeCommand(Input input, Mode *mode, Game *game);
 
 FinishCode askUserForDimension();
 

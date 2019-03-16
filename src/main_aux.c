@@ -117,7 +117,7 @@ void destroyGame(Game *game) {
     free(game);
 }
 
-FinishCode askUserForNextTurn(Input *input) {
+FinishCode askUserForNextTurn(Mode mode, Input *input) {
     FinishCode finishCode;
     do {
         finishCode = parseCommand(input);
@@ -125,6 +125,76 @@ FinishCode askUserForNextTurn(Input *input) {
             return finishCode;
         }
     } while (finishCode == FC_INVALID_RECOVERABLE);
+
+    return FC_SUCCESS;
+}
+
+void terminate(Game *game, FinishCode finishCode) {
+    destroyGame(game);
+    printPrompt(PExit, COMMAND_INVALID);
+
+    if (finishCode == FC_UNEXPECTED_ERROR || finishCode == FC_INVALID_TERMINATE) {
+        exit(-1);
+    }
+    exit(0);
+}
+
+
+FinishCode executeCommand(Input input, Mode *mode, Game *game) {
+    /*
+     * game = createGame();
+     */
+    /*
+     * Keep doing until exit
+     * */
+
+
+    /*
+         finishCode = askUserForHintsAmount(&fixedAmount);
+        if (finishCode != FC_SUCCESS) {
+            terminate(game, finishCode);
+        };
+        generateGame(game, fixedAmount);
+        shouldRestart = false;
+        printBoard(game->user_matrix, game->fixed_matrix);
+*/
+    /*
+     * Keep doing until restart
+     * */
+
+    /*
+     while (!shouldRestart) {
+        finishCode = askUserForNextTurn(&input);
+        if (finishCode != FC_SUCCESS) {
+            terminate(game, finishCode);
+        };
+
+    }
+
+     */
+
+
+    switch (input.command) {
+        case COMMAND_SET:
+            !isSolved(game) ? setCoordinate(game, input) : printError(EInvalidCommand, COMMAND_INVALID);
+            break;
+        case COMMAND_HINT:
+            !isSolved(game) ? hint(game, input.coordinate) : printError(EInvalidCommand, COMMAND_INVALID);
+            break;
+        case COMMAND_VALIDATE:
+            !isSolved(game) ? validate(game) : printError(EInvalidCommand, COMMAND_INVALID);
+            break;
+        case COMMAND_EXIT:
+            *mode = Exit;
+            terminate(game, FC_SUCCESS);
+            break;
+        case COMMAND_INVALID:
+            printf("Unreachable Code Error\n");
+            terminate(game, FC_UNEXPECTED_ERROR);
+    }
+
+    printBoard(game->user_matrix, game->fixed_matrix);
+    /*terminate(game, FC_SUCCESS);*/
 
     return FC_SUCCESS;
 }

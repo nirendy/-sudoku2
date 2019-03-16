@@ -101,6 +101,41 @@ void printBoard(Board matrix, BoolBoard fixed_matrix) {
 }
 
 /*
+
+void printBoard(const Board matrix, const BoolBoard fixed_matrix) {
+    int i = 0, j = 0;
+    char sep[35] = "----------------------------------\n";
+
+    for (i = 0; i < 9; i++) {
+        if (i % 3 == 0) {
+            printf("%s", sep);
+        }
+        for (j = 0; j < 9; j++) {
+            if (j % 3 == 0) {
+                printf("| ");
+            }
+            if (isFixed(fixed_matrix, i, j)) {
+                printf(".");
+            } else {
+                printf(" ");
+            }
+
+            if (matrix[i][j] != 0) {
+                printf("%d", matrix[i][j]);
+            } else {
+                printf(" ");
+            }
+            printf(" ");
+        }
+        printf("|");
+        printf("\n");
+    }
+    printf("%s", sep);
+}
+*/
+
+
+/*
    * Categorize token to commands
    * */
 int ClassifyCommand(char *token, Input *returnedInputP) {
