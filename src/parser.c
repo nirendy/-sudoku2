@@ -62,17 +62,22 @@ void printBoard(Board matrix, BoolBoard fixed_matrix) {
     int N = n * m;
     int len = 4 * N + m + 1;
     int i = 0, j = 0, k = 0;
+    int indexI = 0;
     int type;
 
     printSepRow(len);
     for (i = 0; i < n; i++) {
-        for (j = 0; j < m; j++) {
-            printf("%c", PIPE);
 
-            for (k = 0; k < len; k++) {
+        for (j = 0; j < m; j++) {
+
+            for (k = 0; k < N; k++) {
+
+                if (k % n == 0) {
+                    printf("%c", PIPE);
+                }
 
                 printf("%c", SPACE);
-                printf("%2d", matrix[i][j]);
+                matrix[indexI][k]!=0 ? printf("%2d", matrix[indexI][k]) : printf("%s","  ");
                 type = getType();
                 switch (type) {
                     case 0:
@@ -88,16 +93,15 @@ void printBoard(Board matrix, BoolBoard fixed_matrix) {
                 }
 
             }
-
+            indexI++;
             printf("%c", PIPE);
+            printf("%c", NEWLINE);
+
         }
-        printf("%c", NEWLINE);
         printSepRow(len);
     }
 
 
-    printf("%c", SPACE);
-    printf("%s", "sep");
 }
 
 /*
