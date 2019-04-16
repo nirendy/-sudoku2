@@ -4,6 +4,10 @@
 #include "time.h"
 #include "stdlib.h"
 
+#define INVALID_VALUE -1;
+#define INVALID_THRESHOLD -1;
+#define MAX_STRING_LEN 1024
+
 typedef struct _gameDim {
     int n;
     int m;
@@ -37,12 +41,18 @@ typedef enum _error {
     EInvalidNumberOfCells,
     ECellIsFixed,
     EValueIsInvalid,
+    EFunctionFailed,
+
+    /*parser errors*/
     EInvalidCommand,
-    EFunctionFailed
+    EInvalidNumOfParams,
+    EInvalidFirstParam,
+    EInvalidSecondParam,
+    EInvalidThirdParam,
 } Error;
 
 typedef enum _finish_code {
-    FC_SUCCESS=0,
+    FC_SUCCESS = 0,
     FC_EOF,
     FC_INVALID_RECOVERABLE,
     FC_INVALID_TERMINATE,
@@ -114,7 +124,7 @@ typedef struct _input {
     int gen1;
     int gen2;
     float threshold;
-    char* path;
+    char path[MAX_STRING_LEN];
 } Input;
 
 

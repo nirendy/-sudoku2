@@ -8,7 +8,6 @@ int getType() {
     return 0;
 }
 
-
 /*return 0 only if finished successfully */
 FinishCode parseHintsAmount(int *hintsAmount) {
     printPrompt(PEnterFixedAmount, 0);
@@ -96,9 +95,7 @@ void printBoard(Board matrix, BoolBoard fixed_matrix) {
 }
 
 
-/*
-   * Categorize token to commands
-   * */
+/* Categorize token to commands */
 int ClassifyCommand(char *token, Input *returnedInputP) {
     int numOfVars = -1;
 
@@ -175,51 +172,69 @@ int ClassifyCommand(char *token, Input *returnedInputP) {
 }
 
 void initInput(Input *returnedInput) {
-    returnedInput->command = COMMAND_INVALID;
-    returnedInput->coordinate.i = -1;
-    returnedInput->coordinate.j = -1;
-    returnedInput->value = -1;
-    returnedInput->gen1 = -1;
-    returnedInput->gen2 = -1;
-    returnedInput->threshold = -1;
-    returnedInput->path = "";
+    returnedInput->command      =  COMMAND_INVALID;
+    returnedInput->coordinate.i =  INVALID_VALUE;
+    returnedInput->coordinate.j =  INVALID_VALUE;
+    returnedInput->value        =  INVALID_VALUE;
+    returnedInput->gen1         =  INVALID_VALUE;
+    returnedInput->gen2         =  INVALID_VALUE;
+    returnedInput->threshold    =  INVALID_THRESHOLD;
+    returnedInput->path[0] = '\0';
 }
 
-//TODO: verify
 void fillPath(Input *returnedInput, char *path) {
-    returnedInput->path = path;
+    strcpy(returnedInput->path, path);
 }
 
 int getNum(char *str){
-    return 0;
+    int i, n = (int) strlen(str);
+    int digit , res = 0;
+    for ( i = 0; i < n; i++) {
+        digit = str[i] - '0';
+        if (!(digit >= 0 && digit <= 9)) { return -1; }
+        res = res * 10 + digit;
+    }
+
+    return res;
 }
 
-float getFloat(char *str){
-    return 0.0;
+float getFloat(char *str) {
+    int i, n = (int) strlen(str), numOfDots = 0;
+    float val = (float) atof(str);
+    if (val == 0.0)
+    {
+        for (i = 0; i < n; i++) {
+            if (str[i] != '0' && str[i] != '.') {
+                return INVALID_THRESHOLD;
+            }
+            if (str[i] == '.') {
+                numOfDots++;
+            }
+        }
+    if (numOfDots > 1) { return INVALID_THRESHOLD; }
+    }
+    return val;
 }
 
 
 FinishCode parseCommand(Input *returnedInput) {
-    /* TODO: make constant */
-    char str[1024];
-    char *token, command[15];
-    int numOfVars = -1;
-    int x = 0, y = 0, value = -1;
-    int param1, param2, param3;
+
+
+    char str[MAX_STRING_LEN];
+    char *token, command[MAX_COMMAND_LEN + 1];
+    int numOfVars;
     int index = 0;
     initInput(returnedInput);
 
-    /*
-     * Do until a non empty line received
-     * */
+    /* Do until a non empty line received */
     do {
-        if (fgets(str, 1024, stdin) == NULL) {
+        if (fgets(str, MAX_STRING_LEN, stdin) == NULL) {
             return FC_EOF;
         }
         token = strtok(str, " \t\r\n");
     } while (token == NULL);
 
-    numOfVars = ClassifyCommand(token, &returnedInput);
+    numOfVars = ClassifyCommand(token, returnedInput);
 
     if (numOfVars == -1) {
         printError(EInvalidCommand, COMMAND_INVALID);
@@ -227,13 +242,10 @@ FinishCode parseCommand(Input *returnedInput) {
     }
 
     strcpy(command, token);
-
     token = strtok(NULL, " \t\r\n");
     index = 1;
 
-    /*
-     * while not all expected parameters has been interpreted
-     * */
+    /*while not all expected parameters has been interpreted*/
     while (token != NULL && index <= numOfVars) {
 
         switch (index) {
@@ -246,16 +258,19 @@ FinishCode parseCommand(Input *returnedInput) {
 
                 if (!strcmp(token, "mark_errors")){returnedInput->value = getNum(token);}
 
-                if (!strcmp(token, "hint") || !strcmp(token, "guess_hint") || !strcmp(token, "save")) {fillPath(returnedInput, token); }
-
+                if (!strcmp(token, "hint") || !strcmp(token, "guess_hint") || !strcmp(token, "set")) {returnedInput->coordinate.i = getNum(token) - 1; }
 
                 break;
             case 2:
-                y = token[0] - '0';
+
+                if (!strcmp(token, "generate")){returnedInput->gen2 = getNum(token);}
+
+                if (!strcmp(token, "hint") || !strcmp(token, "guess_hint") || !strcmp(token, "set")) {returnedInput->coordinate.j = getNum(token) - 1; }
                 break;
             case 3:
-                value = token[0] - '0';
+                if (!strcmp(token, "set")) {returnedInput->value = getNum(token); }
                 break;
+
             default:
                 printf("Unreachable Code Error");
                 return FC_UNEXPECTED_ERROR;
@@ -265,21 +280,11 @@ FinishCode parseCommand(Input *returnedInput) {
         token = strtok(NULL, " \t\r\n");
     }
 
-    /*
-     * if X,Y in needed for command make the values changed
-     * if VALUE in needed for command make the values changed
-     * */
-    if (
-            (numOfVars >= 2 && (x == 0 || y == 0))
-            || (numOfVars == 3 && value == -1)
-            ) {
-        returnedInput->command = COMMAND_INVALID;
-        printError(EInvalidCommand, COMMAND_INVALID);
+    if (index != numOfVars && strcmp(command, "edit") != 0) {
+        printError(EInvalidNumOfParams, returnedInput->command);
         return FC_INVALID_RECOVERABLE;
     }
 
-    returnedInput->coordinate = createCoordinate(y - 1, x - 1);
-    returnedInput->value = value;
 
     return FC_SUCCESS;
 }

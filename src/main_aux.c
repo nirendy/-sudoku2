@@ -29,6 +29,13 @@ void printError(Error err, Command command) {
             /* TODO: fill command*/
             printf("Error: <%d> has failed\n", command);
             break;
+
+        case EInvalidNumOfParams:
+            printf("Error: number of parameters don't suit the command\n");
+            break;
+
+
+
     }
 }
 

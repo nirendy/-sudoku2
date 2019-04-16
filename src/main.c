@@ -15,13 +15,14 @@ int main(int argc, char *argv[]) {
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
     askUserForNextTurn(mode, &input);
+
     /* MOCK*/
     mode = Solve;
     setGameDim(3,3);
     game = createGame();
     generateGame(game, 20);
 
-    saveFile("../data/1", game);
+//    saveFile("../data/1", game);
 
     printBoard(game->user_matrix, game->fixed_matrix);
     /* END MOCK*/
