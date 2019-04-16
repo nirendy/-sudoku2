@@ -5,7 +5,7 @@
 #include "file_handler.h"
 
 
-FinishCode saveFile(char *filePath, Game *game) {
+FinishCode saveGameToFile(char *filePath, Game *game) {
     FILE *file;
     int i, j;
 

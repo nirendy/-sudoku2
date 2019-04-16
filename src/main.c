@@ -11,18 +11,16 @@ int main(int argc, char *argv[]) {
     Mode mode = Init;
     Input input;
     Game *game;
-    FinishCode finishCode;
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
-    /*askUserForNextTurn(mode, &input);
-*/
-    /* MOCK*/
+
+    /* MOCK */
     mode = Solve;
-    setGameDim(3,5);
+    setGameDim(3, 5);
     game = createGame();
     generateGame(game, 20);
 
-    /*saveFile("../data/1", game);*/
+    /*saveGameToFile("../data/1", game);*/
 
     printBoard(game->user_matrix, game->fixed_matrix);
     printBoard(game->solved_matrix, game->fixed_matrix);
@@ -31,8 +29,8 @@ int main(int argc, char *argv[]) {
 
 
     while (mode != Exit) {
-        finishCode = askUserForNextTurn(mode, &input);
-        finishCode = executeCommand(input, &mode, game);
+        askUserForNextTurn(mode, &input);
+        executeCommand(input, &mode, &game);
     }
 
     return 0;

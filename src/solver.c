@@ -18,11 +18,14 @@ int getEmptyCells(Board board, Coordinate *emptyCells) {
 }
 
 Bool isSolved(Game *game) {
-    Coordinate emptyCells[gameDim.cellsCount];
+    Coordinate *emptyCells;
     int emptyCellsCount;
+
+    emptyCells = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
 
     emptyCellsCount = getEmptyCells(game->user_matrix, emptyCells);
 
+    free(emptyCells);
     /* if 0 empty cells */
     return emptyCellsCount == 0;
 }
@@ -140,9 +143,10 @@ Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, in
     int possibleValuesCount;
     int *possibleValues;
     Bool returnValue = false;
+    Coordinate currentCoordinate = emptyCells[start];
+
     possibleValues = (int *) malloc(gameDim.N * sizeof(int));
 
-    Coordinate currentCoordinate = emptyCells[start];
     possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
 
     /*if any option available*/
@@ -187,8 +191,11 @@ Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, in
 
 /*solve the second parameter based on the first parameter*/
 Bool solveBoard(Board board, Board solvedBoard, Bool isDeterministic) {
-    Coordinate emptyCells[gameDim.cellsCount];
+    Coordinate *emptyCells;
     int emptyCellsCount;
+    Bool returnValue;
+
+    emptyCells = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
 
     /* make a copy of the current board to solve*/
     copyBoard(board, solvedBoard);
@@ -197,7 +204,9 @@ Bool solveBoard(Board board, Board solvedBoard, Bool isDeterministic) {
     emptyCellsCount = getEmptyCells(board, emptyCells);
 
     /*solve the board cursively*/
-    return solveBoardRec(solvedBoard, isDeterministic, emptyCells, emptyCellsCount, 0);
+    returnValue = solveBoardRec(solvedBoard, isDeterministic, emptyCells, emptyCellsCount, 0);
+    free(emptyCells);
+    return returnValue;
 }
 
 void generateFixedBoard(BoolBoard board, int fixedAmount) {

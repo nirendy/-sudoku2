@@ -99,71 +99,71 @@ int ClassifyCommand(char *token, Input *returnedInputP) {
 
     if (!strcmp(token, "solve")) {
         numOfVars = 1;
-        returnedInputP->command = SOLVE;
+        returnedInputP->command = COMMAND_SOLVE;
     }
     if (!strcmp(token, "edit")) {
         numOfVars = 1;
-        returnedInputP->command = EDIT;
+        returnedInputP->command = COMMAND_EDIT;
     }
     if (!strcmp(token, "mark_errors")) {
         numOfVars = 1;
-        returnedInputP->command = MARK_ERRORS;
+        returnedInputP->command = COMMAND_MARK_ERRORS;
     }
     if (!strcmp(token, "print_board")) {
         numOfVars = 0;
-        returnedInputP->command = PRINT_BOARD;
+        returnedInputP->command = COMMAND_PRINT_BOARD;
     }
     if (!strcmp(token, "set")) {
         numOfVars = 3;
-        returnedInputP->command = SET;
+        returnedInputP->command = COMMAND_SET;
     }
     if (!strcmp(token, "validate")) {
         numOfVars = 0;
-        returnedInputP->command = VALIDATE;
+        returnedInputP->command = COMMAND_VALIDATE;
     }
     if (!strcmp(token, "guess")) {
         numOfVars = 1;
-        returnedInputP->command = GUESS;
+        returnedInputP->command = COMMAND_GUESS;
     }
     if (!strcmp(token, "generate")) {
         numOfVars = 2;
-        returnedInputP->command = GENERATE;
+        returnedInputP->command = COMMAND_GENERATE;
     }
     if (!strcmp(token, "undo")) {
         numOfVars = 0;
-        returnedInputP->command = UNDO;
+        returnedInputP->command = COMMAND_UNDO;
     }
     if (!strcmp(token, "redo")) {
         numOfVars = 0;
-        returnedInputP->command = REDO;
+        returnedInputP->command = COMMAND_REDO;
     }
     if (!strcmp(token, "save")) {
         numOfVars = 1;
-        returnedInputP->command = SAVE;
+        returnedInputP->command = COMMAND_SAVE;
     }
     if (!strcmp(token, "hint")) {
         numOfVars = 2;
-        returnedInputP->command = HINT;
+        returnedInputP->command = COMMAND_HINT;
     }
     if (!strcmp(token, "guess_hint")) {
         numOfVars = 2;
-        returnedInputP->command = GUESS_HINT;
+        returnedInputP->command = COMMAND_GUESS_HINT;
     }
     if (!strcmp(token, "num_solutions")) {
         numOfVars = 0;
-        returnedInputP->command = NUM_SOLUTIONS;
+        returnedInputP->command = COMMAND_NUM_SOLUTIONS;
     }
     if (!strcmp(token, "autofill")) {
         numOfVars = 0;
-        returnedInputP->command = AUTOFILL;
+        returnedInputP->command = COMMAND_AUTOFILL;
     }
     if (!strcmp(token, "reset")) {
         numOfVars = 0;
-        returnedInputP->command = RESET;
+        returnedInputP->command = COMMAND_RESET;
     }
     if (!strcmp(token, "exit")) {
         numOfVars = 0;
-        returnedInputP->command = EXIT;
+        returnedInputP->command = COMMAND_EXIT;
     }
 
     return numOfVars;
