@@ -5,6 +5,7 @@
 #include "game.h"
 #include "solver.h"
 #include "SPBufferset.h"
+#include "file_handler.h"
 
 int main(int argc, char *argv[]) {
     Mode mode = Init;
@@ -15,14 +16,17 @@ int main(int argc, char *argv[]) {
     printPrompt(PTitle, 0);
 
     /* MOCK*/
-
     mode = Solve;
-    n = 3;
-    m = 3;
+    setGameDim(3,3);
     game = createGame();
     generateGame(game, 20);
+
+    saveFile("../data/1", game);
+
     printBoard(game->user_matrix, game->fixed_matrix);
     /* END MOCK*/
+
+
 
     while (mode != Exit) {
         finishCode = askUserForNextTurn(mode, &input);

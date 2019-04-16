@@ -1,5 +1,5 @@
 CC = gcc
-OBJS = main.o main_aux.o parser.o game.o solver.o
+OBJS = main.o main_aux.o parser.o game.o solver.o file_handler.o
 EXEC = sudoku-console
 COMP_FLAG = -ansi -Wall -Wextra -Werror -pedantic-errors
 
@@ -14,6 +14,8 @@ parser.o: parser.c parser.h
 game.o: game.c game.h
 	$(CC) $(COMP_FLAG) -c $*.c
 solver.o: solver.c solver.h
+	$(CC) $(COMP_FLAG) -c $*.c
+file_handler.o: file_handler.c file_handler.h
 	$(CC) $(COMP_FLAG) -c $*.c
 clean:
 	rm -f $(OBJS) $(EXEC)

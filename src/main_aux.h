@@ -3,8 +3,21 @@
 
 #include "time.h"
 #include "stdlib.h"
-int n;
-int m;
+
+typedef struct _gameDim {
+    int n;
+    int m;
+    int N;
+    int cellsCount;
+    int cellNeighboursCount;
+} GameDim;
+
+/* Global variable*/
+GameDim gameDim;
+
+void setGameDim(int n, int m);
+
+
 typedef enum _bool {
     false = 0,
     true = 1

@@ -5,8 +5,8 @@ int getEmptyCells(Board board, Coordinate *emptyCells) {
     int i, j, emptyCount = 0;
 
     /* go over each cell of the matrix*/
-    for (i = 0; i < n * m; ++i) {
-        for (j = 0; j < n * m; ++j) {
+    for (i = 0; i < gameDim.N; ++i) {
+        for (j = 0; j < gameDim.N; ++j) {
             if (board[i][j] == 0) {
                 /* if empty*/
                 emptyCells[emptyCount] = createCoordinate(i, j);
@@ -18,7 +18,7 @@ int getEmptyCells(Board board, Coordinate *emptyCells) {
 }
 
 Bool isSolved(Game *game) {
-    Coordinate emptyCells[n * n * m * m];
+    Coordinate emptyCells[gameDim.cellsCount];
     int emptyCellsCount;
 
     emptyCellsCount = getEmptyCells(game->user_matrix, emptyCells);
@@ -29,8 +29,8 @@ Bool isSolved(Game *game) {
 
 void copyBoard(Board sourceBoard, Board targetBoard) {
     int i, j;
-    for (i = 0; i < n * m; ++i) {
-        for (j = 0; j < n * m; ++j) {
+    for (i = 0; i < gameDim.N; ++i) {
+        for (j = 0; j < gameDim.N; ++j) {
             targetBoard[i][j] = sourceBoard[i][j];
         }
     }
@@ -38,25 +38,25 @@ void copyBoard(Board sourceBoard, Board targetBoard) {
 
 void clearBoard(Board board) {
     int i, j;
-    for (i = 0; i < n * m; ++i) {
-        for (j = 0; j < n * m; ++j) {
+    for (i = 0; i < gameDim.N; ++i) {
+        for (j = 0; j < gameDim.N; ++j) {
             board[i][j] = 0;
         }
     }
 }
 
-void coordinateNeighbours(Coordinate coordinate, Coordinate neighbours[3 * n * m - n - m + 1]) {
+void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
     int i, j, k, neighboursCreated = 0;
 
     /* find leftmost coordinate*/
     Coordinate leftMostBlockCoordinate = createCoordinate(
-            coordinate.i - coordinate.i % n,
-            coordinate.j - coordinate.j % m
+            coordinate.i - coordinate.i % gameDim.n,
+            coordinate.j - coordinate.j % gameDim.m
     );
 
     /* go over all cell in the block*/
-    for (i = leftMostBlockCoordinate.i + 0; i < leftMostBlockCoordinate.i + n; ++i) {
-        for (j = leftMostBlockCoordinate.j + 0; j < leftMostBlockCoordinate.j + m; ++j) {
+    for (i = leftMostBlockCoordinate.i + 0; i < leftMostBlockCoordinate.i + gameDim.n; ++i) {
+        for (j = leftMostBlockCoordinate.j + 0; j < leftMostBlockCoordinate.j + gameDim.m; ++j) {
             if (i != coordinate.i && j != coordinate.j) {
                 neighbours[neighboursCreated] = createCoordinate(i, j);
                 neighboursCreated++;
@@ -65,7 +65,7 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate neighbours[3 * n * m
     }
 
     /* go over all cells in the column and row expect of the one's in the block*/
-    for (k = 0; k < n * m; ++k) {
+    for (k = 0; k < gameDim.N; ++k) {
         if (coordinate.i != k) {
             neighbours[neighboursCreated] = createCoordinate(k, coordinate.j);
             neighboursCreated++;
@@ -81,17 +81,18 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate neighbours[3 * n * m
 
 int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
     int i, possibleValuesCount = 0;
-    Coordinate neighbours[3 * n * m - n - m - 1];
+    Coordinate *neighbours;
+    neighbours = malloc(gameDim.cellNeighboursCount * sizeof(Coordinate));
 
     /* init an array of all numbers available*/
-    for (i = 0; i < n * m; ++i) {
+    for (i = 0; i < gameDim.cellsCount; ++i) {
         possibleValues[i] = i + 1;
     }
 
     coordinateNeighbours(coordinate, neighbours);
 
     /* zeroing values from the array of used numbers*/
-    for (i = 0; i < 3 * n * m - n - m - 1; ++i) {
+    for (i = 0; i < gameDim.cellNeighboursCount; ++i) {
         int neighbourValue = board[neighbours[i].i][neighbours[i].j];
         if (neighbourValue != 0) {
             possibleValues[neighbourValue - 1] = 0;
@@ -100,7 +101,7 @@ int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
 
     /*closing the gap of zeroes*/
     /*for each value in array*/
-    for (i = 0; i < n * m; ++i) {
+    for (i = 0; i < gameDim.cellsCount; ++i) {
         /* if it isn't zero*/
         if (possibleValues[i] != 0) {
             /*put the non zero value to the next actual filled cell*/
@@ -110,10 +111,11 @@ int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
     }
 
     /*zeroing the rest of the array - not necessary but cleaner*/
-    for (i = possibleValuesCount; i < n * m; ++i) {
+    for (i = possibleValuesCount; i < gameDim.cellsCount; ++i) {
         possibleValues[i] = 0;
     }
 
+    free(neighbours);
     /*return the not zeroes values amount*/
     return possibleValuesCount;
 }
@@ -137,7 +139,7 @@ int randomRemoveArrayIndex(int *arr, int arrLength) {
 
 Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, int emptyCellsCount, int start) {
     int possibleValuesCount;
-    int possibleValues[n * m];
+    int possibleValues[gameDim.N];
 
     Coordinate currentCoordinate = emptyCells[start];
     possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
@@ -184,7 +186,7 @@ Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, in
 
 /*solve the second parameter based on the first parameter*/
 Bool solveBoard(Board board, Board solvedBoard, Bool isDeterministic) {
-    Coordinate emptyCells[n * n * m * m];
+    Coordinate emptyCells[gameDim.cellsCount];
     int emptyCellsCount;
 
     /* make a copy of the current board to solve*/
@@ -202,8 +204,8 @@ void generateFixedBoard(BoolBoard board, int fixedAmount) {
     clearBoard((Board) board);
 
     while (fixedCellsFound < fixedAmount) {
-        j = randLimit(n * n);
-        i = randLimit(n * n);
+        j = randLimit(gameDim.N);
+        i = randLimit(gameDim.N);
 
         if (board[i][j] == 0) {
             board[i][j] = 1;
@@ -224,8 +226,8 @@ void generateGame(Game *game, int fixedAmount) {
     generateFixedBoard(game->fixed_matrix, fixedAmount);
 
     /* fill the fixed cells only*/
-    for (i = 0; i < n * m; ++i) {
-        for (j = 0; j < n * m; ++j) {
+    for (i = 0; i < gameDim.N; ++i) {
+        for (j = 0; j < gameDim.N; ++j) {
             if (game->fixed_matrix[i][j]) {
                 game->user_matrix[i][j] = game->solved_matrix[i][j];
             }

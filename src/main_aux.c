@@ -14,7 +14,7 @@ void printError(Error err, Command command) {
 
     switch (err) {
         case EInvalidNumberOfCells:
-            printf("Error: invalid number of cells to fill (should be between 0 and %d)\n", n * n * m * m - 1);
+            printf("Error: invalid number of cells to fill (should be between 0 and %d)\n", gameDim.cellsCount - 1);
             break;
         case ECellIsFixed:
             printf("Error: cell is fixed\n");
@@ -84,17 +84,25 @@ FinishCode askUserForHintsAmount(int *hintsAmount) {
     return FC_SUCCESS;
 }
 
+void setGameDim(int n, int m) {
+    gameDim.n = n;
+    gameDim.m = m;
+    gameDim.N = n * m;
+    gameDim.cellsCount = gameDim.N * gameDim.N;
+    gameDim.cellNeighboursCount = 3 * gameDim.N - n - m - 1;
+}
+
 Game *createGame() {
     Game *game = malloc(sizeof(Game));
-    game->solved_matrix = (int **) malloc(n * m * sizeof(int *));
-    game->user_matrix = (int **) malloc(n * m * sizeof(int *));
-    game->fixed_matrix = (Bool **) malloc(n * m * sizeof(Bool *));
+    game->solved_matrix = (int **) malloc(gameDim.N * sizeof(int *));
+    game->user_matrix = (int **) malloc(gameDim.N * sizeof(int *));
+    game->fixed_matrix = (Bool **) malloc(gameDim.N * sizeof(Bool *));
     {
         int i;
-        for (i = 0; i < n * m; ++i) {
-            game->solved_matrix[i] = (int *) malloc(n * m * sizeof(int));
-            game->user_matrix[i] = (int *) malloc(n * m * sizeof(int));
-            game->fixed_matrix[i] = (Bool *) malloc(n * m * sizeof(Bool));
+        for (i = 0; i < gameDim.N; ++i) {
+            game->solved_matrix[i] = (int *) malloc(gameDim.N * sizeof(int));
+            game->user_matrix[i] = (int *) malloc(gameDim.N * sizeof(int));
+            game->fixed_matrix[i] = (Bool *) malloc(gameDim.N * sizeof(Bool));
         }
     }
 
@@ -104,7 +112,7 @@ Game *createGame() {
 void destroyGame(Game *game) {
     {
         int i;
-        for (i = 0; i < n * m; ++i) {
+        for (i = 0; i < gameDim.N; ++i) {
             free(game->solved_matrix[i]);
             free(game->user_matrix[i]);
             free(game->fixed_matrix[i]);
