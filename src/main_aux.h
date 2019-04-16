@@ -126,8 +126,6 @@ FinishCode askUserForNextTurn(Mode mode, Input *input);
 
 FinishCode executeCommand(Input input, Mode *mode, Game *game);
 
-FinishCode askUserForDimension();
-
 FinishCode askUserForHintsAmount(int *hintsAmount);
 
 int randLimit(int limit);

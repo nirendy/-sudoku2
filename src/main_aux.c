@@ -35,7 +35,7 @@ void printError(Error err, Command command) {
 void printPrompt(Prompt prompt, int num1) {
     switch (prompt) {
         case PEnterFixedAmount:
-            printf("Please enter the number of cells to fill [0-%d]:\n", n * n * m * m - 1);
+            printf("Please enter the number of cells to fill [0-%d]:\n", gameDim.cellsCount - 1);
             break;
         case PExit:
             printf("Exiting...\n");
@@ -70,10 +70,6 @@ int randLimit(int limit) {
     return rand() % limit;
 }
 
-/*return 0 only if finished successfully*/
-FinishCode askUserForDimension() {
-    return parseDimension();
-}
 
 /*return 0 only if finished successfully*/
 FinishCode askUserForHintsAmount(int *hintsAmount) {

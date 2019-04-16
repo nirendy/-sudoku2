@@ -10,7 +10,6 @@
 void printBoard(Board matrix, BoolBoard fixed_matrix);
 void initInput(Input *returnedInput);
 
-FinishCode parseDimension();
 FinishCode parseHintsAmount(int *hintsAmount);
 FinishCode parseCommand(Input *input);
 

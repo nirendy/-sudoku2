@@ -10,14 +10,6 @@ int getType() {
 
 
 /*return 0 only if finished successfully */
-FinishCode parseDimension() {
-    n = 3;
-    m = 3;
-
-    return FC_SUCCESS;
-}
-
-/*return 0 only if finished successfully */
 FinishCode parseHintsAmount(int *hintsAmount) {
     printPrompt(PEnterFixedAmount, 0);
 
@@ -37,7 +29,7 @@ FinishCode parseHintsAmount(int *hintsAmount) {
     /*
      * Validate input
      * */
-    if (!(0 <= *hintsAmount && *hintsAmount <= n * n * m * m - 1)) {
+    if (!(0 <= *hintsAmount && *hintsAmount <= gameDim.cellsCount - 1)) {
         printError(EInvalidNumberOfCells, 0);
         *hintsAmount = -1;
         return FC_INVALID_RECOVERABLE;
@@ -59,20 +51,19 @@ void printSepRow(int len) {
 
 void printBoard(Board matrix, BoolBoard fixed_matrix) {
     const char SPACE = ' ', PIPE = '|', ASTERISK = '*', DOT = '.', NEWLINE = '\n';
-    int N = n * m;
-    int len = 4 * N + m + 1;
+    int len = 4 * gameDim.N + gameDim.m + 1;
     int i = 0, j = 0, k = 0;
     int indexI = 0;
     int type;
 
     printSepRow(len);
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < gameDim.n; i++) {
 
-        for (j = 0; j < m; j++) {
+        for (j = 0; j < gameDim.m; j++) {
 
-            for (k = 0; k < N; k++) {
+            for (k = 0; k < gameDim.N; k++) {
 
-                if (k % n == 0) {
+                if (k % gameDim.n == 0) {
                     printf("%c", PIPE);
                 }
 
