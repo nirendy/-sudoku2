@@ -42,15 +42,14 @@ typedef enum _error {
     ECellIsFixed,
     EValueIsInvalid,
     EFunctionFailed,
-
+    EInvalidCommandInMode,
     /*parser errors*/
-    EInvalidCommand,
+            EInvalidCommand,
     EInvalidNumOfParams,
     EInvalidFirstParam,
     EInvalidSecondParam,
     EInvalidThirdParam,
-    EInvalidFile,
-
+    EInvalidFile
 } Error;
 
 typedef enum _finish_code {
@@ -93,29 +92,24 @@ typedef struct _coordinate {
 Coordinate createCoordinate(int i, int j);
 
 typedef enum _command {
+    COMMAND_SOLVE,
+    COMMAND_EDIT,
+    COMMAND_MARK_ERRORS,
+    COMMAND_PRINT_BOARD,
     COMMAND_SET,
-    COMMAND_HINT,
     COMMAND_VALIDATE,
+    COMMAND_GUESS,
+    COMMAND_GENERATE,
+    COMMAND_UNDO,
+    COMMAND_REDO,
+    COMMAND_SAVE,
+    COMMAND_HINT,
+    COMMAND_GUESS_HINT,
+    COMMAND_NUM_SOLUTIONS,
+    COMMAND_AUTOFILL,
+    COMMAND_RESET,
     COMMAND_EXIT,
-    COMMAND_INVALID,
-    SOLVE,
-    EDIT,
-    MARK_ERRORS,
-    PRINT_BOARD,
-    SET,
-    VALIDATE,
-    GUESS,
-    GENERATE,
-    UNDO,
-    REDO,
-    SAVE,
-    HINT,
-    GUESS_HINT,
-    NUM_SOLUTIONS,
-    AUTOFILL,
-    RESET,
-    EXIT,
-    INVALID
+    COMMAND_INVALID
 } Command;
 
 
@@ -134,9 +128,9 @@ void printError(Error err, Command command);
 
 void printPrompt(Prompt prompt, int num1);
 
-FinishCode askUserForNextTurn(Mode mode, Input *input);
+void askUserForNextTurn(Mode mode, Input *input);
 
-FinishCode executeCommand(Input input, Mode *mode, Game *game);
+void executeCommand(Input input, Mode *mode, Game **gameP);
 
 FinishCode askUserForHintsAmount(int *hintsAmount);
 

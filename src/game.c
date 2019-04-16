@@ -7,20 +7,25 @@ Bool isCoordinateFixed(Game *game, Coordinate coordinate) {
 }
 
 Bool isValueInNeighbours(Game *game, Coordinate coordinate, int value) {
-    int possibleValues[gameDim.N];
+    int *possibleValues;
+    Bool returnValue = true;
     int i, possibleValuesCount;
+
+    possibleValues = (int *) malloc(gameDim.N * sizeof(int));
 
     possibleValuesCount = getPossibleValues(game->user_matrix, coordinate, possibleValues);
 
     /*will return false if the value is found in one of the neighbours*/
     for (i = 0; i < possibleValuesCount; ++i) {
         if (possibleValues[i] == value) {
-            return false;
+            returnValue = false;
+            break;
         }
     }
 
     /* did not find - return true*/
-    return true;
+    free(possibleValues);
+    return returnValue;
 }
 
 void setCoordinate(Game *game, Input input) {
