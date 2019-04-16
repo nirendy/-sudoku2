@@ -34,38 +34,49 @@ void printError(Error err, Command command) {
             printf("Error: <Command> is not valid in <Mode>\n");
             break;
         }
-        case EInvalidNumOfParams:
+        case EInvalidNumOfParams: {
             printf("Error: number of parameters don't suit the command\n");
             break;
-
-
+        }
+        default: {
+            printf("Unreachable Code Error");
+        }
     }
 }
 
 void printPrompt(Prompt prompt, int num1) {
     switch (prompt) {
-        case PEnterFixedAmount:
+        case PEnterFixedAmount: {
             printf("Please enter the number of cells to fill [0-%d]:\n", gameDim.cellsCount - 1);
             break;
-        case PExit:
+        }
+        case PExit: {
             printf("Exiting...\n");
             break;
-        case PSuccess:
+        }
+        case PSuccess: {
             printf("Puzzle solved successfully\n");
             break;
-        case PHint:
+        }
+        case PHint: {
             printf("Hint: set cell to %d\n", num1);
             break;
-        case PValidateFailed:
+        }
+        case PValidateFailed: {
             printf("Validation failed: board is unsolvable\n");
             break;
-        case PValidateSuccess:
+        }
+        case PValidateSuccess: {
             printf("Validation passed: board is solvable\n");
             break;
-
-        case PTitle:
+        }
+        case PTitle: {
             printf("Sudoku Game\n");
             break;
+        }
+        default: {
+            printf("Unreachable Code Error");
+        }
     }
 }
 
@@ -211,6 +222,10 @@ Bool isCommandAllowedInMode(Mode mode, Command command) {
         }
         case COMMAND_INVALID: {
             return (mode == Solve || mode == Edit);
+        }
+        default: {
+            printf("Unreachable Code Error");
+            return false;
         }
     }
 }
