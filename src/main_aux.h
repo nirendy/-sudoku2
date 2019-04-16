@@ -49,6 +49,8 @@ typedef enum _error {
     EInvalidFirstParam,
     EInvalidSecondParam,
     EInvalidThirdParam,
+    EInvalidFile,
+
 } Error;
 
 typedef enum _finish_code {

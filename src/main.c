@@ -22,7 +22,8 @@ int main(int argc, char *argv[]) {
     game = createGame();
     generateGame(game, 20);
 
-    /*saveFile("../data/1", game);*/
+    saveFile("../data/1", game);
+    generateGameFromFile("../data/1", game);
 
     printBoard(game->user_matrix, game->fixed_matrix);
     printBoard(game->solved_matrix, game->fixed_matrix);

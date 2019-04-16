@@ -34,6 +34,10 @@ void printError(Error err, Command command) {
             printf("Error: number of parameters don't suit the command\n");
             break;
 
+        case EInvalidFile:
+            printf("Error: text in file is invalid\n");
+            break;
+
 
 
     }
