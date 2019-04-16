@@ -52,7 +52,6 @@ typedef enum _finish_code {
 typedef enum _prompt {
     PTitle,
 
-
     PEnterFixedAmount,
     PExit,
     PSuccess,
@@ -112,6 +111,10 @@ typedef struct _input {
     Command command;
     Coordinate coordinate;
     int value;
+    int gen1;
+    int gen2;
+    float threshold;
+    char* path;
 } Input;
 
 
