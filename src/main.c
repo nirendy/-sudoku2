@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     FinishCode finishCode;
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
-
+    askUserForNextTurn(mode, &input);
     /* MOCK*/
 
     mode = Solve;

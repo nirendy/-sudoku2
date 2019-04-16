@@ -77,7 +77,7 @@ void printBoard(Board matrix, BoolBoard fixed_matrix) {
                 }
 
                 printf("%c", SPACE);
-                matrix[indexI][k]!=0 ? printf("%2d", matrix[indexI][k]) : printf("%s","  ");
+                matrix[indexI][k] != 0 ? printf("%2d", matrix[indexI][k]) : printf("%s", "  ");
                 type = getType();
                 switch (type) {
                     case 0:
@@ -104,46 +104,12 @@ void printBoard(Board matrix, BoolBoard fixed_matrix) {
 
 }
 
-/*
-
-void printBoard(const Board matrix, const BoolBoard fixed_matrix) {
-    int i = 0, j = 0;
-    char sep[35] = "----------------------------------\n";
-
-    for (i = 0; i < 9; i++) {
-        if (i % 3 == 0) {
-            printf("%s", sep);
-        }
-        for (j = 0; j < 9; j++) {
-            if (j % 3 == 0) {
-                printf("| ");
-            }
-            if (isFixed(fixed_matrix, i, j)) {
-                printf(".");
-            } else {
-                printf(" ");
-            }
-
-            if (matrix[i][j] != 0) {
-                printf("%d", matrix[i][j]);
-            } else {
-                printf(" ");
-            }
-            printf(" ");
-        }
-        printf("|");
-        printf("\n");
-    }
-    printf("%s", sep);
-}
-*/
-
 
 /*
    * Categorize token to commands
    * */
 int ClassifyCommand(char *token, Input *returnedInputP) {
-    int numOfVars = 0;
+    int numOfVars = -1;
 
     if (!strcmp(token, "solve")) {
         numOfVars = 1;
@@ -217,15 +183,40 @@ int ClassifyCommand(char *token, Input *returnedInputP) {
     return numOfVars;
 }
 
+void initInput(Input *returnedInput) {
+    returnedInput->command = COMMAND_INVALID;
+    returnedInput->coordinate.i = -1;
+    returnedInput->coordinate.j = -1;
+    returnedInput->value = -1;
+    returnedInput->gen1 = -1;
+    returnedInput->gen2 = -1;
+    returnedInput->threshold = -1;
+    returnedInput->path = "";
+}
+
+//TODO: verify
+void fillPath(Input *returnedInput, char *path) {
+    returnedInput->path = path;
+}
+
+int getNum(char *str){
+    return 0;
+}
+
+float getFloat(char *str){
+    return 0.0;
+}
+
 
 FinishCode parseCommand(Input *returnedInput) {
-    char str[1024];
     /* TODO: make constant */
+    char str[1024];
     char *token, command[15];
     int numOfVars = -1;
     int x = 0, y = 0, value = -1;
+    int param1, param2, param3;
     int index = 0;
-    returnedInput->command = COMMAND_INVALID;
+    initInput(returnedInput);
 
     /*
      * Do until a non empty line received
@@ -244,9 +235,6 @@ FinishCode parseCommand(Input *returnedInput) {
         return FC_INVALID_RECOVERABLE;
     }
 
-    /*
-     *
-     * */
     strcpy(command, token);
 
     token = strtok(NULL, " \t\r\n");
@@ -259,7 +247,17 @@ FinishCode parseCommand(Input *returnedInput) {
 
         switch (index) {
             case 1:
-                x = token[0] - '0';
+                if (!strcmp(token, "solve") || !strcmp(token, "edit") || !strcmp(token, "save")) {fillPath(returnedInput, token); }
+
+                if (!strcmp(token, "generate")){returnedInput->gen1 = getNum(token);}
+
+                if (!strcmp(token, "guess")){returnedInput->threshold = getFloat(token);}
+
+                if (!strcmp(token, "mark_errors")){returnedInput->value = getNum(token);}
+
+                if (!strcmp(token, "hint") || !strcmp(token, "guess_hint") || !strcmp(token, "save")) {fillPath(returnedInput, token); }
+
+
                 break;
             case 2:
                 y = token[0] - '0';

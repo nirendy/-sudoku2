@@ -52,6 +52,10 @@ void printPrompt(Prompt prompt, int num1) {
         case PValidateSuccess:
             printf("Validation passed: board is solvable\n");
             break;
+
+        case PTitle:
+            printf("Sudoku Game\n");
+            break;
     }
 }
 
