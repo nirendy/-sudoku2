@@ -43,9 +43,7 @@ void printSepRow(int len) {
     for (i = 0; i < len; i++) {
         printf("-");
     }
-
     printf("\n");
-
 }
 
 
@@ -68,7 +66,7 @@ void printBoard(Board matrix, BoolBoard fixed_matrix) {
                 }
 
                 printf("%c", SPACE);
-                matrix[indexI][k] != 0 ? printf("%2d", matrix[indexI][k]) : printf("%s", "  ");
+                matrix[indexI][k] != 0 ? printf("%2d", matrix[indexI][k]) : printf("  ");
                 type = getType();
                 switch (type) {
                     case 0:

@@ -18,13 +18,14 @@ int main(int argc, char *argv[]) {
 
     /* MOCK*/
     mode = Solve;
-    setGameDim(3,3);
+    setGameDim(3,5);
     game = createGame();
     generateGame(game, 20);
 
     /*saveFile("../data/1", game);*/
 
     printBoard(game->user_matrix, game->fixed_matrix);
+    printBoard(game->solved_matrix, game->fixed_matrix);
     /* END MOCK*/
 
 
