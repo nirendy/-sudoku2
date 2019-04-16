@@ -50,13 +50,13 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
 
     /* find leftmost coordinate*/
     Coordinate leftMostBlockCoordinate = createCoordinate(
-            coordinate.i - coordinate.i % gameDim.n,
-            coordinate.j - coordinate.j % gameDim.m
+            coordinate.i - (coordinate.i % gameDim.m),
+            coordinate.j - (coordinate.j % gameDim.n)
     );
 
     /* go over all cell in the block*/
-    for (i = leftMostBlockCoordinate.i + 0; i < leftMostBlockCoordinate.i + gameDim.n; ++i) {
-        for (j = leftMostBlockCoordinate.j + 0; j < leftMostBlockCoordinate.j + gameDim.m; ++j) {
+    for (i = leftMostBlockCoordinate.i + 0; i < leftMostBlockCoordinate.i + gameDim.m; ++i) {
+        for (j = leftMostBlockCoordinate.j + 0; j < leftMostBlockCoordinate.j + gameDim.n; ++j) {
             if (i != coordinate.i && j != coordinate.j) {
                 neighbours[neighboursCreated] = createCoordinate(i, j);
                 neighboursCreated++;
@@ -76,16 +76,15 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
             neighboursCreated++;
         }
     }
-
 }
 
 int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
     int i, possibleValuesCount = 0;
     Coordinate *neighbours;
-    neighbours = malloc(gameDim.cellNeighboursCount * sizeof(Coordinate));
+    neighbours = (Coordinate *) malloc(gameDim.cellNeighboursCount * sizeof(Coordinate));
 
     /* init an array of all numbers available*/
-    for (i = 0; i < gameDim.cellsCount; ++i) {
+    for (i = 0; i < gameDim.N; ++i) {
         possibleValues[i] = i + 1;
     }
 
@@ -101,7 +100,7 @@ int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
 
     /*closing the gap of zeroes*/
     /*for each value in array*/
-    for (i = 0; i < gameDim.cellsCount; ++i) {
+    for (i = 0; i < gameDim.N; ++i) {
         /* if it isn't zero*/
         if (possibleValues[i] != 0) {
             /*put the non zero value to the next actual filled cell*/
@@ -111,7 +110,7 @@ int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
     }
 
     /*zeroing the rest of the array - not necessary but cleaner*/
-    for (i = possibleValuesCount; i < gameDim.cellsCount; ++i) {
+    for (i = possibleValuesCount; i < gameDim.N; ++i) {
         possibleValues[i] = 0;
     }
 
@@ -139,49 +138,51 @@ int randomRemoveArrayIndex(int *arr, int arrLength) {
 
 Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, int emptyCellsCount, int start) {
     int possibleValuesCount;
-    int possibleValues[gameDim.N];
+    int *possibleValues;
+    Bool returnValue = false;
+    possibleValues = (int *) malloc(gameDim.N * sizeof(int));
 
     Coordinate currentCoordinate = emptyCells[start];
     possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
 
-    /*if no options available*/
-    if (possibleValuesCount == 0) {
-        return false;
+    /*if any option available*/
+    if (possibleValuesCount > 0) {
+        /* as long there are more possible values that we didn't check*/
+        while (possibleValuesCount > 0) {
+            int nextValue;
+
+            /*if it is deterministic or there are only one option left*/
+            if (possibleValuesCount == 1 || isDeterministic) {
+                /* remove the lowest option*/
+                nextValue = removeArrayIndex(possibleValues, possibleValuesCount, 0);
+            } else {
+                /* remove a random option*/
+                nextValue = randomRemoveArrayIndex(possibleValues, possibleValuesCount);
+            }
+
+            /*change the value to the next value*/
+            board[currentCoordinate.i][currentCoordinate.j] = nextValue;
+
+            /* if this is the last cell
+             * OR
+             * if this configuration leads to a winning configuration
+             * */
+            if ((start == emptyCellsCount - 1) ||
+                (solveBoardRec(board, isDeterministic, emptyCells, emptyCellsCount, start + 1))) {
+                returnValue = true;
+                break;
+            }
+
+            /* clears the unsuccessful cell guess*/
+            board[currentCoordinate.i][currentCoordinate.j] = 0;
+
+            /*decrease the available options amount left*/
+            possibleValuesCount--;
+        }
     }
 
-    /* as long there are more possible values that we didn't check*/
-    while (possibleValuesCount > 0) {
-        int nextValue;
-
-        /*if it is deterministic or there are only one option left*/
-        if (possibleValuesCount == 1 || isDeterministic) {
-            /* remove the lowest option*/
-            nextValue = removeArrayIndex(possibleValues, possibleValuesCount, 0);
-        } else {
-            /* remove a random option*/
-            nextValue = randomRemoveArrayIndex(possibleValues, possibleValuesCount);
-        }
-
-        /*change the value to the next value*/
-        board[currentCoordinate.i][currentCoordinate.j] = nextValue;
-
-        /* if this is the last cell
-         * OR
-         * if this configuration leads to a winning configuration
-         * */
-        if ((start == emptyCellsCount - 1) ||
-            (solveBoardRec(board, isDeterministic, emptyCells, emptyCellsCount, start + 1))) {
-            return true;
-        }
-
-        /* clears the unsuccessful cell guess*/
-        board[currentCoordinate.i][currentCoordinate.j] = 0;
-
-        /*decrease the available options amount left*/
-        possibleValuesCount--;
-    }
-
-    return false;
+    free(possibleValues);
+    return returnValue;
 }
 
 /*solve the second parameter based on the first parameter*/
