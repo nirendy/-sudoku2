@@ -170,13 +170,13 @@ void destroyGame(Game *game) {
 Bool isCommandAllowedInMode(Mode mode, Command command) {
     switch (command) {
         case COMMAND_SOLVE: {
-            return (mode == Solve || mode == Edit);
+            return true;
         }
         case COMMAND_EDIT: {
-            return (mode == Solve || mode == Edit);
+            return true;
         }
         case COMMAND_MARK_ERRORS: {
-            return (mode == Solve || mode == Edit);
+            return (mode == Solve);
         }
         case COMMAND_PRINT_BOARD: {
             return (mode == Solve || mode == Edit);
@@ -188,10 +188,10 @@ Bool isCommandAllowedInMode(Mode mode, Command command) {
             return (mode == Solve || mode == Edit);
         }
         case COMMAND_GUESS: {
-            return (mode == Solve || mode == Edit);
+            return (mode == Solve);
         }
         case COMMAND_GENERATE: {
-            return (mode == Solve || mode == Edit);
+            return (mode == Edit);
         }
         case COMMAND_UNDO: {
             return (mode == Solve || mode == Edit);
@@ -203,33 +203,30 @@ Bool isCommandAllowedInMode(Mode mode, Command command) {
             return (mode == Solve || mode == Edit);
         }
         case COMMAND_HINT: {
-            return (mode == Solve || mode == Edit);
+            return (mode == Solve);
         }
         case COMMAND_GUESS_HINT: {
-            return (mode == Solve || mode == Edit);
+            return (mode == Solve);
         }
         case COMMAND_NUM_SOLUTIONS: {
             return (mode == Solve || mode == Edit);
         }
         case COMMAND_AUTOFILL: {
-            return (mode == Solve || mode == Edit);
+            return (mode == Solve);
         }
         case COMMAND_RESET: {
             return (mode == Solve || mode == Edit);
         }
         case COMMAND_EXIT: {
-            return (mode == Solve || mode == Edit);
+            return true;
         }
-        case COMMAND_INVALID: {
-            return (mode == Solve || mode == Edit);
-        }
+        case COMMAND_INVALID:
         default: {
             printf("Unreachable Code Error");
             return false;
         }
     }
 }
-
 
 void terminate(Game *game, FinishCode finishCode) {
     destroyGame(game);
