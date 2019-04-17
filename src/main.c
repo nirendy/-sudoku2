@@ -27,7 +27,6 @@ int main(int argc, char *argv[]) {
     /* END MOCK*/
 
 
-
     while (mode != Exit) {
         askUserForNextTurn(mode, &input);
         executeCommand(input, &mode, &game);
