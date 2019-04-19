@@ -278,6 +278,7 @@ FinishCode parseCommand(Input *returnedInput) {
         token = strtok(NULL, " \t\r\n");
     }
 
+    index--;
     if (index != numOfVars && strcmp(command, "edit") != 0) {
         printError(EInvalidNumOfParams, returnedInput->command);
         return FC_INVALID_RECOVERABLE;

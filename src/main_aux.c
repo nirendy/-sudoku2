@@ -250,7 +250,7 @@ void askUserForNextTurn(Mode mode, Input *input) {
             terminate(NULL, finishCode);
         }
 
-        if (finishCode == FC_SUCCESS && isCommandAllowedInMode(mode, input->command)) {
+        if (finishCode == FC_SUCCESS && !isCommandAllowedInMode(mode, input->command)) {
             printError(EInvalidCommandInMode, COMMAND_INVALID);
             finishCode = FC_INVALID_RECOVERABLE;
         }
