@@ -121,6 +121,8 @@ void setGameDim(int n, int m) {
     gameDim.cellNeighboursCount = 3 * gameDim.N - n - m - 1;
 }
 
+
+
 Game *createGame() {
     Game *game = malloc(sizeof(Game));
     game->solved_matrix = (int **) malloc(gameDim.N * sizeof(int *));
@@ -149,6 +151,7 @@ Game *createGameFromFile(char *filePath) {
         finishCode = generateGameFromFile(filePath, newGame);
 
         if (finishCode == FC_INVALID_RECOVERABLE) {
+            destroyGame(newGame);
             setGameDim(oldDimentions.n, oldDimentions.m);
             return NULL;
         } else if (finishCode == FC_SUCCESS) {
@@ -307,6 +310,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             setDimentiosFromFile(input.path);
             Game *newGame = createGameFromFile(input.path);
             if (newGame != NULL) {
+                /* TODO: this destroy isn't good because it doesn't take into account the old dimentions*/
                 destroyGame(game);
                 *gameP = newGame;
                 setMode(mode, Solve);

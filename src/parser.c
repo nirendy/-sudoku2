@@ -241,32 +241,33 @@ FinishCode parseCommand(Input *returnedInput) {
 
     strcpy(command, token);
     token = strtok(NULL, " \t\r\n");
-    index = 1;
+    index = 0;
 
     /*while not all expected parameters has been interpreted*/
     while (token != NULL && index <= numOfVars) {
+        index++;
 
         switch (index) {
             case 1:
-                if (!strcmp(token, "solve") || !strcmp(token, "edit") || !strcmp(token, "save")) {fillPath(returnedInput, token); }
+                if (!strcmp(command, "solve") || !strcmp(command, "edit") || !strcmp(command, "save")) {fillPath(returnedInput, token); }
 
-                if (!strcmp(token, "generate")){returnedInput->gen1 = getNum(token);}
+                if (!strcmp(command, "generate")){returnedInput->gen1 = getNum(token);}
 
-                if (!strcmp(token, "guess")){returnedInput->threshold = getFloat(token);}
+                if (!strcmp(command, "guess")){returnedInput->threshold = getFloat(token);}
 
-                if (!strcmp(token, "mark_errors")){returnedInput->value = getNum(token);}
+                if (!strcmp(command, "mark_errors")){returnedInput->value = getNum(token);}
 
-                if (!strcmp(token, "hint") || !strcmp(token, "guess_hint") || !strcmp(token, "set")) {returnedInput->coordinate.i = getNum(token) - 1; }
+                if (!strcmp(command, "hint") || !strcmp(command, "guess_hint") || !strcmp(command, "set")) {returnedInput->coordinate.i = getNum(token) - 1; }
 
                 break;
             case 2:
 
-                if (!strcmp(token, "generate")){returnedInput->gen2 = getNum(token);}
+                if (!strcmp(command, "generate")){returnedInput->gen2 = getNum(token);}
 
-                if (!strcmp(token, "hint") || !strcmp(token, "guess_hint") || !strcmp(token, "set")) {returnedInput->coordinate.j = getNum(token) - 1; }
+                if (!strcmp(command, "hint") || !strcmp(command, "guess_hint") || !strcmp(command, "set")) {returnedInput->coordinate.j = getNum(token) - 1; }
                 break;
             case 3:
-                if (!strcmp(token, "set")) {returnedInput->value = getNum(token); }
+                if (!strcmp(command, "set")) {returnedInput->value = getNum(token); }
                 break;
 
             default:
@@ -274,11 +275,9 @@ FinishCode parseCommand(Input *returnedInput) {
                 return FC_UNEXPECTED_ERROR;
         }
 
-        index++;
         token = strtok(NULL, " \t\r\n");
     }
 
-    index--;
     if (index != numOfVars && strcmp(command, "edit") != 0) {
         printError(EInvalidNumOfParams, returnedInput->command);
         return FC_INVALID_RECOVERABLE;
