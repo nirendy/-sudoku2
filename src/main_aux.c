@@ -304,6 +304,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
 
     switch (input.command) {
         case COMMAND_SOLVE: {
+            setDimentiosFromFile(input.path);
             Game *newGame = createGameFromFile(input.path);
             if (newGame != NULL) {
                 destroyGame(game);

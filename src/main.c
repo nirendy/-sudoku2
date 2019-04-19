@@ -11,6 +11,7 @@ int main(int argc, char *argv[]) {
     Mode mode = Init;
     Input input;
     Game *game;
+    Bool mark_errors;
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
@@ -21,9 +22,6 @@ int main(int argc, char *argv[]) {
     generateGame(game, 20);
 
     /*saveGameToFile("../data/1", game);*/
-
-//    printBoard(game->user_matrix, game->fixed_matrix);
-//    printBoard(game->solved_matrix, game->fixed_matrix);
 
     setDimentiosFromFile("../data/1");
     generateGameFromFile("../data/1", game);
