@@ -22,8 +22,11 @@ int main(int argc, char *argv[]) {
 
     /*saveGameToFile("../data/1", game);*/
 
-    printBoard(game->user_matrix, game->fixed_matrix);
-    printBoard(game->solved_matrix, game->fixed_matrix);
+//    printBoard(game->user_matrix, game->fixed_matrix);
+//    printBoard(game->solved_matrix, game->fixed_matrix);
+
+    setDimentiosFromFile("../data/1");
+    generateGameFromFile("../data/1", game);
     /* END MOCK*/
 
 

@@ -78,6 +78,10 @@ void printPrompt(Prompt prompt, int num1) {
             printf("Sudoku Game\n");
             break;
         }
+        case PNextCommand: {
+            printf("Please enter the desired command:\n");
+            break;
+        }
         default: {
             printf("Unreachable Code Error");
         }
@@ -244,6 +248,7 @@ void terminate(Game *game, FinishCode finishCode) {
 
 void askUserForNextTurn(Mode mode, Input *input) {
     FinishCode finishCode;
+    printPrompt(PNextCommand , 0);
     do {
         finishCode = parseCommand(input);
         if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
@@ -393,5 +398,4 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
         }
     }
 
-    printBoard(game->user_matrix, game->fixed_matrix);
 }
