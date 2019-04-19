@@ -9,7 +9,7 @@
 #define MAX_STRING_LEN 1024
 #define MAX_COMMAND_LEN 20
 
-void printBoard(Board matrix, BoolBoard fixed_matrix);
+void printBoard(Game *game);
 void initInput(Input *returnedInput);
 float getFloat(char *str);
 

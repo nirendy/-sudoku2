@@ -42,6 +42,12 @@ void printError(Error err, Command command) {
             printf("Error: text in file is invalid\n");
             break;
         }
+
+        case EInvalidFirstParam: {
+            printf("Error: first parameter is invalid\n");
+            break;
+        }
+
         default: {
             printf("Unreachable Code Error");
         }
@@ -122,18 +128,19 @@ void setGameDim(int n, int m) {
 }
 
 
-
 Game *createGame() {
     Game *game = malloc(sizeof(Game));
     game->solved_matrix = (int **) malloc(gameDim.N * sizeof(int *));
     game->user_matrix = (int **) malloc(gameDim.N * sizeof(int *));
     game->fixed_matrix = (Bool **) malloc(gameDim.N * sizeof(Bool *));
+    game->error_matrix = (Bool **) malloc(gameDim.N * sizeof(Bool *));
     {
         int i;
         for (i = 0; i < gameDim.N; ++i) {
             game->solved_matrix[i] = (int *) malloc(gameDim.N * sizeof(int));
             game->user_matrix[i] = (int *) malloc(gameDim.N * sizeof(int));
             game->fixed_matrix[i] = (Bool *) malloc(gameDim.N * sizeof(Bool));
+            game->error_matrix[i] = (Bool *) malloc(gameDim.N * sizeof(Bool));
         }
     }
 
@@ -169,12 +176,14 @@ void destroyGame(Game *game) {
             free(game->solved_matrix[i]);
             free(game->user_matrix[i]);
             free(game->fixed_matrix[i]);
+            free(game->error_matrix[i]);
         }
     }
 
     free(game->solved_matrix);
     free(game->user_matrix);
     free(game->fixed_matrix);
+    free(game->error_matrix);
     free(game);
 }
 
@@ -251,7 +260,7 @@ void terminate(Game *game, FinishCode finishCode) {
 
 void askUserForNextTurn(Mode mode, Input *input) {
     FinishCode finishCode;
-    printPrompt(PNextCommand , 0);
+    printPrompt(PNextCommand, 0);
     do {
         finishCode = parseCommand(input);
         if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
@@ -276,7 +285,6 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
     /*
      * Keep doing until exit
      * */
-
 
     /*
          finishCode = askUserForHintsAmount(&fixedAmount);
@@ -308,13 +316,14 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
     switch (input.command) {
         case COMMAND_SOLVE: {
             setDimentiosFromFile(input.path);
-            Game *newGame = createGameFromFile(input.path);
-            if (newGame != NULL) {
-                /* TODO: this destroy isn't good because it doesn't take into account the old dimentions*/
-                destroyGame(game);
-                *gameP = newGame;
-                setMode(mode, Solve);
-            }
+            Game *newGame;
+            newGame = createGameFromFile(input.path);
+            setMode(mode, Solve);
+//            if (newGame != NULL) {
+//                /* TODO: this destroy isn't good because it doesn't take into account the old dimentions*/
+//                destroyGame(game);
+//                *gameP = newGame;
+//            }
             break;
         }
         case COMMAND_EDIT: {
@@ -330,16 +339,19 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             if (newGame != NULL) {
                 destroyGame(game);
                 *gameP = newGame;
-                setMode(mode, Solve);
+                setMode(mode, Edit);
             }
             break;
         }
         case COMMAND_MARK_ERRORS: {
-            printf("Command not implemented yet");
+            if (input.value == 0) { markError = false; }
+            else if (input.value == 1) { markError = true; }
+            else { printError(EInvalidFirstParam, 0); }
+
             break;
         }
         case COMMAND_PRINT_BOARD: {
-            printBoard(game->user_matrix, game->fixed_matrix);
+            printBoard(game);
             break;
         }
         case COMMAND_SET: {
@@ -402,5 +414,18 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             terminate(game, FC_UNEXPECTED_ERROR);
         }
     }
+    if (input.command == COMMAND_SOLVE ||
+        input.command == COMMAND_EDIT ||
+        input.command == COMMAND_SET ||
+        input.command == COMMAND_AUTOFILL ||
+        input.command == COMMAND_UNDO ||
+        input.command == COMMAND_REDO ||
+        input.command == COMMAND_GENERATE ||
+        input.command == COMMAND_GUESS ||
+        input.command == COMMAND_RESET)
+    {
+        printBoard(game);
+    }
+
 
 }

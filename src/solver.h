@@ -13,6 +13,7 @@ Bool solveBoard(const Board board, Board solvedBoard, Bool isDeterministic);
 
 Bool isSolved(Game *game);
 
+void updateErrorMatrix(Game *game, Input input);
 
 #endif
 

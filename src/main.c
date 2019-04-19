@@ -11,20 +11,19 @@ int main(int argc, char *argv[]) {
     Mode mode = Init;
     Input input;
     Game *game;
-    Bool mark_errors;
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
     /* MOCK */
-    mode = Solve;
+//    mode = Solve;
     setGameDim(3, 5);
     game = createGame();
     generateGame(game, 20);
 
     /*saveGameToFile("../data/1", game);*/
 
-    setDimentiosFromFile("../data/1");
-    generateGameFromFile("../data/1", game);
+//    setDimentiosFromFile("../data/1");
+//    generateGameFromFile("../data/1", game);
     /* END MOCK*/
 
 

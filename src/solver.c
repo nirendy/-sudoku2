@@ -234,6 +234,7 @@ void generateGame(Game *game, int fixedAmount) {
     solveBoard(game->user_matrix, game->solved_matrix, false);
 
     generateFixedBoard(game->fixed_matrix, fixedAmount);
+    clearBoard(game->error_matrix);
 
     /* fill the fixed cells only*/
     for (i = 0; i < gameDim.N; ++i) {
@@ -243,4 +244,8 @@ void generateGame(Game *game, int fixedAmount) {
             }
         }
     }
+}
+
+void updateErrorMatrix(Game *game, Input input){
+    //TODO: implement command
 }
