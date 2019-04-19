@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "solver.h"
+#include "parser.h"
 
 int getEmptyCells(Board board, Coordinate *emptyCells) {
     int i, j, emptyCount = 0;
@@ -28,15 +29,6 @@ Bool isSolved(Game *game) {
     free(emptyCells);
     /* if 0 empty cells */
     return emptyCellsCount == 0;
-}
-
-void copyBoard(Board sourceBoard, Board targetBoard) {
-    int i, j;
-    for (i = 0; i < gameDim.N; ++i) {
-        for (j = 0; j < gameDim.N; ++j) {
-            targetBoard[i][j] = sourceBoard[i][j];
-        }
-    }
 }
 
 void clearBoard(Board board) {
@@ -189,8 +181,53 @@ Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, in
     return returnValue;
 }
 
+int
+countPossibleSolutionsRec(Board board, Coordinate *emptyCells, int emptyCellsCount, int start) {
+    int possibleValuesCount;
+    int *possibleValues;
+    int returnValue = 0;
+    Coordinate currentCoordinate = emptyCells[start];
+
+    possibleValues = (int *) malloc(gameDim.N * sizeof(int));
+
+    possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
+
+    /*if any option available*/
+    if (possibleValuesCount > 0) {
+        /* as long there are more possible values that we didn't check*/
+        while (possibleValuesCount > 0) {
+            int nextValue;
+
+            /* remove the lowest option*/
+            nextValue = removeArrayIndex(possibleValues, possibleValuesCount, 0);
+
+            /*change the value to the next value*/
+            board[currentCoordinate.i][currentCoordinate.j] = nextValue;
+
+            /* if this is the last cell
+             * OR
+             * if this configuration leads to a winning configuration
+             * */
+            if (start == emptyCellsCount - 1) {
+                returnValue += 1;
+            } else {
+                returnValue += countPossibleSolutionsRec(board, emptyCells, emptyCellsCount, start + 1);
+            }
+
+            /* clears the unsuccessful cell guess*/
+            board[currentCoordinate.i][currentCoordinate.j] = 0;
+
+            /*decrease the available options amount left*/
+            possibleValuesCount--;
+        }
+    }
+
+    free(possibleValues);
+    return returnValue;
+}
+
 /*solve the second parameter based on the first parameter*/
-Bool solveBoard(Board board, Board solvedBoard, Bool isDeterministic) {
+Bool solveBoard(Board userBoard, Board toSolveBoard, Bool isDeterministic) {
     Coordinate *emptyCells;
     int emptyCellsCount;
     Bool returnValue;
@@ -198,14 +235,39 @@ Bool solveBoard(Board board, Board solvedBoard, Bool isDeterministic) {
     emptyCells = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
 
     /* make a copy of the current board to solve*/
-    copyBoard(board, solvedBoard);
+    copyBoard(toSolveBoard, userBoard);
+
+    /*needed for the init of the recursion*/
+    emptyCellsCount = getEmptyCells(userBoard, emptyCells);
+
+    /*solve the board cursively*/
+    returnValue = solveBoardRec(toSolveBoard, isDeterministic, emptyCells, emptyCellsCount, 0);
+    free(emptyCells);
+    return returnValue;
+}
+
+
+FinishCode countPossibleSolutions(Board board) {
+    Coordinate *emptyCells;
+    int emptyCellsCount;
+    int returnValue;
+    Board tempBoard;
+
+    emptyCells = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
+    tempBoard = createBoard();
+
+    /* make a copy of the current board to solve*/
+    copyBoard(tempBoard, board);
 
     /*needed for the init of the recursion*/
     emptyCellsCount = getEmptyCells(board, emptyCells);
 
     /*solve the board cursively*/
-    returnValue = solveBoardRec(solvedBoard, isDeterministic, emptyCells, emptyCellsCount, 0);
+    returnValue = countPossibleSolutionsRec(tempBoard, emptyCells, emptyCellsCount, 0);
     free(emptyCells);
+    destroyBoard(tempBoard, gameDim);
+
+    printf("%d possible solutions\n", returnValue);
     return returnValue;
 }
 

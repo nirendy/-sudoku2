@@ -20,6 +20,7 @@ FinishCode saveGameToFile(char *filePath, Game *game) {
         fprintf(file, "\n");/*TODO: handle Error*/
     }
     fclose(file);/*TODO: handle Error*/
+    return FC_SUCCESS;
 }
 
 

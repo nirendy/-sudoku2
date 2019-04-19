@@ -16,16 +16,16 @@ int main(int argc, char *argv[]) {
 
     /* MOCK */
     mode = Solve;
-    setGameDim(3, 5);
+    setGameDim(2, 2);
     game = createGame();
-    generateGame(game, 20);
+    generateGame(game, 0);
 
-    /*saveGameToFile("../data/1", game);*/
 
-//    printBoard(game->user_matrix, game->fixed_matrix);
-//    printBoard(game->solved_matrix, game->fixed_matrix);
 
-    setDimentiosFromFile("../data/1");
+    printBoard(game->user_matrix, game->fixed_matrix);
+    printBoard(game->solved_matrix, game->fixed_matrix);
+    /*setDimentiosFromFile("../data/1");*/
+    saveGameToFile("../data/1", game);
     generateGameFromFile("../data/1", game);
     /* END MOCK*/
 

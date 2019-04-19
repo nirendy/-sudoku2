@@ -78,12 +78,18 @@ typedef struct _game {
     Board solved_matrix;
     Board user_matrix;
     BoolBoard fixed_matrix;
+    GameDim dim;
 } Game;
+
+Board createBoard();
+
+void destroyBoard(Board board, GameDim dim);
 
 Game *createGame();
 
 void destroyGame(Game *game);
 
+void copyBoard(Board targetBoard, Board copyFromBoard);
 
 typedef struct _coordinate {
     int i;
