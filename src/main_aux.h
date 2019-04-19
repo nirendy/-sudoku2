@@ -68,7 +68,8 @@ typedef enum _prompt {
     PSuccess,
     PHint,
     PValidateFailed,
-    PValidateSuccess
+    PValidateSuccess,
+    PNextCommand
 
 } Prompt;
 
