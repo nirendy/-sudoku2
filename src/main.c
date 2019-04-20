@@ -6,6 +6,7 @@
 #include "solver.h"
 #include "SPBufferset.h"
 #include "file_handler.h"
+#include "linked_list.h"
 
 int main(int argc, char *argv[]) {
     Mode mode = Init;
