@@ -24,9 +24,9 @@ int main(int argc, char *argv[]) {
 //
     setDimentiosFromFile("../data/1");
     game = createGame();
-//    generateGame(game, 10);
+    generateGame(game, 0);
 
-    generateGameFromFile("../data/1", game);
+//    generateGameFromFile("../data/1", game);
 
 //    saveGameToFile("../data/1", game);
     /*
