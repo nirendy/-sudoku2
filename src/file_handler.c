@@ -67,7 +67,7 @@ void printFileError(char *string) {
 FinishCode generateGameFromFile(char *filePath, Game *game) {
     FILE *file;
     int tempN, tempM;
-    int i = 0, j = 0, c = 1, num = 0;
+    int i = 0, j = 0, c = 1, num = 0 , indexJ = -1;
     Bool isFailed = false;
     char tav;
     file = fopen(filePath, "r"); /*TODO: handle Error*/
@@ -92,13 +92,14 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
             num = getDigit(tav);
             if (isLegalNum(num)) {
                 game->user_matrix[i][j] = num;
+                indexJ = j;
             } else {
                 printFileError("number not in range exists");
                 isFailed = true;
                 break;
             }
-            game->fixed_matrix[i][j] = 0;
-            game->error_matrix[i][j] = 0;
+            game->fixed_matrix[i][indexJ] = 0;
+            game->error_matrix[i][indexJ] = 0;
             j++;
 
             if ((c = fgetc(file)) == EOF) { break; }
@@ -115,10 +116,10 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
                 }
 
             } else if (isAsterisk(tav)) {
-                game->error_matrix[i][j] = 1;
+                game->error_matrix[i][indexJ] = 1;
                 continue;
             } else if (isDot(tav)) {
-                game->fixed_matrix[i][j] = 1;
+                game->fixed_matrix[i][indexJ] = 1;
                 continue;
             } else if (isWhiteSpace(tav)) { continue; }
 
@@ -130,8 +131,8 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
             if ((c = fgetc(file)) == EOF) { break; }
             tav = (char) c;
 
-            if (isDot(tav)) { game->fixed_matrix[i][j] = 1; }
-            else if (isAsterisk(tav)) { game->error_matrix[i][j] = 1; }
+            if (isDot(tav)) { game->fixed_matrix[i][indexJ] = 1; }
+            else if (isAsterisk(tav)) { game->error_matrix[i][indexJ] = 1; }
             else {
                 if (isDigit(tav)) {
                     printFileError("number not in range exists");
