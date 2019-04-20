@@ -99,6 +99,11 @@ void printPrompt(Prompt prompt, int num1) {
             printf("Please enter the desired command:\n");
             break;
         }
+        case PNumSolutionsOutput: {
+            /* TODO: nicer printed message*/
+            printf("%d possible solutions\n", num1);
+            break;
+        }
 
         case PPerformedChanges: {
             printf("The performed changes are:\n");
@@ -148,22 +153,58 @@ void setGameDim(int n, int m) {
     gameDim.cellNeighboursCount = 3 * gameDim.N - n - m - 1;
 }
 
+Board createBoard() {
+    Board board = (int **) malloc(gameDim.N * sizeof(int *));
+    int i;
+
+    for (i = 0; i < gameDim.N; ++i) {
+        board[i] = (int *) malloc(gameDim.N * sizeof(int));
+    }
+
+    return board;
+}
+
+
+void destroyBoard(Board board, GameDim dim) {
+    {
+        int i;
+        for (i = 0; i < dim.N; ++i) {
+            free(board[i]);
+        }
+    }
+
+    free(board);
+}
+
+BoolBoard createBoolBoard() {
+    BoolBoard board = (Bool **) malloc(gameDim.N * sizeof(Bool *));
+    int i;
+
+    for (i = 0; i < gameDim.N; ++i) {
+        board[i] = (Bool *) malloc(gameDim.N * sizeof(Bool));
+    }
+
+    return board;
+}
+
+void destroyBoolBoard(BoolBoard board, GameDim dim) {
+    {
+        int i;
+        for (i = 0; i < dim.N; ++i) {
+            free(board[i]);
+        }
+    }
+
+    free(board);
+}
 
 Game *createGame() {
     Game *game = malloc(sizeof(Game));
-    game->solved_matrix = (int **) malloc(gameDim.N * sizeof(int *));
-    game->user_matrix = (int **) malloc(gameDim.N * sizeof(int *));
-    game->fixed_matrix = (Bool **) malloc(gameDim.N * sizeof(Bool *));
-    game->error_matrix = (Bool **) malloc(gameDim.N * sizeof(Bool *));
-    {
-        int i;
-        for (i = 0; i < gameDim.N; ++i) {
-            game->solved_matrix[i] = (int *) malloc(gameDim.N * sizeof(int));
-            game->user_matrix[i] = (int *) malloc(gameDim.N * sizeof(int));
-            game->fixed_matrix[i] = (Bool *) malloc(gameDim.N * sizeof(Bool));
-            game->error_matrix[i] = (Bool *) malloc(gameDim.N * sizeof(Bool));
-        }
-    }
+    game->dim = gameDim;
+    game->solved_matrix = createBoard();
+    game->user_matrix = createBoard();
+    game->fixed_matrix = createBoolBoard();
+    game->error_matrix = createBoolBoard();
 
     return game;
 }
@@ -174,6 +215,7 @@ Game *createGameFromFile(char *filePath) {
 
     if (finishCode == FC_INVALID_RECOVERABLE) {
         setGameDim(oldDimentions.n, oldDimentions.m);
+        return NULL;
     } else if (finishCode == FC_SUCCESS) {
         Game *newGame = createGame();
         finishCode = generateGameFromFile(filePath, newGame);
@@ -191,21 +233,22 @@ Game *createGameFromFile(char *filePath) {
 }
 
 void destroyGame(Game *game) {
-    {
-        int i;
-        for (i = 0; i < gameDim.N; ++i) {
-            free(game->solved_matrix[i]);
-            free(game->user_matrix[i]);
-            free(game->fixed_matrix[i]);
-            free(game->error_matrix[i]);
+    destroyBoard(game->solved_matrix, game->dim);
+    destroyBoard(game->user_matrix, game->dim);
+    destroyBoolBoard(game->fixed_matrix, game->dim);
+    destroyBoolBoard(game->error_matrix, game->dim);
+
+    free(game);
+}
+
+void copyBoard(Board targetBoard, Board copyFromBoard){
+    int i, j;
+    for (i = 0; i < gameDim.N; ++i) {
+        for (j = 0; j < gameDim.N; ++j) {
+            targetBoard[i][j] = copyFromBoard[i][j];
         }
     }
 
-    free(game->solved_matrix);
-    free(game->user_matrix);
-    free(game->fixed_matrix);
-    free(game->error_matrix);
-    free(game);
 }
 
 Bool isCommandAllowedInMode(Mode mode, Command command) {
@@ -360,15 +403,13 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
 
     switch (input.command) {
         case COMMAND_SOLVE: {
-            setDimentiosFromFile(input.path);
-            Game *newGame;
-            newGame = createGameFromFile(input.path);
-            setMode(mode, Solve);
-//            if (newGame != NULL) {
-//                /* TODO: this destroy isn't good because it doesn't take into account the old dimentions*/
-//                destroyGame(game);
-//                *gameP = newGame;
-//            }
+            Game *newGame = createGameFromFile(input.path);
+            if (newGame != NULL) {
+                destroyGame(game);
+                *gameP = newGame;
+                game = newGame; /*TODO: we should keep it, until we be sure it isn't needed*/
+                setMode(mode, Solve);
+            }
             break;
         }
         case COMMAND_EDIT: {
@@ -384,6 +425,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             if (newGame != NULL) {
                 destroyGame(game);
                 *gameP = newGame;
+                game = newGame; /*TODO: we should keep it, until we be sure it isn't needed*/
                 setMode(mode, Edit);
             }
             break;
@@ -449,7 +491,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             break;
         }
         case COMMAND_NUM_SOLUTIONS: {
-            printf("Command not implemented yet");
+            countPossibleSolutions(game->user_matrix);
             break;
         }
         case COMMAND_AUTOFILL: {

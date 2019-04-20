@@ -1,11 +1,5 @@
-//
-// Created by Allen on 19/04/2019.
-//
-
 #ifndef SUDOKU2_LINKED_LIST_H
 #define SUDOKU2_LINKED_LIST_H
-
-#endif //SUDOKU2_LINKED_LIST_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,3 +29,6 @@ struct Node * CreateFirstNode();
 struct DataNode * CreateFirstDataNode();
 struct DataNode* getLastDataNode(struct DataNode *currDataNode);
 struct DataNode* getFirstDataNode(struct DataNode *currDataNode);
+
+
+#endif SUDOKU2_LINKED_LIST_H

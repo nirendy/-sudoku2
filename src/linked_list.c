@@ -1,4 +1,5 @@
-
+#include <stdio.h>
+#include <stdlib.h>
 #include "linked_list.h"
 
 //void insertFirst(struct Node **head_ref, struct DataNode *new_data) {
@@ -46,8 +47,9 @@ void insertAfterNode(struct Node *curNode, struct DataNode *new_data) {
     new_node->next = curNode->next;
     curNode->next = new_node;
     new_node->prev = curNode;
-    if (new_node->next != NULL)
+    if (new_node->next != NULL) {
         new_node->next->prev = new_node;
+    }
 }
 
 void clearListFromNode(struct Node *curNode) {

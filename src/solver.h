@@ -9,7 +9,9 @@ int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues);
 
 void generateGame(Game *game, int fixedAmount);
 
-Bool solveBoard(const Board board, Board solvedBoard, Bool isDeterministic);
+Bool solveBoard(const Board userBoard, Board toSolveBoard, Bool isDeterministic);
+
+FinishCode countPossibleSolutions(Board board);
 
 Bool isSolved(Game *game);
 

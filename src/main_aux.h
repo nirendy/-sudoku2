@@ -24,7 +24,7 @@ typedef enum _bool {
     true = 1
 } Bool;
 
-/* Global variable*/
+/* Global variables */
 GameDim gameDim;
 Bool markError;
 struct Node *firstNode;
@@ -78,6 +78,7 @@ typedef enum _prompt {
     PValidateFailed,
     PValidateSuccess,
     PNextCommand,
+    PNumSolutionsOutput,
     PPerformedChanges
 
 } Prompt;
@@ -88,12 +89,18 @@ typedef struct _game {
     Board user_matrix;
     BoolBoard fixed_matrix;
     BoolBoard error_matrix;
+    GameDim dim;
 } Game;
+
+Board createBoard();
+
+void destroyBoard(Board board, GameDim dim);
 
 Game *createGame();
 
 void destroyGame(Game *game);
 
+void copyBoard(Board targetBoard, Board copyFromBoard);
 
 typedef struct _coordinate {
     int i;

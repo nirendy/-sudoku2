@@ -19,15 +19,22 @@ int main(int argc, char *argv[]) {
     printPrompt(PTitle, 0);
 
     /* MOCK */
-//    mode = Solve;
+    mode = Solve;
     setGameDim(3, 5);
     game = createGame();
     generateGame(game, 20);
 
-    /*saveGameToFile("../data/1", game);*/
 
-//    setDimentiosFromFile("../data/1");
-//    generateGameFromFile("../data/1", game);
+    /*
+    printBoard(game->user_matrix, game->fixed_matrix);
+    printBoard(game->solved_matrix, game->fixed_matrix);
+    */
+
+    /*
+    saveGameToFile("../data/1", game);
+    setDimentiosFromFile("../data/1");
+    generateGameFromFile("../data/1", game);
+     */
     /* END MOCK*/
 
 
