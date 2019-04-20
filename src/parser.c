@@ -286,3 +286,6 @@ FinishCode parseCommand(Input *returnedInput) {
     return FC_SUCCESS;
 }
 
+void printUserBoard(Game *game) {
+//TODO: nir
+}

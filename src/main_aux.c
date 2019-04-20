@@ -5,6 +5,7 @@
 #include "solver.h"
 #include "parser.h"
 #include "file_handler.h"
+#include "linked_list.h"
 
 
 void printError(Error err, Command command) {
@@ -45,6 +46,16 @@ void printError(Error err, Command command) {
 
         case EInvalidFirstParam: {
             printf("Error: first parameter is invalid\n");
+            break;
+        }
+
+        case ERedoUnavailable: {
+            printf("Error: Redo command is not possible\n");
+            break;
+        }
+
+        case EUndoUnavailable: {
+            printf("Error: Undo command is not possible\n");
             break;
         }
 
@@ -93,10 +104,20 @@ void printPrompt(Prompt prompt, int num1) {
             printf("%d possible solutions\n", num1);
             break;
         }
+
+        case PPerformedChanges: {
+            printf("The performed changes are:\n");
+            break;
+        }
+
         default: {
             printf("Unreachable Code Error");
         }
     }
+}
+
+void printChange(int i, int j, int value) {
+    printf("The value of the cell<%d,%d> set back to %d\n", i, j, value);
 }
 
 Coordinate createCoordinate(int i, int j) {
@@ -220,7 +241,7 @@ void destroyGame(Game *game) {
     free(game);
 }
 
-void copyBoard(Board targetBoard, Board copyFromBoard){
+void copyBoard(Board targetBoard, Board copyFromBoard) {
     int i, j;
     for (i = 0; i < gameDim.N; ++i) {
         for (j = 0; j < gameDim.N; ++j) {
@@ -321,6 +342,30 @@ void setMode(Mode *mode, Mode newMode) {
     *mode = newMode;
 }
 
+
+void performUndo(Game *game, DataNode *currDataNode) {
+    Input input;
+    currDataNode = getLastDataNode(currDataNode);
+    while (currDataNode->isFirst == false) {
+        input = currDataNode->undoInput;
+        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
+        printChange(input.coordinate.i, input.coordinate.j, input.value);
+        currDataNode = currDataNode->prev;
+    }
+}
+
+void performRedo(Game *game, DataNode *currDataNode) {
+    Input input;
+    currDataNode = getFirstDataNode(currDataNode);
+    currDataNode = currDataNode->next;
+    while (currDataNode != NULL) {
+        input = currDataNode->redoInput;
+        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
+        printChange(input.coordinate.i, input.coordinate.j, input.value);
+        currDataNode = currDataNode->next;
+    }
+}
+
 void executeCommand(Input input, Mode *mode, Game **gameP) {
     /*
      * game = createGame();
@@ -364,6 +409,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
                 *gameP = newGame;
                 game = newGame; /*TODO: we should keep it, until we be sure it isn't needed*/
                 setMode(mode, Solve);
+                markError = 0;
             }
             break;
         }
@@ -375,6 +421,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
                 generateGame(game, 0);
             } else {
                 newGame = createGameFromFile(input.path);
+                markError = 1;
             }
 
             if (newGame != NULL) {
@@ -415,11 +462,21 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             break;
         }
         case COMMAND_UNDO: {
-            printf("Command not implemented yet");
+            if (curNode->isFirst) { printError(EUndoUnavailable, 0); }
+            else {
+                printPrompt(PPerformedChanges, 0);
+                performUndo(game, curNode->currDataNode);
+                curNode = curNode->prev;
+            }
             break;
         }
         case COMMAND_REDO: {
-            printf("Command not implemented yet");
+            if (curNode->next == NULL) { printError(ERedoUnavailable, 0); }
+            else {
+                printPrompt(PPerformedChanges, 0);
+                performRedo(game, curNode->currDataNode);
+                curNode = curNode->next;
+            }
             break;
         }
         case COMMAND_SAVE: {
@@ -464,8 +521,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
         input.command == COMMAND_REDO ||
         input.command == COMMAND_GENERATE ||
         input.command == COMMAND_GUESS ||
-        input.command == COMMAND_RESET)
-    {
+        input.command == COMMAND_RESET) {
         printBoard(game);
     }
 

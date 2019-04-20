@@ -31,23 +31,27 @@ Bool isValueInNeighbours(Game *game, Coordinate coordinate, int value) {
 void setCoordinate(Game *game, Input input) {
     if (isCoordinateFixed(game, input.coordinate)) {
         printError(ECellIsFixed, COMMAND_INVALID);
-    } else if (input.value != 0 && isValueInNeighbours(game, input.coordinate, input.value)) {
-        /* the intention is not to clean,
-         * AND
-         * one of the neighbours has the value
-         * */
+        return;
+    }
 
-        updateErrorMatrix(game,input);
-        /* printError(EValueIsInvalid, COMMAND_INVALID);*/
-    } else {
+    game->user_matrix[input.coordinate.i][input.coordinate.j] = 0;
+    updateAfterClearErrorMatrix(game, input);
+    if (input.value != 0) {
+        updateAfterSetErrorMatrix(game, input);
         game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
-        printBoard(game);
+    }
 
+    if (!(input.value != 0 && isValueInNeighbours(game, input.coordinate, input.value))) {
         /*checks if game is solved*/
         if (isSolved(game)) {
             printPrompt(PSuccess, 0);
         }
     }
+
+
+
+
+
 }
 
 void hint(Game *game, Coordinate coordinate) {
