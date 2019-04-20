@@ -41,15 +41,9 @@ void setCoordinate(Game *game, Input input) {
         game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
     }
 
-    if (!(input.value != 0 && isValueInNeighbours(game, input.coordinate, input.value))) {
-        /*checks if game is solved*/
-        if (isSolved(game)) {
-            printPrompt(PSuccess, 0);
-        }
+    if (isSolved(game)) {
+        printPrompt(PSuccess, 0);
     }
-
-
-
 
 
 }
