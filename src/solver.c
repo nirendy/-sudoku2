@@ -255,11 +255,24 @@ Bool solveBoard(Board userBoard, Board toSolveBoard, Bool isDeterministic) {
     return returnValue;
 }
 
+typedef struct _CountPossibleSolutionsScope {
+    int start;
+    Coordinate currentCoordinate;
+    int *possibleValues;
+    int possibleValuesCount;
+    int nextValue;
+    Bool beforeChildPoped;
+    Bool isInitialized;
+    struct _CountPossibleSolutionsScope *parentScope;
+} CountPossibleSolutionsScope;
+
+
 FinishCode countPossibleSolutions(Board board) {
     Coordinate *emptyCells;
     int emptyCellsCount;
-    int returnValue;
+    int returnValue = 0;
     Board tempBoard;
+    CountPossibleSolutionsScope *curScope;
 
     emptyCells = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
     tempBoard = createBoard();
@@ -268,10 +281,87 @@ FinishCode countPossibleSolutions(Board board) {
     copyBoard(tempBoard, board);
 
     /*needed for the init of the recursion*/
-    emptyCellsCount = getEmptyCells(board, emptyCells);
+    emptyCellsCount = getEmptyCells(tempBoard, emptyCells);
 
-    /*solve the board cursively*/
-    returnValue = countPossibleSolutionsRec(tempBoard, emptyCells, emptyCellsCount, 0);
+
+    curScope = (CountPossibleSolutionsScope *) malloc(sizeof(CountPossibleSolutionsScope));
+    curScope->parentScope = NULL;
+    curScope->beforeChildPoped = true;
+    curScope->isInitialized = false;
+    curScope->start = 0;
+
+    /* Begin */
+    /*returnValue = countPossibleSolutionsRec(tempBoard, emptyCells, emptyCellsCount, 0);*/
+    do {
+        if (curScope->isInitialized == false) {
+            /* initialize*/
+            curScope->currentCoordinate = emptyCells[curScope->start];
+            curScope->possibleValues = (int *) malloc(gameDim.N * sizeof(int));
+            curScope->possibleValuesCount = getPossibleValues(tempBoard, curScope->currentCoordinate,
+                                                              curScope->possibleValues);
+            curScope->isInitialized = true;
+        }
+
+        /* as long there are more possible values that we didn't check*/
+        while (curScope->possibleValuesCount > 0) {
+            if (curScope->beforeChildPoped == true) {
+                /* remove the lowest option*/
+                curScope->nextValue = removeArrayIndex(curScope->possibleValues, curScope->possibleValuesCount, 0);
+
+                /*change the value to the next value*/
+                tempBoard[curScope->currentCoordinate.i][curScope->currentCoordinate.j] = curScope->nextValue;
+
+                /* if this is the last cell
+                 * */
+                if (curScope->start == emptyCellsCount - 1) {
+                    /*pop*/
+                    returnValue += 1;
+                    tempBoard[curScope->currentCoordinate.i][curScope->currentCoordinate.j] = 0;
+
+                    /*if got to here, the value must be the last than no need to go over to next child*/
+                    break;
+                } else {
+                    /*push*/
+
+                    CountPossibleSolutionsScope *newScope =
+                            (CountPossibleSolutionsScope *) malloc(sizeof(CountPossibleSolutionsScope));
+                    newScope->parentScope = curScope;
+                    newScope->beforeChildPoped = true;
+                    newScope->isInitialized = false;
+                    newScope->start = curScope->start + 1;
+
+                    curScope->beforeChildPoped = false;
+                    curScope = newScope;
+
+                    /* so the new scope will be initialized*/
+                    break;
+                }
+            } else {
+                /* clears the unsuccessful cell guess*/
+                tempBoard[curScope->currentCoordinate.i][curScope->currentCoordinate.j] = 0;
+                /*decrease the available options amount left*/
+                curScope->possibleValuesCount--;
+
+                /* get ready for next child to be pushed*/
+                curScope->beforeChildPoped = true;
+
+                /* so the scope won't get destroyed, if there is more options, */
+                continue;
+            }
+        }
+
+        if (curScope->isInitialized == true) {
+            /* pop */
+            CountPossibleSolutionsScope *parentScope = curScope->parentScope;
+            free(curScope->possibleValues);
+            free(curScope);
+            curScope = parentScope;
+        }
+
+    } while (curScope != NULL);
+
+    /* End */
+
     free(emptyCells);
     destroyBoard(tempBoard, gameDim);
 
