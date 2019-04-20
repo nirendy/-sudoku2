@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include "linked_list.h"
 
-//void insertFirst(struct Node **head_ref, struct DataNode *new_data) {
+//void insertFirst(Node **head_ref, DataNode *new_data) {
 //
-//    struct Node *new_node = (struct Node *) malloc(sizeof(struct Node));
+//    Node *new_node = (Node *) malloc(sizeof(Node));
 //    new_node->data = new_data;
 //    new_node->next = (*head_ref);
 //    new_node->prev = NULL;
@@ -13,10 +13,10 @@
 //    (*head_ref) = new_node;
 //}
 
-//void insertLast(struct Node **head_ref, struct DataNode *new_data) {
+//void insertLast(Node **head_ref, DataNode *new_data) {
 //
-//    struct Node *new_node = (struct Node *) malloc(sizeof(struct Node));
-//    struct Node *last = *head_ref;
+//    Node *new_node = (Node *) malloc(sizeof(Node));
+//    Node *last = *head_ref;
 //    new_node->data = new_data;
 //    new_node->next = NULL;
 //    if (*head_ref == NULL) {
@@ -33,15 +33,15 @@
 //}
 
 
-void insertAfterNode(struct Node *curNode, struct DataNode *new_data) {
-    struct Node *new_node;
+void insertAfterNode( Node *curNode, DataNode *new_data) {
+    Node *new_node;
 
     if (curNode == NULL) {
         printf("the given previous node cannot be NULL");
         return;
     }
 
-    new_node = (struct Node *) malloc(sizeof(struct Node));
+    new_node = (Node *) malloc(sizeof(Node));
     new_node->currDataNode = new_data;
     new_node->isFirst = false;
     new_node->next = curNode->next;
@@ -52,8 +52,8 @@ void insertAfterNode(struct Node *curNode, struct DataNode *new_data) {
     }
 }
 
-void clearListFromNode(struct Node *curNode) {
-    struct Node *nextNode;
+void clearListFromNode(Node *curNode) {
+    Node *nextNode;
     while (curNode != NULL) {
         nextNode = curNode->next;
         freeData(&(curNode->currDataNode));
@@ -63,10 +63,10 @@ void clearListFromNode(struct Node *curNode) {
 
 }
 
-void freeData(struct DataNode **head_data_ref) {
+void freeData(DataNode **head_data_ref) {
 
-    struct DataNode *curNode = *head_data_ref;
-    struct DataNode *nextNode;
+    DataNode *curNode = *head_data_ref;
+    DataNode *nextNode;
     while (curNode != NULL) {
         nextNode = curNode->next;
         free(curNode);
@@ -74,8 +74,8 @@ void freeData(struct DataNode **head_data_ref) {
     }
 }
 
-struct DataNode *CreateFirstDataNode() {
-    struct DataNode *new_node = (struct DataNode *) malloc(sizeof(struct DataNode));
+DataNode *CreateFirstDataNode() {
+    DataNode *new_node = (DataNode *) malloc(sizeof(DataNode));
     new_node->isFirst = true;
     new_node->next = NULL;
     new_node->prev = NULL;
@@ -83,8 +83,8 @@ struct DataNode *CreateFirstDataNode() {
 
 }
 
-struct Node *CreateFirstNode() {
-    struct Node *new_node = (struct Node *) malloc(sizeof(struct Node));
+Node *CreateFirstNode() {
+    Node *new_node = (Node *) malloc(sizeof(Node));
     new_node->isFirst = true;
     new_node->next = NULL;
     new_node->prev = NULL;
@@ -93,15 +93,15 @@ struct Node *CreateFirstNode() {
 
 }
 
-void insertAfterDataNode(struct DataNode *curNode, Input redoInput, Input undoInput) {
-    struct DataNode *new_node;
+void insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInput) {
+    DataNode *new_node;
 
     if (curNode == NULL) {
         printf("the given previous node cannot be NULL");
         return;
     }
 
-    new_node = (struct DataNode *) malloc(sizeof(struct DataNode));
+    new_node = (DataNode *) malloc(sizeof(DataNode));
     new_node->redoInput = redoInput;
     new_node->undoInput = undoInput;
     new_node->isFirst = false;
@@ -112,14 +112,14 @@ void insertAfterDataNode(struct DataNode *curNode, Input redoInput, Input undoIn
         new_node->next->prev = new_node;
 }
 
-struct DataNode *getLastDataNode(struct DataNode *currDataNode) {
+DataNode *getLastDataNode(DataNode *currDataNode) {
     while (currDataNode->next != NULL) {
         currDataNode = currDataNode->next;
     }
     return currDataNode;
 }
 
-struct DataNode *getFirstDataNode(struct DataNode *currDataNode) {
+DataNode *getFirstDataNode(DataNode *currDataNode) {
     while (currDataNode->isFirst == false) {
         currDataNode = currDataNode->prev;
     }

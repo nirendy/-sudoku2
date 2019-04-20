@@ -20,9 +20,9 @@ int main(int argc, char *argv[]) {
 
     /* MOCK */
     mode = Solve;
-    setGameDim(3, 5);
+    setGameDim(1, 3);
     game = createGame();
-    generateGame(game, 20);
+    generateGame(game, 0);
 
 
     /*

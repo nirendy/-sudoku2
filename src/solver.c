@@ -223,6 +223,8 @@ countPossibleSolutionsRec(Board board, Coordinate *emptyCells, int emptyCellsCou
                 returnValue += countPossibleSolutionsRec(board, emptyCells, emptyCellsCount, start + 1);
             }
 
+
+
             /* clears the unsuccessful cell guess*/
             board[currentCoordinate.i][currentCoordinate.j] = 0;
 

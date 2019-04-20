@@ -343,7 +343,7 @@ void setMode(Mode *mode, Mode newMode) {
 }
 
 
-void performUndo(Game *game, struct DataNode *currDataNode) {
+void performUndo(Game *game, DataNode *currDataNode) {
     Input input;
     currDataNode = getLastDataNode(currDataNode);
     while (currDataNode->isFirst == false) {
@@ -354,7 +354,7 @@ void performUndo(Game *game, struct DataNode *currDataNode) {
     }
 }
 
-void performRedo(Game *game, struct DataNode *currDataNode) {
+void performRedo(Game *game, DataNode *currDataNode) {
     Input input;
     currDataNode = getFirstDataNode(currDataNode);
     currDataNode = currDataNode->next;

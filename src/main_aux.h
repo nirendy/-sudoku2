@@ -4,9 +4,12 @@
 #include "time.h"
 #include "stdlib.h"
 
+
 #define INVALID_VALUE -1;
 #define INVALID_THRESHOLD -1;
 #define MAX_STRING_LEN 1024
+
+/* Typedefs */
 
 typedef struct _gameDim {
     int n;
@@ -16,20 +19,10 @@ typedef struct _gameDim {
     int cellNeighboursCount;
 } GameDim;
 
-void setGameDim(int n, int m);
-
-
 typedef enum _bool {
     false = 0,
     true = 1
 } Bool;
-
-/* Global variables */
-GameDim gameDim;
-Bool markError;
-struct Node *firstNode;
-struct Node *curNode;
-
 
 typedef int **Board;
 typedef Bool **BoolBoard;
@@ -53,10 +46,9 @@ typedef enum _error {
     EInvalidFirstParam,
     EInvalidSecondParam,
     EInvalidThirdParam,
-    /* */
     EInvalidFile,
     ERedoUnavailable,
-    EUndoUnavailable,
+    EUndoUnavailable
 
 } Error;
 
@@ -92,22 +84,6 @@ typedef struct _game {
     GameDim dim;
 } Game;
 
-Board createBoard();
-
-void destroyBoard(Board board, GameDim dim);
-
-Game *createGame();
-
-void destroyGame(Game *game);
-
-void copyBoard(Board targetBoard, Board copyFromBoard);
-
-typedef struct _coordinate {
-    int i;
-    int j;
-} Coordinate;
-
-Coordinate createCoordinate(int i, int j);
 
 typedef enum _command {
     COMMAND_SOLVE,
@@ -131,6 +107,12 @@ typedef enum _command {
 } Command;
 
 
+typedef struct _coordinate {
+    int i;
+    int j;
+} Coordinate;
+
+
 typedef struct _input {
     Command command;
     Coordinate coordinate;
@@ -140,6 +122,47 @@ typedef struct _input {
     float threshold;
     char path[MAX_STRING_LEN];
 } Input;
+
+
+typedef struct _DataNode {
+    Bool isFirst;
+    Input redoInput;
+    Input undoInput;
+    struct _DataNode* next;
+    struct _DataNode* prev;
+} DataNode;
+
+
+
+// A linked list node
+typedef struct _Node {
+    Bool isFirst;
+    DataNode* currDataNode;
+    struct _Node* next;
+    struct _Node* prev;
+} Node;
+
+
+/* Global variables */
+GameDim gameDim;
+Bool markError;
+Node *firstNode;
+Node *curNode;
+
+
+void setGameDim(int n, int m);
+
+Board createBoard();
+
+void destroyBoard(Board board, GameDim dim);
+
+Game *createGame();
+
+void destroyGame(Game *game);
+
+void copyBoard(Board targetBoard, Board copyFromBoard);
+
+Coordinate createCoordinate(int i, int j);
 
 void printError(Error err, Command command);
 
