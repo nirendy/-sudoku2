@@ -5,6 +5,7 @@
 #include "solver.h"
 #include "parser.h"
 #include "file_handler.h"
+#include "linked_list.h"
 
 
 void printError(Error err, Command command) {
@@ -48,6 +49,16 @@ void printError(Error err, Command command) {
             break;
         }
 
+        case ERedoUnavailable: {
+            printf("Error: Redo command is not possible\n");
+            break;
+        }
+
+        case EUndoUnavailable: {
+            printf("Error: Undo command is not possible\n");
+            break;
+        }
+
         default: {
             printf("Unreachable Code Error");
         }
@@ -88,10 +99,20 @@ void printPrompt(Prompt prompt, int num1) {
             printf("Please enter the desired command:\n");
             break;
         }
+
+        case PPerformedChanges: {
+            printf("The performed changes are:\n");
+            break;
+        }
+
         default: {
             printf("Unreachable Code Error");
         }
     }
+}
+
+void printChange(int i, int j, int value) {
+    printf("The value of the cell<%d,%d> set back to %d\n", i, j, value);
 }
 
 Coordinate createCoordinate(int i, int j) {
@@ -278,6 +299,30 @@ void setMode(Mode *mode, Mode newMode) {
     *mode = newMode;
 }
 
+
+void performUndo(Game *game, struct DataNode *currDataNode) {
+    Input input;
+    currDataNode = getLastDataNode(currDataNode);
+    while (currDataNode->isFirst == false) {
+        input = currDataNode->undoInput;
+        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
+        printChange(input.coordinate.i, input.coordinate.j, input.value);
+        currDataNode = currDataNode->prev;
+    }
+}
+
+void performRedo(Game *game, struct DataNode *currDataNode) {
+    Input input;
+    currDataNode = getFirstDataNode(currDataNode);
+    currDataNode = currDataNode->next;
+    while (currDataNode!=NULL) {
+        input = currDataNode->redoInput;
+        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
+        printChange(input.coordinate.i, input.coordinate.j, input.value);
+        currDataNode = currDataNode->next;
+    }
+}
+
 void executeCommand(Input input, Mode *mode, Game **gameP) {
     /*
      * game = createGame();
@@ -373,11 +418,21 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             break;
         }
         case COMMAND_UNDO: {
-            printf("Command not implemented yet");
+            if (curNode->isFirst) { printError(EUndoUnavailable, 0); }
+            else {
+                printPrompt(PPerformedChanges, 0);
+                performUndo(game, curNode->currDataNode);
+                curNode = curNode->prev;
+            }
             break;
         }
         case COMMAND_REDO: {
-            printf("Command not implemented yet");
+            if (curNode->next == NULL) { printError(ERedoUnavailable, 0); }
+            else {
+                printPrompt(PPerformedChanges, 0);
+                performRedo(game, curNode->currDataNode);
+                curNode = curNode->next;
+            }
             break;
         }
         case COMMAND_SAVE: {
@@ -422,8 +477,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
         input.command == COMMAND_REDO ||
         input.command == COMMAND_GENERATE ||
         input.command == COMMAND_GUESS ||
-        input.command == COMMAND_RESET)
-    {
+        input.command == COMMAND_RESET) {
         printBoard(game);
     }
 

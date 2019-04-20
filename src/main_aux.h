@@ -27,6 +27,8 @@ typedef enum _bool {
 /* Global variable*/
 GameDim gameDim;
 Bool markError;
+struct Node *firstNode;
+struct Node *curNode;
 
 
 typedef int **Board;
@@ -51,7 +53,11 @@ typedef enum _error {
     EInvalidFirstParam,
     EInvalidSecondParam,
     EInvalidThirdParam,
-    EInvalidFile
+    /* */
+    EInvalidFile,
+    ERedoUnavailable,
+    EUndoUnavailable,
+
 } Error;
 
 typedef enum _finish_code {
@@ -71,7 +77,8 @@ typedef enum _prompt {
     PHint,
     PValidateFailed,
     PValidateSuccess,
-    PNextCommand
+    PNextCommand,
+    PPerformedChanges
 
 } Prompt;
 

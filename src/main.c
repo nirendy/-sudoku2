@@ -12,6 +12,9 @@ int main(int argc, char *argv[]) {
     Mode mode = Init;
     Input input;
     Game *game;
+    firstNode = CreateFirstNode();
+    curNode = firstNode;
+
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
