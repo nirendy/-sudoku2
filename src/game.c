@@ -36,10 +36,12 @@ void setCoordinate(Game *game, Input input) {
          * AND
          * one of the neighbours has the value
          * */
-        printError(EValueIsInvalid, COMMAND_INVALID);
+
+        updateErrorMatrix(game,input);
+        // printError(EValueIsInvalid, COMMAND_INVALID);
     } else {
         game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
-        printBoard(game->user_matrix, game->fixed_matrix);
+        printBoard(game);
 
         /*checks if game is solved*/
         if (isSolved(game)) {

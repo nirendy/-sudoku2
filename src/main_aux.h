@@ -16,9 +16,6 @@ typedef struct _gameDim {
     int cellNeighboursCount;
 } GameDim;
 
-/* Global variable*/
-GameDim gameDim;
-
 void setGameDim(int n, int m);
 
 
@@ -26,6 +23,11 @@ typedef enum _bool {
     false = 0,
     true = 1
 } Bool;
+
+/* Global variables */
+GameDim gameDim;
+Bool markError;
+
 
 typedef int **Board;
 typedef Bool **BoolBoard;
@@ -78,6 +80,7 @@ typedef struct _game {
     Board solved_matrix;
     Board user_matrix;
     BoolBoard fixed_matrix;
+    BoolBoard error_matrix;
     GameDim dim;
 } Game;
 
@@ -129,7 +132,6 @@ typedef struct _input {
     float threshold;
     char path[MAX_STRING_LEN];
 } Input;
-
 
 void printError(Error err, Command command);
 

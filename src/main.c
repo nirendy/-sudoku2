@@ -16,17 +16,21 @@ int main(int argc, char *argv[]) {
 
     /* MOCK */
     mode = Solve;
-    setGameDim(2, 2);
+    setGameDim(3, 5);
     game = createGame();
-    generateGame(game, 0);
+    generateGame(game, 20);
 
 
-
+    /*
     printBoard(game->user_matrix, game->fixed_matrix);
     printBoard(game->solved_matrix, game->fixed_matrix);
-    /*setDimentiosFromFile("../data/1");*/
+    */
+
+    /*
     saveGameToFile("../data/1", game);
+    setDimentiosFromFile("../data/1");
     generateGameFromFile("../data/1", game);
+     */
     /* END MOCK*/
 
 

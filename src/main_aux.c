@@ -42,6 +42,12 @@ void printError(Error err, Command command) {
             printf("Error: text in file is invalid\n");
             break;
         }
+
+        case EInvalidFirstParam: {
+            printf("Error: first parameter is invalid\n");
+            break;
+        }
+
         default: {
             printf("Unreachable Code Error");
         }
@@ -166,13 +172,13 @@ void destroyBoolBoard(BoolBoard board, GameDim dim) {
     free(board);
 }
 
-
 Game *createGame() {
     Game *game = malloc(sizeof(Game));
     game->dim = gameDim;
     game->solved_matrix = createBoard();
     game->user_matrix = createBoard();
     game->fixed_matrix = createBoolBoard();
+    game->error_matrix = createBoolBoard();
 
     return game;
 }
@@ -204,6 +210,7 @@ void destroyGame(Game *game) {
     destroyBoard(game->solved_matrix, game->dim);
     destroyBoard(game->user_matrix, game->dim);
     destroyBoolBoard(game->fixed_matrix, game->dim);
+    destroyBoolBoard(game->error_matrix, game->dim);
 
     free(game);
 }
@@ -317,7 +324,6 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
      * Keep doing until exit
      * */
 
-
     /*
          finishCode = askUserForHintsAmount(&fixedAmount);
         if (finishCode != FC_SUCCESS) {
@@ -370,16 +376,19 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
                 destroyGame(game);
                 *gameP = newGame;
                 game = newGame; /*TODO: we should keep it, until we be sure it isn't needed*/
-                setMode(mode, Solve);
+                setMode(mode, Edit);
             }
             break;
         }
         case COMMAND_MARK_ERRORS: {
-            printf("Command not implemented yet");
+            if (input.value == 0) { markError = false; }
+            else if (input.value == 1) { markError = true; }
+            else { printError(EInvalidFirstParam, 0); }
+
             break;
         }
         case COMMAND_PRINT_BOARD: {
-            printBoard(game->user_matrix, game->fixed_matrix);
+            printBoard(game);
             break;
         }
         case COMMAND_SET: {
@@ -442,5 +451,18 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             terminate(game, FC_UNEXPECTED_ERROR);
         }
     }
+    if (input.command == COMMAND_SOLVE ||
+        input.command == COMMAND_EDIT ||
+        input.command == COMMAND_SET ||
+        input.command == COMMAND_AUTOFILL ||
+        input.command == COMMAND_UNDO ||
+        input.command == COMMAND_REDO ||
+        input.command == COMMAND_GENERATE ||
+        input.command == COMMAND_GUESS ||
+        input.command == COMMAND_RESET)
+    {
+        printBoard(game);
+    }
+
 
 }

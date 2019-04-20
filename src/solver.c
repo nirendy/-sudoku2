@@ -40,6 +40,15 @@ void clearBoard(Board board) {
     }
 }
 
+void clearBoolBoard(BoolBoard board) {
+    int i, j;
+    for (i = 0; i < gameDim.N; ++i) {
+        for (j = 0; j < gameDim.N; ++j) {
+            board[i][j] = false;
+        }
+    }
+}
+
 void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
     int i, j, k, neighboursCreated = 0;
 
@@ -296,6 +305,7 @@ void generateGame(Game *game, int fixedAmount) {
     solveBoard(game->user_matrix, game->solved_matrix, false);
 
     generateFixedBoard(game->fixed_matrix, fixedAmount);
+    clearBoolBoard(game->error_matrix);
 
     /* fill the fixed cells only*/
     for (i = 0; i < gameDim.N; ++i) {
@@ -305,4 +315,8 @@ void generateGame(Game *game, int fixedAmount) {
             }
         }
     }
+}
+
+void updateErrorMatrix(Game *game, Input input){
+    //TODO: implement command
 }
