@@ -1,4 +1,5 @@
-
+#include <stdio.h>
+#include <stdlib.h>
 #include "linked_list.h"
 
 void push(struct Node **head_ref, struct Data new_data) {
@@ -13,8 +14,9 @@ void push(struct Node **head_ref, struct Data new_data) {
     new_node->prev = NULL;
 
     /* 4. change prev of head node to new node */
-    if ((*head_ref) != NULL)
+    if ((*head_ref) != NULL) {
         (*head_ref)->prev = new_node;
+    }
 
     /* 5. move the head to point to the new node */
     (*head_ref) = new_node;
@@ -45,8 +47,9 @@ void insertAfter(struct Node *prev_node, struct Data new_data) {
     new_node->prev = prev_node;
 
     /* 7. Change previous of new_node's next node */
-    if (new_node->next != NULL)
+    if (new_node->next != NULL) {
         new_node->next->prev = new_node;
+    }
 }
 
 void append(struct Node **head_ref, struct Data new_data) {
@@ -94,6 +97,5 @@ void clearList(struct Node **head_ref) {
 }
 
 void freeData(struct Data *data) {
-//TODO
-
+    /* TODO */
 }

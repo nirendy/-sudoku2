@@ -255,7 +255,6 @@ Bool solveBoard(Board userBoard, Board toSolveBoard, Bool isDeterministic) {
     return returnValue;
 }
 
-
 FinishCode countPossibleSolutions(Board board) {
     Coordinate *emptyCells;
     int emptyCellsCount;
@@ -318,5 +317,5 @@ void generateGame(Game *game, int fixedAmount) {
 }
 
 void updateErrorMatrix(Game *game, Input input) {
-    //TODO: implement command
+    /*TODO: implement command*/
 }

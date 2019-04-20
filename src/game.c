@@ -38,7 +38,7 @@ void setCoordinate(Game *game, Input input) {
          * */
 
         updateErrorMatrix(game,input);
-        // printError(EValueIsInvalid, COMMAND_INVALID);
+        /* printError(EValueIsInvalid, COMMAND_INVALID);*/
     } else {
         game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
         printBoard(game);
