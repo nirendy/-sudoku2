@@ -15,7 +15,9 @@ FinishCode countPossibleSolutions(Board board);
 
 Bool isSolved(Game *game);
 
-void updateErrorMatrix(Game *game, Input input);
+void updateAfterSetErrorMatrix(Game *game, Input input);
+
+void updateAfterClearErrorMatrix(Game *game, Input input);
 
 #endif
 

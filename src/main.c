@@ -20,20 +20,16 @@ int main(int argc, char *argv[]) {
 
     /* MOCK */
     mode = Solve;
-    setGameDim(1, 3);
-    game = createGame();
-    generateGame(game, 0);
-
-
-    /*
-    printBoard(game->user_matrix, game->fixed_matrix);
-    printBoard(game->solved_matrix, game->fixed_matrix);
-    */
-
-    /*
-    saveGameToFile("../data/1", game);
+//    setGameDim(2,2);
+//
     setDimentiosFromFile("../data/1");
+    game = createGame();
+//    generateGame(game, 10);
+
     generateGameFromFile("../data/1", game);
+
+//    saveGameToFile("../data/1", game);
+    /*
      */
     /* END MOCK*/
 

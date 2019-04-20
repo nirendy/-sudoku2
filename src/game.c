@@ -29,21 +29,29 @@ Bool isValueInNeighbours(Game *game, Coordinate coordinate, int value) {
 }
 
 void setCoordinate(Game *game, Input input) {
-    Bool isLegalMove = true;
     if (isCoordinateFixed(game, input.coordinate)) {
         printError(ECellIsFixed, COMMAND_INVALID);
         return;
-    } else if (input.value != 0 && isValueInNeighbours(game, input.coordinate, input.value)) {
-        updateErrorMatrix(game,input);
-        isLegalMove = false;
     }
 
-    game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
-
-    /*checks if game is solved*/
-    if (isLegalMove && isSolved(game)) {
-        printPrompt(PSuccess, 0);
+    game->user_matrix[input.coordinate.i][input.coordinate.j] = 0;
+    updateAfterClearErrorMatrix(game, input);
+    if (input.value != 0) {
+        updateAfterSetErrorMatrix(game, input);
+        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
     }
+
+    if (!(input.value != 0 && isValueInNeighbours(game, input.coordinate, input.value))) {
+        /*checks if game is solved*/
+        if (isSolved(game)) {
+            printPrompt(PSuccess, 0);
+        }
+    }
+
+
+
+
+
 }
 
 void hint(Game *game, Coordinate coordinate) {

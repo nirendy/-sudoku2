@@ -318,6 +318,50 @@ void generateGame(Game *game, int fixedAmount) {
     }
 }
 
-void updateErrorMatrix(Game *game, Input input) {
-    /*TODO: implement command*/
+
+void updateAfterClearErrorMatrix(Game *game, Input input) {
+    int k;
+    Input in;
+    Coordinate cor;
+    Coordinate *neighbours;
+    neighbours = (Coordinate *) malloc(gameDim.cellNeighboursCount * sizeof(Coordinate));
+    coordinateNeighbours(input.coordinate, neighbours);
+
+    for (k = 0; k < gameDim.cellNeighboursCount; k++) {
+        game->error_matrix[neighbours[k].i][neighbours[k].j] = 0;
+    }
+
+    for (k = 0; k < gameDim.cellNeighboursCount; k++) {
+        cor.i = neighbours[k].i;
+        cor.j = neighbours[k].j;
+        in.coordinate = cor;
+        in.value = game->user_matrix[cor.i][cor.j];
+        if (in.value != 0) {
+            updateAfterSetErrorMatrix(game, in);
+        }
+    }
+
+    free(neighbours);
+    game->error_matrix[input.coordinate.i][input.coordinate.j] = 0;
 }
+
+void updateAfterSetErrorMatrix(Game *game, Input input) {
+    int k;
+    Bool flag = false;
+    Coordinate *neighbours;
+    neighbours = (Coordinate *) malloc(gameDim.cellNeighboursCount * sizeof(Coordinate));
+    coordinateNeighbours(input.coordinate, neighbours);
+    for (k = 0; k < gameDim.cellNeighboursCount; k++) {
+        if (game->user_matrix[neighbours[k].i][neighbours[k].j] == input.value) {
+            flag = true;
+            if (game->fixed_matrix[neighbours[k].i][neighbours[k].j] == 0) {
+                game->error_matrix[neighbours[k].i][neighbours[k].j] = 1;
+            }
+        }
+    }
+    if (flag) {
+        game->error_matrix[input.coordinate.i][input.coordinate.j] = 1;
+    }
+    free(neighbours);
+}
+

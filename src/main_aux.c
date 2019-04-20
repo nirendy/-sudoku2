@@ -241,7 +241,7 @@ void destroyGame(Game *game) {
     free(game);
 }
 
-void copyBoard(Board targetBoard, Board copyFromBoard){
+void copyBoard(Board targetBoard, Board copyFromBoard) {
     int i, j;
     for (i = 0; i < gameDim.N; ++i) {
         for (j = 0; j < gameDim.N; ++j) {
@@ -358,7 +358,7 @@ void performRedo(Game *game, DataNode *currDataNode) {
     Input input;
     currDataNode = getFirstDataNode(currDataNode);
     currDataNode = currDataNode->next;
-    while (currDataNode!=NULL) {
+    while (currDataNode != NULL) {
         input = currDataNode->redoInput;
         game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
         printChange(input.coordinate.i, input.coordinate.j, input.value);
@@ -409,6 +409,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
                 *gameP = newGame;
                 game = newGame; /*TODO: we should keep it, until we be sure it isn't needed*/
                 setMode(mode, Solve);
+                markError = 0;
             }
             break;
         }
@@ -420,6 +421,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
                 generateGame(game, 0);
             } else {
                 newGame = createGameFromFile(input.path);
+                markError = 1;
             }
 
             if (newGame != NULL) {

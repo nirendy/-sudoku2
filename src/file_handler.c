@@ -1,4 +1,5 @@
 #include "file_handler.h"
+
 FinishCode saveGameToFile(char *filePath, Game *game) {
     FILE *file;
     int i, j;
@@ -54,6 +55,10 @@ int isDot(char tav) {
     return tav == '.';
 }
 
+int isAsterisk(char tav) {
+    return tav == '*';
+}
+
 void printFileError(char *string) {
     printError(EInvalidFile, 0);
     printf("reason: %s\n", string);
@@ -62,7 +67,7 @@ void printFileError(char *string) {
 FinishCode generateGameFromFile(char *filePath, Game *game) {
     FILE *file;
     int tempN, tempM;
-    int i = 0, j=0, c = 1, num = 0;
+    int i = 0, j = 0, c = 1, num = 0;
     Bool isFailed = false;
     char tav;
     file = fopen(filePath, "r"); /*TODO: handle Error*/
@@ -93,6 +98,7 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
                 break;
             }
             game->fixed_matrix[i][j] = 0;
+            game->error_matrix[i][j] = 0;
             j++;
 
             if ((c = fgetc(file)) == EOF) { break; }
@@ -108,10 +114,14 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
                     break;
                 }
 
+            } else if (isAsterisk(tav)) {
+                game->error_matrix[i][j] = 1;
+                continue;
             } else if (isDot(tav)) {
                 game->fixed_matrix[i][j] = 1;
                 continue;
             } else if (isWhiteSpace(tav)) { continue; }
+
             else {
                 printFileError("invalid char exists");
                 isFailed = true;
@@ -121,6 +131,7 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
             tav = (char) c;
 
             if (isDot(tav)) { game->fixed_matrix[i][j] = 1; }
+            else if (isAsterisk(tav)) { game->error_matrix[i][j] = 1; }
             else {
                 if (isDigit(tav)) {
                     printFileError("number not in range exists");
@@ -141,11 +152,11 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
     }
 
     fclose(file); /*TODO: handle Error*/
-    if (i!=gameDim.N || j!=gameDim.N){
-        if(!isFailed){
+    if (i != gameDim.N || j != gameDim.N) {
+        if (!isFailed) {
             printFileError("invalid text");
             isFailed = true;
         }
     }
-    return (isFailed)? FC_INVALID_RECOVERABLE : FC_SUCCESS;
+    return (isFailed) ? FC_INVALID_RECOVERABLE : FC_SUCCESS;
 }
