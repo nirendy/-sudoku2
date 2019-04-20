@@ -71,8 +71,8 @@ typedef enum _prompt {
     PHint,
     PValidateFailed,
     PValidateSuccess,
-    PNextCommand
-
+    PNextCommand,
+    PNumSolutionsOutput
 } Prompt;
 
 /*TODO: add more fields*/

@@ -88,6 +88,11 @@ void printPrompt(Prompt prompt, int num1) {
             printf("Please enter the desired command:\n");
             break;
         }
+        case PNumSolutionsOutput: {
+            /* TODO: nicer printed message*/
+            printf("%d possible solutions\n", num1);
+            break;
+        }
         default: {
             printf("Unreachable Code Error");
         }

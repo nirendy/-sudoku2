@@ -276,7 +276,7 @@ FinishCode countPossibleSolutions(Board board) {
     free(emptyCells);
     destroyBoard(tempBoard, gameDim);
 
-    printf("%d possible solutions\n", returnValue);
+    printPrompt(PNumSolutionsOutput, returnValue);
     return returnValue;
 }
 
@@ -317,6 +317,6 @@ void generateGame(Game *game, int fixedAmount) {
     }
 }
 
-void updateErrorMatrix(Game *game, Input input){
+void updateErrorMatrix(Game *game, Input input) {
     //TODO: implement command
 }
