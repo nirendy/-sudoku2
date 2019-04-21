@@ -32,56 +32,7 @@
 //
 //}
 
-
-void insertAfterNode( Node *curNode, DataNode *new_data) {
-    Node *new_node;
-
-    if (curNode == NULL) {
-        printf("the given previous node cannot be NULL");
-        return;
-    }
-
-    new_node = (Node *) malloc(sizeof(Node));
-    new_node->currDataNode = new_data;
-    new_node->isFirst = false;
-    new_node->next = curNode->next;
-    curNode->next = new_node;
-    new_node->prev = curNode;
-    if (new_node->next != NULL) {
-        new_node->next->prev = new_node;
-    }
-}
-
-void clearListFromNode(Node *curNode) {
-    Node *nextNode;
-    while (curNode != NULL) {
-        nextNode = curNode->next;
-        freeData(&(curNode->currDataNode));
-        free(curNode);
-        curNode = nextNode;
-    }
-
-}
-
-void freeData(DataNode **head_data_ref) {
-
-    DataNode *curNode = *head_data_ref;
-    DataNode *nextNode;
-    while (curNode != NULL) {
-        nextNode = curNode->next;
-        free(curNode);
-        curNode = nextNode;
-    }
-}
-
-DataNode *CreateFirstDataNode() {
-    DataNode *new_node = (DataNode *) malloc(sizeof(DataNode));
-    new_node->isFirst = true;
-    new_node->next = NULL;
-    new_node->prev = NULL;
-    return new_node;
-
-}
+/* Data Node Funcs */
 
 Node *CreateFirstNode() {
     Node *new_node = (Node *) malloc(sizeof(Node));
@@ -93,12 +44,55 @@ Node *CreateFirstNode() {
 
 }
 
-void insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInput) {
+Node *insertAfterNode(Node *curNode) {
+    Node *new_node;
+
+    if (curNode == NULL) {
+        printError(ENullNode,0);
+        return NULL;
+    }
+
+    new_node = (Node *) malloc(sizeof(Node));
+    new_node->currDataNode = CreateFirstDataNode();
+    new_node->isFirst = false;
+    new_node->next = curNode->next;
+    curNode->next = new_node;
+    new_node->prev = curNode;
+    if (new_node->next != NULL) {
+        printError(EInsertionInMiddle, 0);
+    }
+
+    return curNode->next;
+}
+
+void clearListFromNode(Node *curNode) {
+    Node *nextNode;
+    while (curNode != NULL) {
+        nextNode = curNode->next;
+        clearDataListFromNode(curNode->currDataNode);
+        free(curNode);
+        curNode = nextNode;
+    }
+
+}
+
+/* Data Node Funcs */
+
+DataNode *CreateFirstDataNode() {
+    DataNode *new_node = (DataNode *) malloc(sizeof(DataNode));
+    new_node->isFirst = true;
+    new_node->next = NULL;
+    new_node->prev = NULL;
+    return new_node;
+
+}
+
+DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInput) {
     DataNode *new_node;
 
     if (curNode == NULL) {
-        printf("the given previous node cannot be NULL");
-        return;
+        printError(ENullDataNode, 0);
+        return NULL;
     }
 
     new_node = (DataNode *) malloc(sizeof(DataNode));
@@ -108,20 +102,43 @@ void insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInput) {
     new_node->next = curNode->next;
     curNode->next = new_node;
     new_node->prev = curNode;
-    if (new_node->next != NULL)
-        new_node->next->prev = new_node;
+    if (new_node->next != NULL){
+        printError(EInsertionInMiddle, 0);
+    }
+
+    return curNode->next;
+}
+
+DataNode *getFirstDataNode(DataNode *currDataNode) {
+    if (currDataNode== NULL) {
+        printError(ENullDataNode, 0);
+        return NULL;
+    }
+
+    while (currDataNode->isFirst == false) {
+        currDataNode = currDataNode->prev;
+    }
+    return currDataNode;
 }
 
 DataNode *getLastDataNode(DataNode *currDataNode) {
+    if (currDataNode== NULL) {
+        printError(ENullDataNode, 0);
+        return NULL;
+    }
+
     while (currDataNode->next != NULL) {
         currDataNode = currDataNode->next;
     }
     return currDataNode;
 }
 
-DataNode *getFirstDataNode(DataNode *currDataNode) {
-    while (currDataNode->isFirst == false) {
-        currDataNode = currDataNode->prev;
+void clearDataListFromNode(DataNode *curNode) {
+
+    DataNode *nextNode;
+    while (curNode != NULL) {
+        nextNode = curNode->next;
+        free(curNode);
+        curNode = nextNode;
     }
-    return currDataNode;
 }

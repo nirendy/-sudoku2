@@ -5,12 +5,26 @@
 #include <stdlib.h>
 #include "main_aux.h"
 
-void freeData(DataNode **data);
+/* Data Node Funcs */
 
-Node * CreateFirstNode();
-DataNode * CreateFirstDataNode();
-DataNode* getLastDataNode(DataNode *currDataNode);
-DataNode* getFirstDataNode(DataNode *currDataNode);
+Node *CreateFirstNode();
+
+Node *insertAfterNode(Node *curNode);
+
+void clearListFromNode(Node *curNode);
+
+/* Data Node Funcs */
+
+DataNode *CreateFirstDataNode();
+
+DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInput);
+
+DataNode *getFirstDataNode(DataNode *currDataNode);
+
+DataNode *getLastDataNode(DataNode *currDataNode);
+
+void clearDataListFromNode(DataNode *curNode);
 
 
 #endif SUDOKU2_LINKED_LIST_H
+

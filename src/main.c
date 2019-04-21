@@ -12,8 +12,7 @@ int main(int argc, char *argv[]) {
     Mode mode = Init;
     Input input;
     Game *game;
-    firstNode = CreateFirstNode();
-    curNode = firstNode;
+    curNode = CreateFirstNode();
 
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
@@ -24,9 +23,9 @@ int main(int argc, char *argv[]) {
 //
     setDimentiosFromFile("../data/1");
     game = createGame();
-    generateGame(game, 0);
+//    generateGame(game, 0);
 
-//    generateGameFromFile("../data/1", game);
+    generateGameFromFile("../data/1", game);
 
 //    saveGameToFile("../data/1", game);
     /*

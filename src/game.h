@@ -7,7 +7,7 @@ void hint(Game *game, Coordinate coordinate);
 
 void validate(Game *game);
 
-void setCoordinate(Game *game, Input input);
+Bool setCoordinate(Game *game, Input input);
 
 
 #endif

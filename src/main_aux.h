@@ -48,7 +48,10 @@ typedef enum _error {
     EInvalidThirdParam,
     EInvalidFile,
     ERedoUnavailable,
-    EUndoUnavailable
+    EUndoUnavailable,
+    ENullNode,
+    ENullDataNode,
+    EInsertionInMiddle
 
 } Error;
 
@@ -146,7 +149,6 @@ typedef struct _Node {
 /* Global variables */
 GameDim gameDim;
 Bool markError;
-Node *firstNode;
 Node *curNode;
 
 

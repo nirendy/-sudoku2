@@ -28,10 +28,10 @@ Bool isValueInNeighbours(Game *game, Coordinate coordinate, int value) {
     return returnValue;
 }
 
-void setCoordinate(Game *game, Input input) {
+Bool setCoordinate(Game *game, Input input) {
     if (isCoordinateFixed(game, input.coordinate)) {
         printError(ECellIsFixed, COMMAND_INVALID);
-        return;
+        return 0;
     }
 
     game->user_matrix[input.coordinate.i][input.coordinate.j] = 0;
@@ -41,10 +41,12 @@ void setCoordinate(Game *game, Input input) {
         game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
     }
 
+    //TODO: decide if print success after redo
     if (isSolved(game)) {
         printPrompt(PSuccess, 0);
     }
 
+    return 1;
 
 }
 

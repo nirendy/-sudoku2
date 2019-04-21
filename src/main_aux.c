@@ -58,9 +58,23 @@ void printError(Error err, Command command) {
             printf("Error: Undo command is not possible\n");
             break;
         }
+        case ENullNode: {
+            printf("Error: Null node given as a pointer - unreachable code\n");
+            break;
+        }
+
+        case ENullDataNode: {
+            printf("Error: Null Data node given as a pointer - unreachable code\n");
+            break;
+        }
+
+        case EInsertionInMiddle: {
+            printf("Error: Insertion in the middle of the list - unreachable code\n");
+            break;
+        }
 
         default: {
-            printf("Unreachable Code Error");
+            printf("Unreachable Code Error\n");
         }
     }
 }
@@ -117,7 +131,7 @@ void printPrompt(Prompt prompt, int num1) {
 }
 
 void printChange(int i, int j, int value) {
-    printf("The value of the cell<%d,%d> set back to %d\n", i, j, value);
+    printf("The value of the cell<%d,%d> set back to %d\n", i + 1, j + 1, value);
 }
 
 Coordinate createCoordinate(int i, int j) {
@@ -343,13 +357,13 @@ void setMode(Mode *mode, Mode newMode) {
 }
 
 
-void performUndo(Game *game, DataNode *currDataNode) {
+void performUndo(Game *game, DataNode *currDataNode, Bool toPrint) {
     Input input;
     currDataNode = getLastDataNode(currDataNode);
     while (currDataNode->isFirst == false) {
         input = currDataNode->undoInput;
-        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
-        printChange(input.coordinate.i, input.coordinate.j, input.value);
+        setCoordinate(game, input);
+        if (toPrint) { printChange(input.coordinate.i, input.coordinate.j, input.value); }
         currDataNode = currDataNode->prev;
     }
 }
@@ -360,7 +374,7 @@ void performRedo(Game *game, DataNode *currDataNode) {
     currDataNode = currDataNode->next;
     while (currDataNode != NULL) {
         input = currDataNode->redoInput;
-        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
+        setCoordinate(game, input);
         printChange(input.coordinate.i, input.coordinate.j, input.value);
         currDataNode = currDataNode->next;
     }
@@ -445,7 +459,19 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
         }
         case COMMAND_SET: {
             /*!isSolved(game) ? setCoordinate(game, input) : printError(EInvalidCommand, COMMAND_INVALID);*/
-            setCoordinate(game, input);
+
+            Input redoInput;
+            Input undoInput;
+            redoInput.coordinate = input.coordinate;
+            undoInput.coordinate = input.coordinate;
+            redoInput.value = input.value;
+            undoInput.value = game->user_matrix[input.coordinate.i][input.coordinate.j];
+
+            if (setCoordinate(game, input)) {
+                curNode = insertAfterNode(curNode);
+                insertAfterDataNode(curNode->currDataNode, redoInput, undoInput);
+            }
+
             break;
         }
         case COMMAND_VALIDATE: {
@@ -465,7 +491,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             if (curNode->isFirst) { printError(EUndoUnavailable, 0); }
             else {
                 printPrompt(PPerformedChanges, 0);
-                performUndo(game, curNode->currDataNode);
+                performUndo(game, curNode->currDataNode, true);
                 curNode = curNode->prev;
             }
             break;
@@ -474,8 +500,8 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             if (curNode->next == NULL) { printError(ERedoUnavailable, 0); }
             else {
                 printPrompt(PPerformedChanges, 0);
-                performRedo(game, curNode->currDataNode);
                 curNode = curNode->next;
+                performRedo(game, curNode->currDataNode);
             }
             break;
         }
@@ -501,7 +527,10 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             break;
         }
         case COMMAND_RESET: {
-            printf("Command not implemented yet");
+            while (!curNode->isFirst) {
+                performUndo(game, curNode->currDataNode, false);
+                curNode = curNode->prev;
+            }
             break;
         }
         case COMMAND_EXIT: {
