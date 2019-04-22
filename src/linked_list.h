@@ -13,4 +13,4 @@ DataNode* getLastDataNode(DataNode *currDataNode);
 DataNode* getFirstDataNode(DataNode *currDataNode);
 
 
-#endif SUDOKU2_LINKED_LIST_H
+#endif

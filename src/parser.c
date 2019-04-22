@@ -286,6 +286,10 @@ FinishCode parseCommand(Input *returnedInput) {
     return FC_SUCCESS;
 }
 
-void printUserBoard(Game *game) {
-//TODO: nir
+void printUserBoard(Board board) {
+    Game game;
+    game.user_matrix = board;
+    game.fixed_matrix = (BoolBoard) board;
+    game.error_matrix = (BoolBoard) board;
+    printBoard(&game);
 }

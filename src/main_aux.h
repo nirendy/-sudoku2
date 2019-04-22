@@ -134,7 +134,7 @@ typedef struct _DataNode {
 
 
 
-// A linked list node
+/* A linked list node */
 typedef struct _Node {
     Bool isFirst;
     DataNode* currDataNode;

@@ -16,6 +16,7 @@ float getFloat(char *str);
 FinishCode parseHintsAmount(int *hintsAmount);
 FinishCode parseCommand(Input *input);
 
+void printUserBoard(Board board);
 
 #endif
 
