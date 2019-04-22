@@ -2,38 +2,10 @@
 
 int getType(Game *game, int i, int j) {
     if (game->fixed_matrix[i][j] == 1) { return 1; }
-    if (game->error_matrix[i][j] == 1 && markError == 1) { return 2; }
+    if (game->error_matrix[i][j] == 1 && g_markError == 1) { return 2; }
     return 0;
 }
 
-/*return 0 only if finished successfully */
-FinishCode parseHintsAmount(int *hintsAmount) {
-    printPrompt(PEnterFixedAmount, 0);
-
-    /*
-     * read input
-     * */
-    if (scanf("%d", hintsAmount) != 1) {
-        char isEOF;
-        if (scanf("%c", &isEOF) != EOF) {
-            /* This part is just that the programs works as the example program*/
-            printf("Error: not a number\n");
-            return FC_EOF;
-        }
-        return FC_INVALID_TERMINATE;
-    }
-
-    /*
-     * Validate input
-     * */
-    if (!(0 <= *hintsAmount && *hintsAmount <= gameDim.cellsCount - 1)) {
-        printError(EInvalidNumberOfCells, 0);
-        *hintsAmount = -1;
-        return FC_INVALID_RECOVERABLE;
-    }
-
-    return FC_SUCCESS;
-}
 
 void printSepRow(int len) {
     int i = 0;
@@ -43,22 +15,21 @@ void printSepRow(int len) {
     printf("\n");
 }
 
-
 void printBoard(Game *game) {
     const char SPACE = ' ', PIPE = '|', ASTERISK = '*', DOT = '.', NEWLINE = '\n';
-    int len = 4 * gameDim.N + gameDim.m + 1;
+    int len = 4 * g_gameDim.N + g_gameDim.m + 1;
     int i = 0, j = 0, k = 0;
     int indexI = 0;
     int type;
 
     printSepRow(len);
-    for (i = 0; i < gameDim.n; i++) {
+    for (i = 0; i < g_gameDim.n; i++) {
 
-        for (j = 0; j < gameDim.m; j++) {
+        for (j = 0; j < g_gameDim.m; j++) {
 
-            for (k = 0; k < gameDim.N; k++) {
+            for (k = 0; k < g_gameDim.N; k++) {
 
-                if (k % gameDim.n == 0) {
+                if (k % g_gameDim.n == 0) {
                     printf("%c", PIPE);
                 }
 
@@ -230,7 +201,7 @@ FinishCode parseCommand(Input *returnedInput) {
     numOfVars = ClassifyCommand(token, returnedInput);
 
     if (numOfVars == -1) {
-        printError(EInvalidCommand, COMMAND_INVALID);
+        printError(EInvalidCommand);
         return FC_INVALID_RECOVERABLE;
     }
 
@@ -293,7 +264,7 @@ FinishCode parseCommand(Input *returnedInput) {
     }
 
     if (index != numOfVars && strcmp(command, "edit") != 0) {
-        printError(EInvalidNumOfParams, returnedInput->command);
+        printError(EInvalidNumOfParams);
         return FC_INVALID_RECOVERABLE;
     }
 
@@ -301,6 +272,3 @@ FinishCode parseCommand(Input *returnedInput) {
     return FC_SUCCESS;
 }
 
-void printUserBoard(Game *game) {
-//TODO: nir
-}

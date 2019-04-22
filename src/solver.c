@@ -6,8 +6,8 @@ int getEmptyCells(Board board, Coordinate *emptyCells) {
     int i, j, emptyCount = 0;
 
     /* go over each cell of the matrix*/
-    for (i = 0; i < gameDim.N; ++i) {
-        for (j = 0; j < gameDim.N; ++j) {
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
             if (board[i][j] == 0) {
                 /* if empty*/
                 emptyCells[emptyCount] = createCoordinate(i, j);
@@ -22,7 +22,7 @@ Bool isSolved(Game *game) {
     Coordinate *emptyCells;
     int emptyCellsCount;
 
-    emptyCells = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
+    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
 
     emptyCellsCount = getEmptyCells(game->user_matrix, emptyCells);
 
@@ -33,8 +33,8 @@ Bool isSolved(Game *game) {
 
 void clearBoard(Board board) {
     int i, j;
-    for (i = 0; i < gameDim.N; ++i) {
-        for (j = 0; j < gameDim.N; ++j) {
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
             board[i][j] = 0;
         }
     }
@@ -42,8 +42,8 @@ void clearBoard(Board board) {
 
 void clearBoolBoard(BoolBoard board) {
     int i, j;
-    for (i = 0; i < gameDim.N; ++i) {
-        for (j = 0; j < gameDim.N; ++j) {
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
             board[i][j] = false;
         }
     }
@@ -54,13 +54,13 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
 
     /* find leftmost coordinate*/
     Coordinate leftMostBlockCoordinate = createCoordinate(
-            coordinate.i - (coordinate.i % gameDim.m),
-            coordinate.j - (coordinate.j % gameDim.n)
+            coordinate.i - (coordinate.i % g_gameDim.m),
+            coordinate.j - (coordinate.j % g_gameDim.n)
     );
 
     /* go over all cell in the block*/
-    for (i = leftMostBlockCoordinate.i + 0; i < leftMostBlockCoordinate.i + gameDim.m; ++i) {
-        for (j = leftMostBlockCoordinate.j + 0; j < leftMostBlockCoordinate.j + gameDim.n; ++j) {
+    for (i = leftMostBlockCoordinate.i + 0; i < leftMostBlockCoordinate.i + g_gameDim.m; ++i) {
+        for (j = leftMostBlockCoordinate.j + 0; j < leftMostBlockCoordinate.j + g_gameDim.n; ++j) {
             if (i != coordinate.i && j != coordinate.j) {
                 neighbours[neighboursCreated] = createCoordinate(i, j);
                 neighboursCreated++;
@@ -69,7 +69,7 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
     }
 
     /* go over all cells in the column and row expect of the one's in the block*/
-    for (k = 0; k < gameDim.N; ++k) {
+    for (k = 0; k < g_gameDim.N; ++k) {
         if (coordinate.i != k) {
             neighbours[neighboursCreated] = createCoordinate(k, coordinate.j);
             neighboursCreated++;
@@ -85,17 +85,17 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
 int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
     int i, possibleValuesCount = 0;
     Coordinate *neighbours;
-    neighbours = (Coordinate *) malloc(gameDim.cellNeighboursCount * sizeof(Coordinate));
+    neighbours = (Coordinate *) malloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
 
     /* init an array of all numbers available*/
-    for (i = 0; i < gameDim.N; ++i) {
+    for (i = 0; i < g_gameDim.N; ++i) {
         possibleValues[i] = i + 1;
     }
 
     coordinateNeighbours(coordinate, neighbours);
 
     /* zeroing values from the array of used numbers*/
-    for (i = 0; i < gameDim.cellNeighboursCount; ++i) {
+    for (i = 0; i < g_gameDim.cellNeighboursCount; ++i) {
         int neighbourValue = board[neighbours[i].i][neighbours[i].j];
         if (neighbourValue != 0) {
             possibleValues[neighbourValue - 1] = 0;
@@ -104,7 +104,7 @@ int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
 
     /*closing the gap of zeroes*/
     /*for each value in array*/
-    for (i = 0; i < gameDim.N; ++i) {
+    for (i = 0; i < g_gameDim.N; ++i) {
         /* if it isn't zero*/
         if (possibleValues[i] != 0) {
             /*put the non zero value to the next actual filled cell*/
@@ -114,7 +114,7 @@ int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
     }
 
     /*zeroing the rest of the array - not necessary but cleaner*/
-    for (i = possibleValuesCount; i < gameDim.N; ++i) {
+    for (i = possibleValuesCount; i < g_gameDim.N; ++i) {
         possibleValues[i] = 0;
     }
 
@@ -146,7 +146,7 @@ Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, in
     Bool returnValue = false;
     Coordinate currentCoordinate = emptyCells[start];
 
-    possibleValues = (int *) malloc(gameDim.N * sizeof(int));
+    possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
 
     possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
 
@@ -197,7 +197,7 @@ countPossibleSolutionsRec(Board board, Coordinate *emptyCells, int emptyCellsCou
     int returnValue = 0;
     Coordinate currentCoordinate = emptyCells[start];
 
-    possibleValues = (int *) malloc(gameDim.N * sizeof(int));
+    possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
 
     possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
 
@@ -243,7 +243,7 @@ Bool solveBoard(Board userBoard, Board toSolveBoard, Bool isDeterministic) {
     int emptyCellsCount;
     Bool returnValue;
 
-    emptyCells = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
+    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
 
     /* make a copy of the current board to solve*/
     copyBoard(toSolveBoard, userBoard);
@@ -276,7 +276,7 @@ FinishCode countPossibleSolutions(Board board) {
     Board tempBoard;
     CountPossibleSolutionsScope *curScope;
 
-    emptyCells = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
+    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
     tempBoard = createBoard();
 
     /* make a copy of the current board to solve*/
@@ -298,7 +298,7 @@ FinishCode countPossibleSolutions(Board board) {
         if (curScope->isInitialized == false) {
             /* initialize*/
             curScope->currentCoordinate = emptyCells[curScope->start];
-            curScope->possibleValues = (int *) malloc(gameDim.N * sizeof(int));
+            curScope->possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
             curScope->possibleValuesCount = getPossibleValues(tempBoard, curScope->currentCoordinate,
                                                               curScope->possibleValues);
             curScope->isInitialized = true;
@@ -365,7 +365,7 @@ FinishCode countPossibleSolutions(Board board) {
     /* End */
 
     free(emptyCells);
-    destroyBoard(tempBoard, gameDim);
+    destroyBoard(tempBoard, g_gameDim);
 
     printPrompt(PNumSolutionsOutput, returnValue);
     return returnValue;
@@ -376,8 +376,8 @@ void generateFixedBoard(BoolBoard board, int fixedAmount) {
     clearBoard((Board) board);
 
     while (fixedCellsFound < fixedAmount) {
-        j = randLimit(gameDim.N);
-        i = randLimit(gameDim.N);
+        j = randLimit(g_gameDim.N);
+        i = randLimit(g_gameDim.N);
 
         if (board[i][j] == 0) {
             board[i][j] = 1;
@@ -399,8 +399,8 @@ void generateGame(Game *game, int fixedAmount) {
     clearBoolBoard(game->error_matrix);
 
     /* fill the fixed cells only*/
-    for (i = 0; i < gameDim.N; ++i) {
-        for (j = 0; j < gameDim.N; ++j) {
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
             if (game->fixed_matrix[i][j]) {
                 game->user_matrix[i][j] = game->solved_matrix[i][j];
             }
@@ -414,14 +414,14 @@ void updateAfterClearErrorMatrix(Game *game, Input input) {
     Input in;
     Coordinate cor;
     Coordinate *neighbours;
-    neighbours = (Coordinate *) malloc(gameDim.cellNeighboursCount * sizeof(Coordinate));
+    neighbours = (Coordinate *) malloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
     coordinateNeighbours(input.coordinate, neighbours);
 
-    for (k = 0; k < gameDim.cellNeighboursCount; k++) {
+    for (k = 0; k < g_gameDim.cellNeighboursCount; k++) {
         game->error_matrix[neighbours[k].i][neighbours[k].j] = 0;
     }
 
-    for (k = 0; k < gameDim.cellNeighboursCount; k++) {
+    for (k = 0; k < g_gameDim.cellNeighboursCount; k++) {
         cor.i = neighbours[k].i;
         cor.j = neighbours[k].j;
         in.coordinate = cor;
@@ -439,9 +439,9 @@ void updateAfterSetErrorMatrix(Game *game, Input input) {
     int k;
     Bool flag = false;
     Coordinate *neighbours;
-    neighbours = (Coordinate *) malloc(gameDim.cellNeighboursCount * sizeof(Coordinate));
+    neighbours = (Coordinate *) malloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
     coordinateNeighbours(input.coordinate, neighbours);
-    for (k = 0; k < gameDim.cellNeighboursCount; k++) {
+    for (k = 0; k < g_gameDim.cellNeighboursCount; k++) {
         if (game->user_matrix[neighbours[k].i][neighbours[k].j] == input.value) {
             flag = true;
             if (game->fixed_matrix[neighbours[k].i][neighbours[k].j] == 0) {

@@ -11,6 +11,8 @@ Node *CreateFirstNode();
 
 Node *insertAfterNode(Node *curNode);
 
+Node *getFirstNode(Node *curNode);
+
 void clearListFromNode(Node *curNode);
 
 /* Data Node Funcs */
@@ -26,5 +28,5 @@ DataNode *getLastDataNode(DataNode *currDataNode);
 void clearDataListFromNode(DataNode *curNode);
 
 
-#endif SUDOKU2_LINKED_LIST_H
+#endif
 

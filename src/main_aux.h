@@ -39,10 +39,7 @@ typedef enum _error {
     ECellIsFixed,
     ECellIsNotEmpty,
     EValueIsInvalid,
-    EFunctionFailed,
-    EInvalidCommandInMode,
-    /*parser errors*/
-            EInvalidCommand,
+    EInvalidCommand,
     EInvalidNumOfParams,
     EInvalidFirstParam,
     EInvalidSecondParam,
@@ -83,7 +80,6 @@ typedef enum _prompt {
 
 } Prompt;
 
-/*TODO: add more fields*/
 typedef struct _game {
     Board solved_matrix;
     Board user_matrix;
@@ -141,7 +137,6 @@ typedef struct _DataNode {
 } DataNode;
 
 
-
 /*A linked list node*/
 typedef struct _Node {
     Bool isFirst;
@@ -152,10 +147,10 @@ typedef struct _Node {
 
 
 /* Global variables */
-Mode mode;
-GameDim gameDim;
-Bool markError;
-Node *curNode;
+Mode g_mode;
+GameDim g_gameDim;
+Bool g_markError;
+Node *g_curNode;
 
 
 void setGameDim(int n, int m);
@@ -172,7 +167,7 @@ void copyBoard(Board targetBoard, Board copyFromBoard);
 
 Coordinate createCoordinate(int i, int j);
 
-void printError(Error err, Command command);
+void printError(Error err);
 
 void printPrompt(Prompt prompt, int num1);
 
@@ -181,8 +176,6 @@ Bool askUserForNextTurn(Mode mode, Input *input);
 void executeCommand(Input input, Game **gameP);
 
 Bool checkLegalInput(Input input, Game *game);
-
-FinishCode askUserForHintsAmount(int *hintsAmount);
 
 int randLimit(int limit);
 

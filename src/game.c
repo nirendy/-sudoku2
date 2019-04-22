@@ -15,7 +15,7 @@ Bool isValueInNeighbours(Game *game, Coordinate coordinate, int value) {
     Bool returnValue = true;
     int i, possibleValuesCount;
 
-    possibleValues = (int *) malloc(gameDim.N * sizeof(int));
+    possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
 
     possibleValuesCount = getPossibleValues(game->user_matrix, coordinate, possibleValues);
 
@@ -34,7 +34,7 @@ Bool isValueInNeighbours(Game *game, Coordinate coordinate, int value) {
 
 Bool setCoordinate(Game *game, Input input) {
     if (isCoordinateFixed(game, input.coordinate)) {
-        printError(ECellIsFixed, COMMAND_INVALID);
+        printError(ECellIsFixed);
         return 0;
     }
 
@@ -45,7 +45,7 @@ Bool setCoordinate(Game *game, Input input) {
         game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
     }
 
-    //TODO: decide if print success after redo
+    /*TODO: decide if print success after redo*/
     if (isSolved(game)) {
         printPrompt(PSuccess, 0);
     }

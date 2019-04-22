@@ -11,29 +11,25 @@
 int main(int argc, char *argv[]) {
     Input input;
     Game *game;
-    mode = Init;
-    curNode = CreateFirstNode();
+    g_mode = Init;
+    g_curNode = CreateFirstNode();
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-    /* MOCK */
-    mode = Solve;
-//    setGameDim(2,2);
-//
-    setDimensionsFromFile("../data/1");
+    /*To avoid uninitialized game warning*/
     game = createGame();
-//    generateGame(game, 0);
+    destroyGame(game);
 
-    generateGameFromFile("../data/1", game);
+    /* MOCK
+    g_mode = Solve;
+    setGameDim(2, 2);
+    generateGame(game, 0);
+    saveGameToFile("../data/1", game);
+    END MOCK*/
 
-//    saveGameToFile("../data/1", game);
-    /*
-     */
-    /* END MOCK*/
 
-
-    while (mode != Exit) {
-        if (askUserForNextTurn(mode, &input)) {
+    while (g_mode != Exit) {
+        if (askUserForNextTurn(g_mode, &input)) {
             if (checkLegalInput(input, game)) {
                 executeCommand(input, &game);
             }

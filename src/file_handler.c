@@ -6,12 +6,12 @@ FinishCode saveGameToFile(char *filePath, Game *game) {
 
     file = fopen(filePath, "w");
     if (file == NULL) {
-        printError(EFileOpenFailure, 0);
+        printError(EFileOpenFailure);
         return FC_INVALID_RECOVERABLE;
     }
-    fprintf(file, "%d %d\n", gameDim.m, gameDim.n);
-    for (i = 0; i < gameDim.N; i++) {
-        for (j = 0; j < gameDim.N; j++) {
+    fprintf(file, "%d %d\n", g_gameDim.m, g_gameDim.n);
+    for (i = 0; i < g_gameDim.N; i++) {
+        for (j = 0; j < g_gameDim.N; j++) {
             if (j > 0) {
                 fprintf(file, " ");
             }
@@ -25,7 +25,7 @@ FinishCode saveGameToFile(char *filePath, Game *game) {
         fprintf(file, "\n");
     }
     if (fclose(file) == EOF) {
-        printError(EFileCloseFailure, 0);
+        printError(EFileCloseFailure);
         return FC_INVALID_TERMINATE;
     }
     return FC_SUCCESS;
@@ -37,16 +37,16 @@ FinishCode setDimensionsFromFile(char *filePath) {
     int tempN, tempM;
     file = fopen(filePath, "r");
     if (file == NULL) {
-        printError(EFileOpenFailure, 0);
+        printError(EFileOpenFailure);
         return FC_INVALID_RECOVERABLE;
     }
     if (fscanf(file, "%d %d", &tempM, &tempN) != 2) {
-        printError(EFileScanFailure, 0);
+        printError(EFileScanFailure);
         return FC_INVALID_RECOVERABLE;
     }
     setGameDim(tempN, tempM);
     if (fclose(file) == EOF) {
-        printError(EFileCloseFailure, 0);
+        printError(EFileCloseFailure);
         return FC_INVALID_TERMINATE;
     }
 
@@ -66,7 +66,7 @@ int isDigit(char tav) {
 }
 
 int isLegalNum(int num) {
-    return (num >= 0 && num <= gameDim.N);
+    return (num >= 0 && num <= g_gameDim.N);
 }
 
 int isDot(char tav) {
@@ -78,7 +78,7 @@ int isAsterisk(char tav) {
 }
 
 void printFileError(char *string) {
-    printError(EInvalidFile, 0);
+    printError(EInvalidFile);
     printf("reason: %s\n", string);
 }
 
@@ -90,18 +90,18 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
     char tav;
     file = fopen(filePath, "r");
     if (file == NULL) {
-        printError(EFileOpenFailure, 0);
+        printError(EFileOpenFailure);
         return FC_INVALID_RECOVERABLE;
     }
 
     if (fscanf(file, "%d %d", &tempM, &tempN) != 2) {
-        printError(EFileScanFailure, 0);
+        printError(EFileScanFailure);
         return FC_INVALID_RECOVERABLE;
     }
 
 
-    for (i = 0; i < gameDim.N; i++) {
-        for (j = 0; j < gameDim.N;) {
+    for (i = 0; i < g_gameDim.N; i++) {
+        for (j = 0; j < g_gameDim.N;) {
             if ((c = fgetc(file)) == EOF) { break; }
             tav = (char) c;
 
@@ -180,12 +180,12 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
     }
 
     if (fclose(file) == EOF) {
-        printError(EFileCloseFailure, 0);
+        printError(EFileCloseFailure);
         return FC_INVALID_TERMINATE;
     }
 
 
-    if (i != gameDim.N || j != gameDim.N) {
+    if (i != g_gameDim.N || j != g_gameDim.N) {
         if (!isFailed) {
             printFileError("invalid text");
             isFailed = true;

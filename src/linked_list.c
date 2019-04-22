@@ -2,35 +2,6 @@
 #include <stdlib.h>
 #include "linked_list.h"
 
-//void insertFirst(Node **head_ref, DataNode *new_data) {
-//
-//    Node *new_node = (Node *) malloc(sizeof(Node));
-//    new_node->data = new_data;
-//    new_node->next = (*head_ref);
-//    new_node->prev = NULL;
-//    if ((*head_ref) != NULL)
-//        (*head_ref)->prev = new_node;
-//    (*head_ref) = new_node;
-//}
-
-//void insertLast(Node **head_ref, DataNode *new_data) {
-//
-//    Node *new_node = (Node *) malloc(sizeof(Node));
-//    Node *last = *head_ref;
-//    new_node->data = new_data;
-//    new_node->next = NULL;
-//    if (*head_ref == NULL) {
-//        new_node->prev = NULL;
-//        *head_ref = new_node;
-//        return;
-//    }
-//    while (last->next != NULL){
-//        last = last->next;
-//    }
-//    last->next = new_node;
-//    new_node->prev = last;
-//
-//}
 
 /* Data Node Funcs */
 
@@ -48,7 +19,7 @@ Node *insertAfterNode(Node *curNode) {
     Node *new_node;
 
     if (curNode == NULL) {
-        printError(ENullNode,0);
+        printError(ENullNode);
         return NULL;
     }
 
@@ -59,10 +30,23 @@ Node *insertAfterNode(Node *curNode) {
     curNode->next = new_node;
     new_node->prev = curNode;
     if (new_node->next != NULL) {
-        printError(EInsertionInMiddle, 0);
+        printError(EInsertionInMiddle);
     }
 
     return curNode->next;
+}
+
+Node *getFirstNode(Node *curNode){
+    if (curNode== NULL) {
+        printError(ENullNode);
+        return NULL;
+    }
+
+    while (curNode->isFirst == false) {
+        curNode = curNode->prev;
+    }
+    return curNode;
+
 }
 
 void clearListFromNode(Node *curNode) {
@@ -91,7 +75,7 @@ DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInpu
     DataNode *new_node;
 
     if (curNode == NULL) {
-        printError(ENullDataNode, 0);
+        printError(ENullDataNode);
         return NULL;
     }
 
@@ -103,7 +87,7 @@ DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInpu
     curNode->next = new_node;
     new_node->prev = curNode;
     if (new_node->next != NULL){
-        printError(EInsertionInMiddle, 0);
+        printError(EInsertionInMiddle);
     }
 
     return curNode->next;
@@ -111,7 +95,7 @@ DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInpu
 
 DataNode *getFirstDataNode(DataNode *currDataNode) {
     if (currDataNode== NULL) {
-        printError(ENullDataNode, 0);
+        printError(ENullDataNode);
         return NULL;
     }
 
@@ -123,7 +107,7 @@ DataNode *getFirstDataNode(DataNode *currDataNode) {
 
 DataNode *getLastDataNode(DataNode *currDataNode) {
     if (currDataNode== NULL) {
-        printError(ENullDataNode, 0);
+        printError(ENullDataNode);
         return NULL;
     }
 
