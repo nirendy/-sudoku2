@@ -9,5 +9,8 @@ void validate(Game *game);
 
 Bool setCoordinate(Game *game, Input input);
 
+Bool isCoordinateFixed(Game *game, Coordinate coordinate);
+
+Bool isCoordinateEmpty(Game *game, Coordinate coordinate);
 
 #endif

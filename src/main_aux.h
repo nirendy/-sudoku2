@@ -37,6 +37,7 @@ typedef enum _mode {
 typedef enum _error {
     EInvalidNumberOfCells,
     ECellIsFixed,
+    ECellIsNotEmpty,
     EValueIsInvalid,
     EFunctionFailed,
     EInvalidCommandInMode,

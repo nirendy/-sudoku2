@@ -21,6 +21,9 @@ void printError(Error err, Command command) {
         case ECellIsFixed:
             printf("Error: cell is fixed\n");
             break;
+        case ECellIsNotEmpty:
+            printf("Error: cell is not empty\n");
+            break;
         case EValueIsInvalid:
             printf("Error: value is invalid\n");
             break;
@@ -474,6 +477,10 @@ void performAutoFill(Game *game) {
 
 Bool checkLegalInput(Input input, Game *game) {
 
+    /*generate_command vars*/
+    Coordinate *tempCorArray;
+    int numOfEmptyCells , numOfFilledCells;
+
     switch (input.command) {
         case COMMAND_SOLVE: {
             return true;
@@ -522,6 +529,12 @@ Bool checkLegalInput(Input input, Game *game) {
 
             /*   is parameter legal in current board state check    */
 
+            if (isCoordinateFixed(game, input.coordinate)) {
+                printError(ECellIsFixed, COMMAND_INVALID);
+                return false;
+            }
+
+
             return true;
         }
         case COMMAND_VALIDATE: {
@@ -539,6 +552,13 @@ Bool checkLegalInput(Input input, Game *game) {
             if(!(input.threshold>=0 && input.threshold<=1)){
                 printError(EInvalidFirstParam,0);
                 printf("parameter must be a float number between 0 and 1\n");
+                return false;
+            }
+
+            /*   is parameter legal in current board state check    */
+
+            if (isBoardErroneous(game)) {
+                printError(EErroneousBoard, 0);
                 return false;
             }
             return true;
@@ -563,13 +583,45 @@ Bool checkLegalInput(Input input, Game *game) {
             /*   is parameter legal in current board state check    */
 
 
+            tempCorArray = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
+            numOfEmptyCells = getEmptyCells(game->user_matrix, tempCorArray);
+            free(tempCorArray);
+
+            if(input.gen1>numOfEmptyCells){
+                printError(EInvalidFirstParam,0);
+                printf("parameter must be smaller or equal than the number of empty cells");
+                return false;
+            }
+
+            numOfFilledCells = gameDim.cellsCount - numOfEmptyCells;
+            if (input.gen2 < numOfFilledCells + input.gen1) {
+                printError(EInvalidSecondParam, 0);
+                printf("second parameter must be greater or equal"
+                       "than the sum of the filled cells and the first parameter");
+                return false;
+            }
+
+
             return true;
         }
         case COMMAND_UNDO: {
-            break;
+            /*   is parameter legal in current board state check    */
+
+            if (curNode->isFirst) {
+                printError(EUndoUnavailable, 0);
+                return false;
+            }
+            return true;
         }
+
         case COMMAND_REDO: {
-            break;
+            /*   is parameter legal in current board state check    */
+
+            if (curNode->next == NULL) {
+                printError(ERedoUnavailable, 0);
+                return false;
+            }
+            return true;
         }
         case COMMAND_SAVE: {
             return true;
@@ -592,7 +644,20 @@ Bool checkLegalInput(Input input, Game *game) {
             }
 
             /*   is parameter legal in current board state check    */
+            if (isBoardErroneous(game)) {
+                printError(EErroneousBoard, 0);
+                return false;
+            }
 
+            if (isCoordinateFixed(game, input.coordinate)) {
+                printError(ECellIsFixed, 0);
+                return false;
+            }
+
+            if (!isCoordinateEmpty(game, input.coordinate)) {
+                printError(ECellIsNotEmpty, 0);
+                return false;
+            }
 
             return true;
         }
@@ -614,7 +679,20 @@ Bool checkLegalInput(Input input, Game *game) {
             }
 
             /*   is parameter legal in current board state check    */
+            if (isBoardErroneous(game)) {
+                printError(EErroneousBoard, 0);
+                return false;
+            }
 
+            if (isCoordinateFixed(game, input.coordinate)) {
+                printError(ECellIsFixed, COMMAND_INVALID);
+                return false;
+            }
+
+            if (!isCoordinateEmpty(game, input.coordinate)) {
+                printError(ECellIsNotEmpty, 0);
+                return false;
+            }
 
             return true;
         }
@@ -719,21 +797,15 @@ void executeCommand(Input input, Game **gameP ) {
             break;
         }
         case COMMAND_UNDO: {
-            if (curNode->isFirst) { printError(EUndoUnavailable, 0); }
-            else {
-                printPrompt(PPerformedChanges, 0);
-                performUndo(game, curNode->currDataNode, true);
-                curNode = curNode->prev;
-            }
+            printPrompt(PPerformedChanges, 0);
+            performUndo(game, curNode->currDataNode, true);
+            curNode = curNode->prev;
             break;
         }
         case COMMAND_REDO: {
-            if (curNode->next == NULL) { printError(ERedoUnavailable, 0); }
-            else {
-                printPrompt(PPerformedChanges, 0);
-                curNode = curNode->next;
-                performRedo(game, curNode->currDataNode);
-            }
+            printPrompt(PPerformedChanges, 0);
+            curNode = curNode->next;
+            performRedo(game, curNode->currDataNode);
             break;
         }
         case COMMAND_SAVE: {
