@@ -9,12 +9,10 @@
 #include "linked_list.h"
 
 int main() {
-    Mode mode = Init;
     Input input;
     Game *game;
-    firstNode = CreateFirstNode();
-    curNode = firstNode;
-
+    mode = Init;
+    curNode = CreateFirstNode();
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
@@ -26,9 +24,9 @@ int main() {
 //
     setDimentiosFromFile("../data/1");
     game = createGame();
-    generateGame(game, 0);
+//    generateGame(game, 0);
 
-//    generateGameFromFile("../data/1", game);
+    generateGameFromFile("../data/1", game);
 
 //    saveGameToFile("../data/1", game);
     /*
@@ -37,9 +35,12 @@ int main() {
 
 
     while (mode != Exit) {
-        askUserForNextTurn(mode, &input);
-        executeCommand(input, &mode, &game);
+        if (askUserForNextTurn(mode, &input)) {
+            if (checkLegalInput(input, game)) {
+                executeCommand(input, &game);
+            }
+        }
     }
-
     return 0;
 }
+

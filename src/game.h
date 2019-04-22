@@ -7,7 +7,10 @@ void hint(Game *game, Coordinate coordinate);
 
 void validate(Game *game);
 
-void setCoordinate(Game *game, Input input);
+Bool setCoordinate(Game *game, Input input);
 
+Bool isCoordinateFixed(Game *game, Coordinate coordinate);
+
+Bool isCoordinateEmpty(Game *game, Coordinate coordinate);
 
 #endif

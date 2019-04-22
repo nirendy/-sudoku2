@@ -21,6 +21,9 @@ void printError(Error err, Command command) {
         case ECellIsFixed:
             printf("Error: cell is fixed\n");
             break;
+        case ECellIsNotEmpty:
+            printf("Error: cell is not empty\n");
+            break;
         case EValueIsInvalid:
             printf("Error: value is invalid\n");
             break;
@@ -49,6 +52,16 @@ void printError(Error err, Command command) {
             break;
         }
 
+        case EInvalidSecondParam: {
+            printf("Error: second parameter is invalid\n");
+            break;
+        }
+
+        case EInvalidThirdParam: {
+            printf("Error: third parameter is invalid\n");
+            break;
+        }
+
         case ERedoUnavailable: {
             printf("Error: Redo command is not possible\n");
             break;
@@ -58,9 +71,28 @@ void printError(Error err, Command command) {
             printf("Error: Undo command is not possible\n");
             break;
         }
+        case ENullNode: {
+            printf("Error: Null node given as a pointer - unreachable code\n");
+            break;
+        }
+
+        case ENullDataNode: {
+            printf("Error: Null Data node given as a pointer - unreachable code\n");
+            break;
+        }
+
+        case EInsertionInMiddle: {
+            printf("Error: Insertion in the middle of the list - unreachable code\n");
+            break;
+        }
+
+        case EErroneousBoard: {
+            printf("Error: Board is erroneous\n");
+            break;
+        }
 
         default: {
-            printf("Unreachable Code Error");
+            printf("Unreachable Code Error\n");
         }
     }
 }
@@ -117,7 +149,7 @@ void printPrompt(Prompt prompt, int num1) {
 }
 
 void printChange(int i, int j, int value) {
-    printf("The value of the cell<%d,%d> set back to %d\n", i, j, value);
+    printf("The value of the cell<%d,%d> set back to %d\n", i + 1, j + 1, value);
 }
 
 Coordinate createCoordinate(int i, int j) {
@@ -164,7 +196,6 @@ Board createBoard() {
     return board;
 }
 
-
 void destroyBoard(Board board, GameDim dim) {
     {
         int i;
@@ -196,6 +227,17 @@ void destroyBoolBoard(BoolBoard board, GameDim dim) {
     }
 
     free(board);
+}
+
+Bool isBoardErroneous(Game *game){
+    int i, j;
+    for (i = 0; i < gameDim.N; ++i) {
+        for (j = 0; j < gameDim.N; ++j) {
+            if(game->error_matrix[i][j] == 1)
+                return true;
+        }
+    }
+    return false;
 }
 
 Game *createGame() {
@@ -322,34 +364,38 @@ void terminate(Game *game, FinishCode finishCode) {
     exit(0);
 }
 
-void askUserForNextTurn(Mode mode, Input *input) {
+Bool askUserForNextTurn(Mode mode, Input *input) {
+
     FinishCode finishCode;
     printPrompt(PNextCommand, 0);
-    do {
-        finishCode = parseCommand(input);
-        if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
-            terminate(NULL, finishCode);
-        }
 
-        if (finishCode == FC_SUCCESS && !isCommandAllowedInMode(mode, input->command)) {
-            printError(EInvalidCommandInMode, COMMAND_INVALID);
-            finishCode = FC_INVALID_RECOVERABLE;
-        }
-    } while (finishCode == FC_INVALID_RECOVERABLE);
+    finishCode = parseCommand(input);
+    if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
+        terminate(NULL, finishCode);
+        return false;
+    }
+
+    if (finishCode == FC_SUCCESS && !isCommandAllowedInMode(mode, input->command)) {
+        printError(EInvalidCommandInMode, COMMAND_INVALID);
+        return false;
+    }
+
+    if (finishCode == FC_INVALID_RECOVERABLE) { return false; }
+
+    return true;
 }
 
 void setMode(Mode *mode, Mode newMode) {
     *mode = newMode;
 }
 
-
-void performUndo(Game *game, DataNode *currDataNode) {
+void performUndo(Game *game, DataNode *currDataNode, Bool toPrint) {
     Input input;
     currDataNode = getLastDataNode(currDataNode);
     while (currDataNode->isFirst == false) {
         input = currDataNode->undoInput;
-        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
-        printChange(input.coordinate.i, input.coordinate.j, input.value);
+        if (toPrint) { printChange(input.coordinate.i, input.coordinate.j, input.value); }
+        setCoordinate(game, input);
         currDataNode = currDataNode->prev;
     }
 }
@@ -360,46 +406,329 @@ void performRedo(Game *game, DataNode *currDataNode) {
     currDataNode = currDataNode->next;
     while (currDataNode != NULL) {
         input = currDataNode->redoInput;
-        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
         printChange(input.coordinate.i, input.coordinate.j, input.value);
+        setCoordinate(game, input);
         currDataNode = currDataNode->next;
     }
 }
 
-void executeCommand(Input input, Mode *mode, Game **gameP) {
-    /*
-     * game = createGame();
-     */
-    /*
-     * Keep doing until exit
-     * */
+void setUndoRedoInputs(Game *game, Input in, Input *redo, Input *undo) {
 
-    /*
-         finishCode = askUserForHintsAmount(&fixedAmount);
-        if (finishCode != FC_SUCCESS) {
-            terminate(game, finishCode);
-        };
-        generateGame(game, fixedAmount);
-        shouldRestart = false;
-        printBoard(game->user_matrix, game->fixed_matrix);
-*/
-    /*
-     * Keep doing until restart
-     * */
+    redo->coordinate = in.coordinate;
+    undo->coordinate = in.coordinate;
 
-    /*
-     while (!shouldRestart) {
-        finishCode = askUserForNextTurn(&input);
-        if (finishCode != FC_SUCCESS) {
-            terminate(game, finishCode);
-        };
+    redo->value = in.value;
+    undo->value = game->user_matrix[in.coordinate.i][in.coordinate.j];
 
+}
+
+void insertInputsToList(Input *redoInputs, Input *undoInputs, int numOfInputs) {
+    int k;
+
+    curNode = insertAfterNode(curNode);
+    for (k = 0; k < numOfInputs; k++) {
+        curNode->currDataNode = insertAfterDataNode(curNode->currDataNode , redoInputs[k] , undoInputs[k]);
     }
 
-     */
+}
 
+void performAutoFill(Game *game) {
+    Coordinate *emptyCells = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
+    int *possibleValues = (int*) malloc(gameDim.cellsCount * sizeof(int));
+    Input *cellToFill = (Input*) malloc(gameDim.cellsCount * sizeof(Input));
+    Input *redoInputs = (Input*) malloc(gameDim.cellsCount * sizeof(Input));
+    Input *undoInputs = (Input*) malloc(gameDim.cellsCount * sizeof(Input));
+
+    int numOfEmpty = getEmptyCells(game->user_matrix , emptyCells);
+    int numOfPossibleValues;
+    int numOfCellsToFill = 0;
+
+    int k;
+    for (k = 0; k < numOfEmpty; k++) {
+        numOfPossibleValues = getPossibleValues(game->user_matrix, emptyCells[k] ,possibleValues);
+        if(numOfPossibleValues==1){
+            cellToFill[numOfCellsToFill].value = possibleValues[0];
+            cellToFill[numOfCellsToFill].coordinate = emptyCells[k];
+            numOfCellsToFill++;
+        }
+    }
+
+    if(numOfCellsToFill>0) {
+
+        for (k = 0; k < numOfCellsToFill; k++) {
+            setUndoRedoInputs(game, cellToFill[k], &redoInputs[k], &undoInputs[k]);
+            if (k < 0) {
+                undoInputs[k].value = redoInputs[k - 1].value;
+            }
+        }
+
+    insertInputsToList(redoInputs,undoInputs,numOfCellsToFill);
+        for (k = 0; k < numOfCellsToFill; k++) {
+            setCoordinate(game,cellToFill[k]);
+        }
+
+    }
+    free(emptyCells);
+    free(possibleValues);
+    free(cellToFill);
+    free(redoInputs);
+    free(undoInputs);
+}
+
+Bool checkLegalInput(Input input, Game *game) {
+
+    /*generate_command vars*/
+    Coordinate *tempCorArray;
+    int numOfEmptyCells , numOfFilledCells;
+
+    switch (input.command) {
+        case COMMAND_SOLVE: {
+            return true;
+        }
+        case COMMAND_EDIT: {
+            return true;
+        }
+        case COMMAND_MARK_ERRORS: {
+            /*     parameter range check    */
+            if(!(input.value==0 || input.value==1)){
+                printError(EInvalidFirstParam,0);
+                printf("parameter must be a binary number - 0 or 1\n");
+                return false;
+            }
+
+
+            return true;
+        }
+        case COMMAND_PRINT_BOARD: {
+            return true;
+        }
+
+        case COMMAND_SET: {
+            /*     parameter range check    */
+
+            /*First Parameter Check*/
+            if (!(input.coordinate.i >= 0 && input.coordinate.i <= gameDim.N - 1)) {
+                printError(EInvalidFirstParam, 0);
+                printf("parameter must be an integer number between 1 and %d\n", gameDim.N );
+                return false;
+            }
+
+            /*Second Parameter Check*/
+            if (!(input.coordinate.j >= 0 && input.coordinate.j <= gameDim.N - 1)) {
+                printError(EInvalidSecondParam, 0);
+                printf("parameter must be an integer number between 1 and %d\n", gameDim.N);
+                return false;
+            }
+
+            /*Third Parameter Check*/
+            if (!(input.value >= 0 && input.value <= gameDim.N)) {
+                printError(EInvalidThirdParam, 0);
+                printf("parameter must be an integer number between 0 and %d\n", gameDim.N);
+                return false;
+            }
+
+            /*   is parameter legal in current board state check    */
+
+            if (isCoordinateFixed(game, input.coordinate)) {
+                printError(ECellIsFixed, COMMAND_INVALID);
+                return false;
+            }
+
+
+            return true;
+        }
+        case COMMAND_VALIDATE: {
+            /*   is parameter legal in current board state check    */
+
+            if (isBoardErroneous(game)) {
+                printError(EErroneousBoard, 0);
+                return false;
+            }
+            return true;
+        }
+        case COMMAND_GUESS: {
+            /*     parameter range check    */
+
+            if(!(input.threshold>=0 && input.threshold<=1)){
+                printError(EInvalidFirstParam,0);
+                printf("parameter must be a float number between 0 and 1\n");
+                return false;
+            }
+
+            /*   is parameter legal in current board state check    */
+
+            if (isBoardErroneous(game)) {
+                printError(EErroneousBoard, 0);
+                return false;
+            }
+            return true;
+        }
+        case COMMAND_GENERATE: {
+            /*     parameter range check    */
+
+            /*First Parameter Check*/
+            if (!(input.gen1 >= 0 && input.gen1 <= gameDim.cellsCount)) {
+                printError(EInvalidFirstParam, 0);
+                printf("parameter must be an integer number between 0 and %d\n", gameDim.cellsCount);
+                return false;
+            }
+
+            /*Second Parameter Check*/
+            if (!(input.gen2 >= 0 && input.gen2 <= gameDim.cellsCount)) {
+                printError(EInvalidSecondParam, 0);
+                printf("parameter must be an integer number between 0 and %d\n", gameDim.cellsCount);
+                return false;
+            }
+
+            /*   is parameter legal in current board state check    */
+
+
+            tempCorArray = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
+            numOfEmptyCells = getEmptyCells(game->user_matrix, tempCorArray);
+            free(tempCorArray);
+
+            if(input.gen1>numOfEmptyCells){
+                printError(EInvalidFirstParam,0);
+                printf("parameter must be smaller or equal than the number of empty cells");
+                return false;
+            }
+
+            numOfFilledCells = gameDim.cellsCount - numOfEmptyCells;
+            if (input.gen2 < numOfFilledCells + input.gen1) {
+                printError(EInvalidSecondParam, 0);
+                printf("second parameter must be greater or equal"
+                       "than the sum of the filled cells and the first parameter");
+                return false;
+            }
+
+
+            return true;
+        }
+        case COMMAND_UNDO: {
+            /*   is parameter legal in current board state check    */
+
+            if (curNode->isFirst) {
+                printError(EUndoUnavailable, 0);
+                return false;
+            }
+            return true;
+        }
+
+        case COMMAND_REDO: {
+            /*   is parameter legal in current board state check    */
+
+            if (curNode->next == NULL) {
+                printError(ERedoUnavailable, 0);
+                return false;
+            }
+            return true;
+        }
+        case COMMAND_SAVE: {
+            return true;
+        }
+        case COMMAND_HINT: {
+            /*     parameter range check    */
+
+            /*First Parameter Check*/
+            if (!(input.coordinate.i >= 0 && input.coordinate.i <= gameDim.N - 1)) {
+                printError(EInvalidFirstParam, 0);
+                printf("parameter must be an integer number between 0 and %d\n", gameDim.N - 1);
+                return false;
+            }
+
+            /*Second Parameter Check*/
+            if (!(input.coordinate.j >= 0 && input.coordinate.j <= gameDim.N - 1)) {
+                printError(EInvalidSecondParam, 0);
+                printf("parameter must be an integer number between 0 and %d\n", gameDim.N - 1);
+                return false;
+            }
+
+            /*   is parameter legal in current board state check    */
+            if (isBoardErroneous(game)) {
+                printError(EErroneousBoard, 0);
+                return false;
+            }
+
+            if (isCoordinateFixed(game, input.coordinate)) {
+                printError(ECellIsFixed, 0);
+                return false;
+            }
+
+            if (!isCoordinateEmpty(game, input.coordinate)) {
+                printError(ECellIsNotEmpty, 0);
+                return false;
+            }
+
+            return true;
+        }
+        case COMMAND_GUESS_HINT: {
+            /*     parameter range check    */
+
+            /*First Parameter Check*/
+            if (!(input.coordinate.i >= 0 && input.coordinate.i <= gameDim.N - 1)) {
+                printError(EInvalidFirstParam, 0);
+                printf("parameter must be an integer number between 0 and %d\n", gameDim.N - 1);
+                return false;
+            }
+
+            /*Second Parameter Check*/
+            if (!(input.coordinate.j >= 0 && input.coordinate.j <= gameDim.N - 1)) {
+                printError(EInvalidSecondParam, 0);
+                printf("parameter must be an integer number between 0 and %d\n", gameDim.N - 1);
+                return false;
+            }
+
+            /*   is parameter legal in current board state check    */
+            if (isBoardErroneous(game)) {
+                printError(EErroneousBoard, 0);
+                return false;
+            }
+
+            if (isCoordinateFixed(game, input.coordinate)) {
+                printError(ECellIsFixed, COMMAND_INVALID);
+                return false;
+            }
+
+            if (!isCoordinateEmpty(game, input.coordinate)) {
+                printError(ECellIsNotEmpty, 0);
+                return false;
+            }
+
+            return true;
+        }
+        case COMMAND_NUM_SOLUTIONS: {
+            return true;
+        }
+        case COMMAND_AUTOFILL: {
+            /*   is parameter legal in current board state check    */
+
+            if (isBoardErroneous(game)) {
+                printError(EErroneousBoard, 0);
+                return false;
+            }
+            return true;
+        }
+        case COMMAND_RESET: {
+            return true;
+        }
+        case COMMAND_EXIT: {
+            return true;
+        }
+        case COMMAND_INVALID: {
+            printf("Unreachable Code Error\n");
+            terminate(game, FC_UNEXPECTED_ERROR);
+            return false;
+        }
+
+
+    }
+    return false;
+}
+
+void executeCommand(Input input, Game **gameP ) {
 
     Game *game = *gameP;
+    Mode *modePtr = &mode;
 
     switch (input.command) {
         case COMMAND_SOLVE: {
@@ -408,7 +737,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
                 destroyGame(game);
                 *gameP = newGame;
                 game = newGame; /*TODO: we should keep it, until we be sure it isn't needed*/
-                setMode(mode, Solve);
+                setMode(modePtr, Solve);
                 markError = 0;
             }
             break;
@@ -428,7 +757,7 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
                 destroyGame(game);
                 *gameP = newGame;
                 game = newGame; /*TODO: we should keep it, until we be sure it isn't needed*/
-                setMode(mode, Edit);
+                setMode(modePtr, Edit);
             }
             break;
         }
@@ -445,7 +774,13 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
         }
         case COMMAND_SET: {
             /*!isSolved(game) ? setCoordinate(game, input) : printError(EInvalidCommand, COMMAND_INVALID);*/
-            setCoordinate(game, input);
+
+            Input redoInput, undoInput;
+            setUndoRedoInputs(game, input, &redoInput, &undoInput);
+            if (setCoordinate(game, input)) {
+                insertInputsToList(&redoInput, &undoInput, 1);
+            }
+
             break;
         }
         case COMMAND_VALIDATE: {
@@ -462,21 +797,15 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             break;
         }
         case COMMAND_UNDO: {
-            if (curNode->isFirst) { printError(EUndoUnavailable, 0); }
-            else {
-                printPrompt(PPerformedChanges, 0);
-                performUndo(game, curNode->currDataNode);
-                curNode = curNode->prev;
-            }
+            printPrompt(PPerformedChanges, 0);
+            performUndo(game, curNode->currDataNode, true);
+            curNode = curNode->prev;
             break;
         }
         case COMMAND_REDO: {
-            if (curNode->next == NULL) { printError(ERedoUnavailable, 0); }
-            else {
-                printPrompt(PPerformedChanges, 0);
-                performRedo(game, curNode->currDataNode);
-                curNode = curNode->next;
-            }
+            printPrompt(PPerformedChanges, 0);
+            curNode = curNode->next;
+            performRedo(game, curNode->currDataNode);
             break;
         }
         case COMMAND_SAVE: {
@@ -497,11 +826,14 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
             break;
         }
         case COMMAND_AUTOFILL: {
-            printf("Command not implemented yet");
+            performAutoFill(game);
             break;
         }
         case COMMAND_RESET: {
-            printf("Command not implemented yet");
+            while (!curNode->isFirst) {
+                performUndo(game, curNode->currDataNode, false);
+                curNode = curNode->prev;
+            }
             break;
         }
         case COMMAND_EXIT: {
@@ -527,3 +859,4 @@ void executeCommand(Input input, Mode *mode, Game **gameP) {
 
 
 }
+
