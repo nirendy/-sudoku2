@@ -19,8 +19,9 @@ int main() {
     printf("%s", getenv("PATH"));
 
     /*To avoid uninitialized game warning*/
-    game = createGame();
-    destroyGame(game);
+
+/*    game = createGame();
+    destroyGame(game);*/
 
     /* MOCK
     g_mode = Solve;
