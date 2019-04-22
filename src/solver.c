@@ -2,6 +2,13 @@
 #include "solver.h"
 #include "parser.h"
 
+/* Gurobi*/
+#include "gurobi_c.h"
+
+GRBenv *env = NULL;
+int error = 0;
+Bool isGurobiEnvInitialized = false;
+
 int getEmptyCells(Board board, Coordinate *emptyCells) {
     int i, j, emptyCount = 0;
 
@@ -268,7 +275,6 @@ typedef struct _CountPossibleSolutionsScope {
     struct _CountPossibleSolutionsScope *parentScope;
 } CountPossibleSolutionsScope;
 
-
 FinishCode countPossibleSolutions(Board board) {
     Coordinate *emptyCells;
     int emptyCellsCount;
@@ -453,5 +459,11 @@ void updateAfterSetErrorMatrix(Game *game, Input input) {
         game->error_matrix[input.coordinate.i][input.coordinate.j] = 1;
     }
     free(neighbours);
+}
+
+
+/* Gurobi*/
+void initGurobi() {
+
 }
 

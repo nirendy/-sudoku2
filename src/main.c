@@ -8,7 +8,7 @@
 #include "file_handler.h"
 #include "linked_list.h"
 
-int main(int argc, char *argv[]) {
+int main() {
     Mode mode = Init;
     Input input;
     Game *game;
@@ -17,6 +17,8 @@ int main(int argc, char *argv[]) {
 
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
+
+    printf("%s", getenv("PATH"));
 
     /* MOCK */
     mode = Solve;
