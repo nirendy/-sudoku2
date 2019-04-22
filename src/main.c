@@ -9,11 +9,10 @@
 #include "linked_list.h"
 
 int main(int argc, char *argv[]) {
-    Mode mode = Init;
     Input input;
     Game *game;
+    mode = Init;
     curNode = CreateFirstNode();
-
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
@@ -34,9 +33,12 @@ int main(int argc, char *argv[]) {
 
 
     while (mode != Exit) {
-        askUserForNextTurn(mode, &input);
-        executeCommand(input, &mode, &game);
+        if (askUserForNextTurn(mode, &input)) {
+            if (checkLegalInput(input, game)) {
+                executeCommand(input, &game);
+            }
+        }
     }
-
     return 0;
 }
+

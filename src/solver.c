@@ -455,3 +455,5 @@ void updateAfterSetErrorMatrix(Game *game, Input input) {
     free(neighbours);
 }
 
+
+

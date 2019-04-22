@@ -186,7 +186,7 @@ int getNum(char *str) {
     int digit, res = 0;
     for (i = 0; i < n; i++) {
         digit = str[i] - '0';
-        if (!(digit >= 0 && digit <= 9)) { return -1; }
+        if (!(digit >= 0 && digit <= 9)) { return INVALID_VALUE; }
         res = res * 10 + digit;
     }
 
@@ -255,7 +255,13 @@ FinishCode parseCommand(Input *returnedInput) {
                 if (!strcmp(command, "mark_errors")) { returnedInput->value = getNum(token); }
 
                 if (!strcmp(command, "hint") || !strcmp(command, "guess_hint") ||
-                    !strcmp(command, "set")) { returnedInput->coordinate.i = getNum(token) - 1; }
+                    !strcmp(command, "set"))
+                {
+                    returnedInput->coordinate.i = getNum(token) - 1;
+                    if( returnedInput->coordinate.i<0){
+                        returnedInput->coordinate.i = INVALID_VALUE
+                    }
+                }
 
                 break;
             case 2:
@@ -263,7 +269,16 @@ FinishCode parseCommand(Input *returnedInput) {
                 if (!strcmp(command, "generate")) { returnedInput->gen2 = getNum(token); }
 
                 if (!strcmp(command, "hint") || !strcmp(command, "guess_hint") ||
-                    !strcmp(command, "set")) { returnedInput->coordinate.j = getNum(token) - 1; }
+                    !strcmp(command, "set"))
+                {
+                    returnedInput->coordinate.j = getNum(token) - 1;
+                    if( returnedInput->coordinate.j<0){
+                        returnedInput->coordinate.j = INVALID_VALUE
+                    }
+                }
+
+
+
                 break;
             case 3:
                 if (!strcmp(command, "set")) { returnedInput->value = getNum(token); }

@@ -51,7 +51,8 @@ typedef enum _error {
     EUndoUnavailable,
     ENullNode,
     ENullDataNode,
-    EInsertionInMiddle
+    EInsertionInMiddle,
+    EErroneousBoard
 
 } Error;
 
@@ -137,7 +138,7 @@ typedef struct _DataNode {
 
 
 
-// A linked list node
+/*A linked list node*/
 typedef struct _Node {
     Bool isFirst;
     DataNode* currDataNode;
@@ -147,6 +148,7 @@ typedef struct _Node {
 
 
 /* Global variables */
+Mode mode;
 GameDim gameDim;
 Bool markError;
 Node *curNode;
@@ -170,9 +172,11 @@ void printError(Error err, Command command);
 
 void printPrompt(Prompt prompt, int num1);
 
-void askUserForNextTurn(Mode mode, Input *input);
+Bool askUserForNextTurn(Mode mode, Input *input);
 
-void executeCommand(Input input, Mode *mode, Game **gameP);
+void executeCommand(Input input, Game **gameP);
+
+Bool checkLegalInput(Input input, Game *game);
 
 FinishCode askUserForHintsAmount(int *hintsAmount);
 

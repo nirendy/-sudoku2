@@ -19,5 +19,8 @@ void updateAfterSetErrorMatrix(Game *game, Input input);
 
 void updateAfterClearErrorMatrix(Game *game, Input input);
 
+int getEmptyCells(Board board, Coordinate *emptyCells);
+
+
 #endif
 
