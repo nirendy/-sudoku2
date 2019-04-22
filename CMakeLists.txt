@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.12)
-project(sudoku2 C)
+cmake_minimum_required(VERSION 2.8)
+project(sudoku-console C)
 
 set(CMAKE_C_STANDARD 90)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -Wall -pedantic")
-add_executable(sudoku2
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -ansi -O3 -Wall -Wextra -Werror -pedantic-errors")
+add_executable(sudoku-console
         src/main.c
         src/main_aux.c
         src/main_aux.h

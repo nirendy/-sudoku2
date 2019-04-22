@@ -25,6 +25,7 @@ typedef enum _bool {
 } Bool;
 
 typedef int **Board;
+typedef double **ProbBoard;
 typedef Bool **BoolBoard;
 
 typedef enum _mode {
@@ -137,7 +138,7 @@ typedef struct _DataNode {
 } DataNode;
 
 
-/*A linked list node*/
+/* A linked list node */
 typedef struct _Node {
     Bool isFirst;
     DataNode* currDataNode;

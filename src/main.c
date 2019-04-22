@@ -8,13 +8,15 @@
 #include "file_handler.h"
 #include "linked_list.h"
 
-int main(int argc, char *argv[]) {
+int main() {
     Input input;
     Game *game;
     g_mode = Init;
     g_curNode = CreateFirstNode();
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
+
+    printf("%s", getenv("PATH"));
 
     /*To avoid uninitialized game warning*/
     game = createGame();
