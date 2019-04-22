@@ -18,22 +18,27 @@ void printError(Error err, Command command) {
         case EInvalidNumberOfCells:
             printf("Error: invalid number of cells to fill (should be between 0 and %d)\n", gameDim.cellsCount - 1);
             break;
-        case ECellIsFixed:
+        case ECellIsFixed: {
             printf("Error: cell is fixed\n");
             break;
-        case ECellIsNotEmpty:
+        }
+        case ECellIsNotEmpty: {
             printf("Error: cell is not empty\n");
             break;
-        case EValueIsInvalid:
+        }
+        case EValueIsInvalid: {
             printf("Error: value is invalid\n");
             break;
-        case EInvalidCommand:
+        }
+        case EInvalidCommand: {
             printf("Error: invalid command\n");
             break;
-        case EFunctionFailed:
+        }
+        case EFunctionFailed: {
             /* TODO: fill command*/
             printf("Error: <%d> has failed\n", command);
             break;
+        }
         case EInvalidCommandInMode: {
             printf("Error: <Command> is not valid in <Mode>\n");
             break;
@@ -46,27 +51,22 @@ void printError(Error err, Command command) {
             printf("Error: text in file is invalid\n");
             break;
         }
-
         case EInvalidFirstParam: {
             printf("Error: first parameter is invalid\n");
             break;
         }
-
         case EInvalidSecondParam: {
             printf("Error: second parameter is invalid\n");
             break;
         }
-
         case EInvalidThirdParam: {
             printf("Error: third parameter is invalid\n");
             break;
         }
-
         case ERedoUnavailable: {
             printf("Error: Redo command is not possible\n");
             break;
         }
-
         case EUndoUnavailable: {
             printf("Error: Undo command is not possible\n");
             break;
@@ -75,22 +75,30 @@ void printError(Error err, Command command) {
             printf("Error: Null node given as a pointer - unreachable code\n");
             break;
         }
-
         case ENullDataNode: {
             printf("Error: Null Data node given as a pointer - unreachable code\n");
             break;
         }
-
         case EInsertionInMiddle: {
             printf("Error: Insertion in the middle of the list - unreachable code\n");
             break;
         }
-
         case EErroneousBoard: {
             printf("Error: Board is erroneous\n");
             break;
         }
-
+        case EFileOpenFailure: {
+            printf("Error: File open failed\n");
+            break;
+        }
+        case EFileCloseFailure: {
+            printf("Error: File close failed\n");
+            break;
+        }
+        case EFileScanFailure: {
+            printf("Error: Scan failed\n");
+            break;
+        }
         default: {
             printf("Unreachable Code Error\n");
         }
@@ -229,11 +237,11 @@ void destroyBoolBoard(BoolBoard board, GameDim dim) {
     free(board);
 }
 
-Bool isBoardErroneous(Game *game){
+Bool isBoardErroneous(Game *game) {
     int i, j;
     for (i = 0; i < gameDim.N; ++i) {
         for (j = 0; j < gameDim.N; ++j) {
-            if(game->error_matrix[i][j] == 1)
+            if (game->error_matrix[i][j] == 1)
                 return true;
         }
     }
@@ -252,11 +260,11 @@ Game *createGame() {
 }
 
 Game *createGameFromFile(char *filePath) {
-    GameDim oldDimentions = gameDim;
-    FinishCode finishCode = setDimentiosFromFile(filePath);
+    GameDim oldDimensions = gameDim;
+    FinishCode finishCode = setDimensionsFromFile(filePath);
 
     if (finishCode == FC_INVALID_RECOVERABLE) {
-        setGameDim(oldDimentions.n, oldDimentions.m);
+        setGameDim(oldDimensions.n, oldDimensions.m);
         return NULL;
     } else if (finishCode == FC_SUCCESS) {
         Game *newGame = createGame();
@@ -264,7 +272,7 @@ Game *createGameFromFile(char *filePath) {
 
         if (finishCode == FC_INVALID_RECOVERABLE) {
             destroyGame(newGame);
-            setGameDim(oldDimentions.n, oldDimentions.m);
+            setGameDim(oldDimensions.n, oldDimensions.m);
             return NULL;
         } else if (finishCode == FC_SUCCESS) {
             return newGame;
@@ -427,33 +435,33 @@ void insertInputsToList(Input *redoInputs, Input *undoInputs, int numOfInputs) {
 
     curNode = insertAfterNode(curNode);
     for (k = 0; k < numOfInputs; k++) {
-        curNode->currDataNode = insertAfterDataNode(curNode->currDataNode , redoInputs[k] , undoInputs[k]);
+        curNode->currDataNode = insertAfterDataNode(curNode->currDataNode, redoInputs[k], undoInputs[k]);
     }
 
 }
 
 void performAutoFill(Game *game) {
     Coordinate *emptyCells = (Coordinate *) malloc(gameDim.cellsCount * sizeof(Coordinate));
-    int *possibleValues = (int*) malloc(gameDim.cellsCount * sizeof(int));
-    Input *cellToFill = (Input*) malloc(gameDim.cellsCount * sizeof(Input));
-    Input *redoInputs = (Input*) malloc(gameDim.cellsCount * sizeof(Input));
-    Input *undoInputs = (Input*) malloc(gameDim.cellsCount * sizeof(Input));
+    int *possibleValues = (int *) malloc(gameDim.cellsCount * sizeof(int));
+    Input *cellToFill = (Input *) malloc(gameDim.cellsCount * sizeof(Input));
+    Input *redoInputs = (Input *) malloc(gameDim.cellsCount * sizeof(Input));
+    Input *undoInputs = (Input *) malloc(gameDim.cellsCount * sizeof(Input));
 
-    int numOfEmpty = getEmptyCells(game->user_matrix , emptyCells);
+    int numOfEmpty = getEmptyCells(game->user_matrix, emptyCells);
     int numOfPossibleValues;
     int numOfCellsToFill = 0;
 
     int k;
     for (k = 0; k < numOfEmpty; k++) {
-        numOfPossibleValues = getPossibleValues(game->user_matrix, emptyCells[k] ,possibleValues);
-        if(numOfPossibleValues==1){
+        numOfPossibleValues = getPossibleValues(game->user_matrix, emptyCells[k], possibleValues);
+        if (numOfPossibleValues == 1) {
             cellToFill[numOfCellsToFill].value = possibleValues[0];
             cellToFill[numOfCellsToFill].coordinate = emptyCells[k];
             numOfCellsToFill++;
         }
     }
 
-    if(numOfCellsToFill>0) {
+    if (numOfCellsToFill > 0) {
 
         for (k = 0; k < numOfCellsToFill; k++) {
             setUndoRedoInputs(game, cellToFill[k], &redoInputs[k], &undoInputs[k]);
@@ -462,9 +470,9 @@ void performAutoFill(Game *game) {
             }
         }
 
-    insertInputsToList(redoInputs,undoInputs,numOfCellsToFill);
+        insertInputsToList(redoInputs, undoInputs, numOfCellsToFill);
         for (k = 0; k < numOfCellsToFill; k++) {
-            setCoordinate(game,cellToFill[k]);
+            setCoordinate(game, cellToFill[k]);
         }
 
     }
@@ -479,7 +487,7 @@ Bool checkLegalInput(Input input, Game *game) {
 
     /*generate_command vars*/
     Coordinate *tempCorArray;
-    int numOfEmptyCells , numOfFilledCells;
+    int numOfEmptyCells, numOfFilledCells;
 
     switch (input.command) {
         case COMMAND_SOLVE: {
@@ -490,8 +498,8 @@ Bool checkLegalInput(Input input, Game *game) {
         }
         case COMMAND_MARK_ERRORS: {
             /*     parameter range check    */
-            if(!(input.value==0 || input.value==1)){
-                printError(EInvalidFirstParam,0);
+            if (!(input.value == 0 || input.value == 1)) {
+                printError(EInvalidFirstParam, 0);
                 printf("parameter must be a binary number - 0 or 1\n");
                 return false;
             }
@@ -509,7 +517,7 @@ Bool checkLegalInput(Input input, Game *game) {
             /*First Parameter Check*/
             if (!(input.coordinate.i >= 0 && input.coordinate.i <= gameDim.N - 1)) {
                 printError(EInvalidFirstParam, 0);
-                printf("parameter must be an integer number between 1 and %d\n", gameDim.N );
+                printf("parameter must be an integer number between 1 and %d\n", gameDim.N);
                 return false;
             }
 
@@ -549,8 +557,8 @@ Bool checkLegalInput(Input input, Game *game) {
         case COMMAND_GUESS: {
             /*     parameter range check    */
 
-            if(!(input.threshold>=0 && input.threshold<=1)){
-                printError(EInvalidFirstParam,0);
+            if (!(input.threshold >= 0 && input.threshold <= 1)) {
+                printError(EInvalidFirstParam, 0);
                 printf("parameter must be a float number between 0 and 1\n");
                 return false;
             }
@@ -587,8 +595,8 @@ Bool checkLegalInput(Input input, Game *game) {
             numOfEmptyCells = getEmptyCells(game->user_matrix, tempCorArray);
             free(tempCorArray);
 
-            if(input.gen1>numOfEmptyCells){
-                printError(EInvalidFirstParam,0);
+            if (input.gen1 > numOfEmptyCells) {
+                printError(EInvalidFirstParam, 0);
                 printf("parameter must be smaller or equal than the number of empty cells");
                 return false;
             }
@@ -725,7 +733,7 @@ Bool checkLegalInput(Input input, Game *game) {
     return false;
 }
 
-void executeCommand(Input input, Game **gameP ) {
+void executeCommand(Input input, Game **gameP) {
 
     Game *game = *gameP;
     Mode *modePtr = &mode;

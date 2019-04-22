@@ -53,7 +53,10 @@ typedef enum _error {
     ENullNode,
     ENullDataNode,
     EInsertionInMiddle,
-    EErroneousBoard
+    EErroneousBoard,
+    EFileOpenFailure,
+    EFileCloseFailure,
+    EFileScanFailure
 
 } Error;
 

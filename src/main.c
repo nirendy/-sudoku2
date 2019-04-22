@@ -22,7 +22,7 @@ int main() {
     mode = Solve;
 //    setGameDim(2,2);
 //
-    setDimentiosFromFile("../data/1");
+    setDimensionsFromFile("../data/1");
     game = createGame();
 //    generateGame(game, 0);
 
