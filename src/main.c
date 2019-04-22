@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     mode = Solve;
 //    setGameDim(2,2);
 //
-    setDimentiosFromFile("../data/1");
+    setDimensionsFromFile("../data/1");
     game = createGame();
 //    generateGame(game, 0);
 

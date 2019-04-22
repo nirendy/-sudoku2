@@ -7,7 +7,7 @@
 
 FinishCode saveGameToFile(char *filePath, Game *game);
 
-FinishCode setDimentiosFromFile(char *filePath);
+FinishCode setDimensionsFromFile(char *filePath);
 
 FinishCode generateGameFromFile(char *filePath, Game *game);
 

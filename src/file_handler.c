@@ -4,34 +4,52 @@ FinishCode saveGameToFile(char *filePath, Game *game) {
     FILE *file;
     int i, j;
 
-    file = fopen(filePath, "w"); /*TODO: handle Error*/
-    fprintf(file, "%d %d\n", gameDim.m, gameDim.n); /*TODO: handle Error*/
+    file = fopen(filePath, "w");
+    if (file == NULL) {
+        printError(EFileOpenFailure, 0);
+        return FC_INVALID_RECOVERABLE;
+    }
+    fprintf(file, "%d %d\n", gameDim.m, gameDim.n);
     for (i = 0; i < gameDim.N; i++) {
         for (j = 0; j < gameDim.N; j++) {
             if (j > 0) {
-                fprintf(file, " ");/*TODO: handle Error*/
+                fprintf(file, " ");
             }
 
-            fprintf(file, "%d", game->user_matrix[i][j]);/*TODO: handle Error*/
+            fprintf(file, "%d", game->user_matrix[i][j]);
 
             if (game->fixed_matrix[i][j] == true) {
-                fprintf(file, ".");/*TODO: handle Error*/
+                fprintf(file, ".");
             }
         }
-        fprintf(file, "\n");/*TODO: handle Error*/
+        fprintf(file, "\n");
     }
-    fclose(file);/*TODO: handle Error*/
+    if (fclose(file) == EOF) {
+        printError(EFileCloseFailure, 0);
+        return FC_INVALID_TERMINATE;
+    }
     return FC_SUCCESS;
 }
 
 
-FinishCode setDimentiosFromFile(char *filePath) {
+FinishCode setDimensionsFromFile(char *filePath) {
     FILE *file;
     int tempN, tempM;
-    file = fopen(filePath, "r"); /*TODO: handle Error*/
-    fscanf(file, "%d %d", &tempM, &tempN);/*TODO: handle Error*/
+    file = fopen(filePath, "r");
+    if (file == NULL) {
+        printError(EFileOpenFailure, 0);
+        return FC_INVALID_RECOVERABLE;
+    }
+    if (fscanf(file, "%d %d", &tempM, &tempN) != 2) {
+        printError(EFileScanFailure, 0);
+        return FC_INVALID_RECOVERABLE;
+    }
     setGameDim(tempN, tempM);
-    fclose(file); /*TODO: handle Error*/
+    if (fclose(file) == EOF) {
+        printError(EFileCloseFailure, 0);
+        return FC_INVALID_TERMINATE;
+    }
+
     return FC_SUCCESS;
 }
 
@@ -67,11 +85,20 @@ void printFileError(char *string) {
 FinishCode generateGameFromFile(char *filePath, Game *game) {
     FILE *file;
     int tempN, tempM;
-    int i = 0, j = 0, c = 1, num = 0 , indexJ = -1;
+    int i = 0, j = 0, c = 1, num = 0, indexJ = -1;
     Bool isFailed = false;
     char tav;
-    file = fopen(filePath, "r"); /*TODO: handle Error*/
-    fscanf(file, "%d %d", &tempM, &tempN);/*TODO: handle Error*/
+    file = fopen(filePath, "r");
+    if (file == NULL) {
+        printError(EFileOpenFailure, 0);
+        return FC_INVALID_RECOVERABLE;
+    }
+
+    if (fscanf(file, "%d %d", &tempM, &tempN) != 2) {
+        printError(EFileScanFailure, 0);
+        return FC_INVALID_RECOVERABLE;
+    }
+
 
     for (i = 0; i < gameDim.N; i++) {
         for (j = 0; j < gameDim.N;) {
@@ -152,7 +179,12 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
 
     }
 
-    fclose(file); /*TODO: handle Error*/
+    if (fclose(file) == EOF) {
+        printError(EFileCloseFailure, 0);
+        return FC_INVALID_TERMINATE;
+    }
+
+
     if (i != gameDim.N || j != gameDim.N) {
         if (!isFailed) {
             printFileError("invalid text");
