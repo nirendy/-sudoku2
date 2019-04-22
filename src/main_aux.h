@@ -25,6 +25,7 @@ typedef enum _bool {
 } Bool;
 
 typedef int **Board;
+typedef double **ProbBoard;
 typedef Bool **BoolBoard;
 
 typedef enum _mode {
