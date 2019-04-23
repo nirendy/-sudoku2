@@ -223,8 +223,9 @@ Bool isBoardErroneous(Game *game) {
     int i, j;
     for (i = 0; i < g_gameDim.N; ++i) {
         for (j = 0; j < g_gameDim.N; ++j) {
-            if (game->error_matrix[i][j] == 1)
+            if (game->error_matrix[i][j] == 1) {
                 return true;
+            }
         }
     }
     return false;
@@ -838,15 +839,11 @@ void executeCommand(Input input, Game **gameP) {
     if (input.command == COMMAND_SET ||
         input.command == COMMAND_AUTOFILL ||
         input.command == COMMAND_GENERATE ||
-        input.command == COMMAND_GUESS)
-    {
+        input.command == COMMAND_GUESS) {
         clearListFromNode(g_curNode->next);
         g_curNode->next = NULL;
-    }
-
-    else if(input.command == COMMAND_SOLVE ||
-            input.command == COMMAND_EDIT)
-    {
+    } else if (input.command == COMMAND_SOLVE ||
+               input.command == COMMAND_EDIT) {
         g_curNode = getFirstNode(g_curNode);
         clearListFromNode(g_curNode->next);
         g_curNode->next = NULL;
@@ -856,7 +853,7 @@ void executeCommand(Input input, Game **gameP) {
         case COMMAND_SOLVE: {
             Game *newGame = createGameFromFile(input.path);
             if (newGame != NULL) {
-                if(game!=NULL){          /*skip if first game*/
+                if (game != NULL) {          /*skip if first game*/
                     destroyGame(game);
                 }
                 *gameP = newGame;
@@ -879,7 +876,7 @@ void executeCommand(Input input, Game **gameP) {
             }
 
             if (newGame != NULL) {
-                if(game!=NULL){         /*skip if first game*/
+                if (game != NULL) {         /*skip if first game*/
                     destroyGame(game);
                 }
                 *gameP = newGame;
@@ -921,7 +918,8 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_VALIDATE: {
-            validate(game);
+            /*validate(game);*/
+            fillSolutionMatrix(game->user_matrix, game->user_matrix);
             break;
         }
         case COMMAND_GUESS: {
