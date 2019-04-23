@@ -5,9 +5,13 @@
 /* Gurobi*/
 #include "gurobi_c.h"
 
+#define GUR_LOG_FILE "../log/gur"
+#define GUR_LOG_FILE2 "../log/gur2"
+#define GUR_NAME "sud"
+
 GRBenv *env = NULL;
-int error = 0;
 Bool isGurobiEnvInitialized = false;
+
 
 int getEmptyCells(Board board, Coordinate *emptyCells) {
     int i, j, emptyCount = 0;
@@ -463,7 +467,252 @@ void updateAfterSetErrorMatrix(Game *game, Input input) {
 
 
 /* Gurobi*/
-void initGurobi() {
+FinishCode initGurobi() {
+    int error;
 
+    if (isGurobiEnvInitialized == true) {
+        return FC_SUCCESS;
+    }
+
+    /* Create environment - log file is mip1.log */
+    error = GRBloadenv(&env, GUR_LOG_FILE);
+    if (error) {
+        printf("ERROR %d GRBloadenv(): %s\n", error, GRBgeterrormsg(env));
+        /*TODO: is recoverable?*/
+        return FC_INVALID_RECOVERABLE;
+    }
+
+/*
+    error = GRBsetintparam(env, GRB_INT_PAR_LOGTOCONSOLE, 0);
+    if (error) {
+        printf("ERROR %d GRBsetintattr(): %s\n", error, GRBgeterrormsg(env));
+        */
+/*TODO: is recoverable?*//*
+
+        return FC_INVALID_RECOVERABLE;
+    }
+*/
+
+
+    isGurobiEnvInitialized = true;
+    return FC_SUCCESS;
+}
+
+typedef struct _PossibleVar {
+    char name[10];
+    int varIndex;
+    char type[1];
+    double coeff[1];
+} PossibleVar;
+
+int calculateIndex(Coordinate coor, int value) {
+    return (g_gameDim.N * (g_gameDim.N * coor.i) + coor.j) + (value - 1);
+}
+
+FinishCode createModelForBoard(Board board) {
+    Coordinate *emptyCells;
+    int emptyCellsCount;
+    int *possibleValues;
+    int i, j, k;
+    PossibleVar *coorV2var; /* for the possibleVars[] */
+    int error;
+    GRBmodel *model = NULL;
+    int numOfVarsCreated = 0;
+    int *constInd;
+    double *constVals;
+    int www;
+    int optimstatus;
+
+
+    coorV2var = (PossibleVar *) malloc(g_gameDim.cellsCount * g_gameDim.N * sizeof(PossibleVar));
+
+    for (i = 0; i < g_gameDim.N; i++) {
+        for (j = 0; j < g_gameDim.N; j++) {
+            for (k = 1; k <= g_gameDim.N; k++) {
+                PossibleVar *posVar = &coorV2var[calculateIndex(createCoordinate(i, j), k)];
+                sprintf(posVar->name, "X_%d_%d_%d", i + 1, j + 1, k);
+                posVar->coeff[0] = 1.0;
+                posVar->type[0] = GRB_BINARY;
+            }
+        }
+    }
+
+    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+
+    /*find empty cells*/
+    emptyCellsCount = getEmptyCells(board, emptyCells);
+
+
+    error = GRBnewmodel(env, &model, GUR_NAME, 0, NULL, NULL, NULL, NULL, NULL);
+    if (error) {
+        printf("ERROR %d GRBnewmodel(): %s\n", error, GRBgeterrormsg(env));
+        return FC_INVALID_RECOVERABLE;
+    }
+
+    for (i = 0; i < emptyCellsCount; i++) {
+        int possibleValuesCount;
+        Coordinate currentCoordinate;
+        /*create var for each possible values and cell*/
+
+        currentCoordinate = emptyCells[i];
+        possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
+        possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
+
+        for (j = 0; j < possibleValuesCount; j++) {
+            PossibleVar *posVar = &coorV2var[calculateIndex(currentCoordinate, possibleValues[j])];
+            posVar->varIndex = numOfVarsCreated;
+
+            /* add variables to model */
+            error = GRBaddvars(model, 1, 0, NULL, NULL, NULL, posVar->coeff, NULL, NULL, posVar->type, NULL);
+            if (error) {
+                printf("ERROR %d GRBaddvars(): %s\n", error, GRBgeterrormsg(env));
+                return -1;
+            }
+
+            numOfVarsCreated++;
+        }
+        free(possibleValues);
+    }
+
+
+    constInd = (int *) malloc(g_gameDim.N * sizeof(int));
+    constVals = (double *) malloc(g_gameDim.N * sizeof(double));
+
+    for (i = 0; i < g_gameDim.N; i++) {
+        constVals[i] = 1;
+    }
+
+    /* SKIP BLOCKS
+    for (www = 0; www <= 2; www++) {
+    */
+    for (www = 0; www <= 1; www++) {
+        char wwwName[10];
+        switch (www) {
+            case 0: {
+                /* rows */
+                sprintf(wwwName, "%s", "row");
+                break;
+            }
+            case 1: {
+                /* columns */
+                sprintf(wwwName, "%s", "column");
+                break;
+            }
+            case 2: {
+                /* blocks */
+                sprintf(wwwName, "%s", "block");
+                break;
+            }
+            default: {
+                printf("Unreachable Code Error");
+                exit(FC_UNEXPECTED_ERROR);
+            }
+        }
+
+        for (k = 1; k <= g_gameDim.N; k++) {
+            for (i = 0; i < g_gameDim.N; i++) {
+                int relvantVarsCount = 0;
+                char constName[100];
+
+                for (j = 0; j < g_gameDim.N; j++) {
+                    PossibleVar *posVar;
+
+                    switch (www) {
+                        case 0: {
+                            /* rows */
+                            posVar = &coorV2var[calculateIndex(createCoordinate(i, j), k)];
+                            break;
+                        }
+                        case 1: {
+                            /* columns */
+                            posVar = &coorV2var[calculateIndex(createCoordinate(j, i), k)];
+                            break;
+                        }
+                        case 2: {
+                            /* blocks */
+                            int I = 0;
+                            int J = 0;
+                            posVar = &coorV2var[calculateIndex(createCoordinate(I, J), k)];
+                            break;
+                        }
+                        default: {
+                            printf("Unreachable Code Error");
+                            exit(FC_UNEXPECTED_ERROR);
+                        }
+                    }
+
+                    if (posVar->varIndex >= 0) {
+                        constInd[relvantVarsCount] = posVar->varIndex;
+                        relvantVarsCount++;
+                    }
+
+                }
+
+                if (relvantVarsCount > 0) {
+                    /*TODO: what if exactly 1?*/
+                    sprintf(constName, "%s number %d with value of %d", wwwName, j + 1, k);
+                    /* add constraint to model*/
+                    error = GRBaddconstr(model, relvantVarsCount, constInd, constVals, GRB_EQUAL, 1.0, constName);
+                    if (error) {
+                        printf("ERROR %d 1st GRBaddconstr(): %s\n", error, GRBgeterrormsg(env));
+                        return -1;
+                    }
+
+                }
+
+            }
+        }
+    }
+
+
+
+    /*create equation for every value in every row, column and block*/
+
+    /*get solutions*/
+
+    /* Optimize model - need to call this before calculation */
+    error = GRBoptimize(model);
+    if (error) {
+        printf("ERROR %d GRBoptimize(): %s\n", error, GRBgeterrormsg(env));
+        return -1;
+    }
+
+    /* Write model to 'mip1.lp' - this is not necessary but very helpful */
+    error = GRBwrite(model, GUR_LOG_FILE2);
+    if (error) {
+        printf("ERROR %d GRBwrite(): %s\n", error, GRBgeterrormsg(env));
+        return -1;
+    }
+
+    error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
+    if (error) {
+        printf("ERROR %d GRBgetintattr(): %s\n", error, GRBgeterrormsg(env));
+        return -1;
+    }
+
+    /* solution found */
+    if (optimstatus == GRB_OPTIMAL) {
+        printf("Solution found\n");
+    }
+        /* no solution found */
+    else if (optimstatus == GRB_INF_OR_UNBD) {
+        printf("Model is infeasible or unbounded\n");
+    }
+        /* error or calculation stopped */
+    else {
+        printf("Optimization was stopped early\n");
+    }
+
+    /* IMPORTANT !!! - Free model and environment */
+    GRBfreemodel(model);
+    /*GRBfreeenv(env);*/
+
+    free(constInd);
+    free(constVals);
+
+    free(emptyCells);
+    free(coorV2var);
+
+    return FC_SUCCESS;
 }
 
