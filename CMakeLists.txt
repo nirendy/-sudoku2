@@ -18,6 +18,6 @@ add_executable(sudoku-console
         src/file_handler.h
         src/linked_list.c
         src/linked_list.h
-     #   src/gurobi_c2.c
-      #  src/gurobi_c2.h
+        src/gurobi_c2.c
+        src/gurobi_c2.h
         )

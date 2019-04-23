@@ -3,7 +3,9 @@
 #include "parser.h"
 
 /* Gurobi*/
-#include "gurobi_c.h"
+#include "gurobi_c2.h"
+/*#include "gurobi_c.h"*/
+
 
 #define GUR_LOG_FILE "../log/gur"
 #define GUR_LOG_FILE2 "../log/gur.lp"
