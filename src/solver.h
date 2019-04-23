@@ -21,6 +21,10 @@ void updateAfterClearErrorMatrix(Game *game, Input input);
 
 int getEmptyCells(Board board, Coordinate *emptyCells);
 
+void updateWholeErrorMatrix(Game *game);
+
+void clearBoolBoard(BoolBoard board);
+
 void fillSolutionMatrix(Board board, Board solutionBoard);
 
 void fillSolutionProbabiltyMatrix(Board board, ProbBoard probBoard, Board solutionBoard);

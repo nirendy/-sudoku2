@@ -814,10 +814,9 @@ void executeCommand(Input input, Game **gameP) {
                 *gameP = newGame;
                 game = newGame;
                 setMode(modePtr, Solve);
-
+                updateWholeErrorMatrix(game);
             }
 
-            g_markError = 0;
             break;
         }
         case COMMAND_EDIT: {
@@ -830,7 +829,6 @@ void executeCommand(Input input, Game **gameP) {
                 newGame = createGameFromFile(input.path);
             }
 
-            g_markError = 1;
             if (newGame != NULL) {
                 if(game!=NULL){         /*skip if first game*/
                     destroyGame(game);
@@ -838,6 +836,8 @@ void executeCommand(Input input, Game **gameP) {
                 *gameP = newGame;
                 game = newGame;
                 setMode(modePtr, Edit);
+                clearBoolBoard(game->fixed_matrix);
+                updateWholeErrorMatrix(game);
             }
             break;
         }
