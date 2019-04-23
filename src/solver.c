@@ -502,12 +502,6 @@ void updateWholeErrorMatrix(Game *game) {
     }
 }
 
-Bool fillSolutionMatrix(Board board, Board solutionBoard){
-    board[0][0]=0;
-    solutionBoard[0][0]=0;
-    return true;
-}
-
 
 /* Gurobi*/
 FinishCode initGurobiEnv() {
@@ -754,8 +748,9 @@ FinishCode createModelForBoard(Board board) {
     return FC_SUCCESS;
 }
 
-void fillSolutionMatrix(Board board, Board solutionBoard) {
+Bool fillSolutionMatrix(Board board, Board solutionBoard) {
     initGurobiEnv();
     createModelForBoard(board);
     destroyGurobiEnv();
+    return true; /*TODO: nir - please return the correct value*/
 }

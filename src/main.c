@@ -17,14 +17,13 @@ int main() {
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-    /*printf("%s", getenv("PATH"));*/
 
     /*To avoid uninitialized game warning*/
-
-    setGameDim(2, 2);
+    setGameDim(1, 1);
     game = createGame();
     /*destroyGame(game);*/
 
+    /*printf("%s", getenv("PATH"));*/
     /* MOCK
     g_mode = Solve;
     setGameDim(2, 2);
