@@ -1,8 +1,8 @@
 #include "parser.h"
 
 int getType(Game *game, int i, int j) {
-    if (game->fixed_matrix[i][j] == 1) { return 1; }
-    if (game->error_matrix[i][j] == 1 && g_markError == 1) { return 2; }
+    if (game->fixed_matrix[i][j] == 1)  { return 1; }
+    if (game->error_matrix[i][j] == 1 && (g_markError == 1 || g_mode == Edit)) { return 2; }
     return 0;
 }
 

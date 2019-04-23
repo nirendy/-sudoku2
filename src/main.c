@@ -12,16 +12,18 @@ int main() {
     Input input;
     Game *game;
     g_mode = Init;
+    g_markError = true;
     g_curNode = CreateFirstNode();
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-    printf("%s", getenv("PATH"));
+    /*printf("%s", getenv("PATH"));*/
 
     /*To avoid uninitialized game warning*/
 
-/*    game = createGame();
-    destroyGame(game);*/
+    setGameDim(2, 2);
+    game = createGame();
+    /*destroyGame(game);*/
 
     /* MOCK
     g_mode = Solve;

@@ -1,5 +1,31 @@
 #include "file_handler.h"
 
+
+int isWhiteSpace(char tav) {
+    return (tav == ' ' || tav == '\t' || tav == '\r' || tav == '\n');
+}
+
+int getDigit(char tav) {
+    return tav - '0';
+}
+
+int isDigit(char tav) {
+    return (tav - '0' >= 0 && tav - '0' <= 9);
+}
+
+int isLegalNum(int num) {
+    return (num >= 0 && num <= g_gameDim.N);
+}
+
+int isDot(char tav) {
+    return tav == '.';
+}
+
+void printFileError(char *string) {
+    printError(EInvalidFile);
+    printf("reason: %s\n", string);
+}
+
 FinishCode saveGameToFile(char *filePath, Game *game) {
     FILE *file;
     int i, j;
@@ -12,13 +38,11 @@ FinishCode saveGameToFile(char *filePath, Game *game) {
     fprintf(file, "%d %d\n", g_gameDim.m, g_gameDim.n);
     for (i = 0; i < g_gameDim.N; i++) {
         for (j = 0; j < g_gameDim.N; j++) {
-            if (j > 0) {
-                fprintf(file, " ");
-            }
+            if (j > 0) { fprintf(file, " "); }
 
             fprintf(file, "%d", game->user_matrix[i][j]);
 
-            if (game->fixed_matrix[i][j] == true) {
+            if (game->fixed_matrix[i][j] == true || (g_mode == Edit && game->user_matrix[i][j] != 0)) {
                 fprintf(file, ".");
             }
         }
@@ -30,7 +54,6 @@ FinishCode saveGameToFile(char *filePath, Game *game) {
     }
     return FC_SUCCESS;
 }
-
 
 FinishCode setDimensionsFromFile(char *filePath) {
     FILE *file;
@@ -53,41 +76,13 @@ FinishCode setDimensionsFromFile(char *filePath) {
     return FC_SUCCESS;
 }
 
-int isWhiteSpace(char tav) {
-    return (tav == ' ' || tav == '\t' || tav == '\r' || tav == '\n');
-}
-
-int getDigit(char tav) {
-    return tav - '0';
-}
-
-int isDigit(char tav) {
-    return (tav - '0' >= 0 && tav - '0' <= 9);
-}
-
-int isLegalNum(int num) {
-    return (num >= 0 && num <= g_gameDim.N);
-}
-
-int isDot(char tav) {
-    return tav == '.';
-}
-
-int isAsterisk(char tav) {
-    return tav == '*';
-}
-
-void printFileError(char *string) {
-    printError(EInvalidFile);
-    printf("reason: %s\n", string);
-}
-
 FinishCode generateGameFromFile(char *filePath, Game *game) {
     FILE *file;
     int tempN, tempM;
-    int i = 0, j = 0, c = 1, num = 0, indexJ = -1;
+    int i = 0, j = 0, c = 1, num = 0;
     Bool isFailed = false;
     char tav;
+
     file = fopen(filePath, "r");
     if (file == NULL) {
         printError(EFileOpenFailure);
@@ -102,81 +97,69 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
 
     for (i = 0; i < g_gameDim.N; i++) {
         for (j = 0; j < g_gameDim.N;) {
+
             if ((c = fgetc(file)) == EOF) { break; }
             tav = (char) c;
 
-            if (!isDigit(tav)) {
-                if (isWhiteSpace(tav)) {
-                    continue;
-                } else {
-                    printFileError("invalid text");
+            /*first step - search for the first digit*/
+            while (!isDigit(tav)) {
+
+                if (!isWhiteSpace(tav)) {
+                    printFileError("invalid text format");
                     isFailed = true;
                     break;
                 }
+                if ((c = fgetc(file)) == EOF) { break; }
+                tav = (char) c;
 
             }
 
-            num = getDigit(tav);
-            if (isLegalNum(num)) {
-                game->user_matrix[i][j] = num;
-                indexJ = j;
-            } else {
+            if (isFailed == true || c == EOF) { break; } /*break if first step failed*/
+
+            game->fixed_matrix[i][j] = 0;
+            game->error_matrix[i][j] = 0;
+
+            /*second step - find the rest of the digits*/
+            while (isDigit(tav)) {
+                num = num * 10 + getDigit(tav);
+                if ((c = fgetc(file)) == EOF) { break; }
+                tav = (char) c;
+            }
+
+            if (c == EOF) { break; } /*break if second step failed*/
+            if (!isLegalNum(num)) {
                 printFileError("number not in range exists");
                 isFailed = true;
                 break;
             }
-            game->fixed_matrix[i][indexJ] = 0;
-            game->error_matrix[i][indexJ] = 0;
-            j++;
 
-            if ((c = fgetc(file)) == EOF) { break; }
-            tav = (char) c;
+            game->user_matrix[i][j] = num;
 
-            if (isDigit(tav)) {
-                num = num * 10 + getDigit(tav);
-                if (isLegalNum(num)) {
-                    game->user_matrix[i][j] = num;
-                } else {
-                    printFileError("number not in range exists");
-                    isFailed = true;
-                    break;
-                }
 
-            } else if (isAsterisk(tav)) {
-                game->error_matrix[i][indexJ] = 1;
-                continue;
-            } else if (isDot(tav)) {
-                game->fixed_matrix[i][indexJ] = 1;
-                continue;
-            } else if (isWhiteSpace(tav)) { continue; }
 
-            else {
+            /*third step - find if the last char is dot or whitespace*/
+
+            if (!isWhiteSpace(tav) && !isDot(tav)) {
                 printFileError("invalid char exists");
                 isFailed = true;
                 break;
             }
-            if ((c = fgetc(file)) == EOF) { break; }
-            tav = (char) c;
 
-            if (isDot(tav)) { game->fixed_matrix[i][indexJ] = 1; }
-            else if (isAsterisk(tav)) { game->error_matrix[i][indexJ] = 1; }
-            else {
-                if (isDigit(tav)) {
-                    printFileError("number not in range exists");
-                    isFailed = true;
-                    break;
-                } else if (isWhiteSpace(tav)) {
-                    continue;
-                } else {
-                    printFileError("invalid text");
-                    isFailed = true;
-                    break;
-                }
+            if (isDot(tav)) {
+                game->fixed_matrix[i][j] = 1;
             }
+
+            num = 0;
+            j++;
         }
 
         if (isFailed == true || c == EOF) { break; }
 
+    }
+
+    if (!isFailed && (i != g_gameDim.N || j != g_gameDim.N)) {
+        printFileError("invalid text - not enough data");
+        isFailed = true;
     }
 
     if (fclose(file) == EOF) {
@@ -185,11 +168,5 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
     }
 
 
-    if (i != g_gameDim.N || j != g_gameDim.N) {
-        if (!isFailed) {
-            printFileError("invalid text");
-            isFailed = true;
-        }
-    }
     return (isFailed) ? FC_INVALID_RECOVERABLE : FC_SUCCESS;
 }

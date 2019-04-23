@@ -465,6 +465,25 @@ void updateAfterSetErrorMatrix(Game *game, Input input) {
     free(neighbours);
 }
 
+void updateWholeErrorMatrix(Game *game) {
+    int i, j , val;
+    Input input;
+    Coordinate cor;
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
+            cor.i = i;
+            cor.j = j;
+            val = game->user_matrix[i][j];
+            input.coordinate = cor;
+            input.value = val;
+
+            if(val!=0){
+                updateAfterSetErrorMatrix(game , input);
+            }
+        }
+    }
+}
+
 
 /* Gurobi*/
 FinishCode initGurobi() {
