@@ -8,8 +8,8 @@
 #include "linked_list.h"
 
 
-char* getModeStr(){
-    switch (g_mode){
+char *getModeStr() {
+    switch (g_mode) {
         case Edit:
             return "edit";
         case Solve:
@@ -22,7 +22,7 @@ char* getModeStr(){
     return "Unreachable Code";
 }
 
-char* getCommandStr(Command command){
+char *getCommandStr(Command command) {
     switch (command) {
         case COMMAND_SOLVE:
             return "solve";
@@ -83,8 +83,8 @@ char* getCommandStr(Command command){
     return "Unreachable Code";
 }
 
-void printModeError(Command command){
-    printf("Error: <%s> is not valid in <%s> g_mode\n" ,getCommandStr(command) , getModeStr() );
+void printModeError(Command command) {
+    printf("Error: <%s> is not valid in <%s> g_mode\n", getCommandStr(command), getModeStr());
 }
 
 void printError(Error err) {
@@ -292,8 +292,9 @@ Bool isBoardErroneous(Game *game) {
     int i, j;
     for (i = 0; i < g_gameDim.N; ++i) {
         for (j = 0; j < g_gameDim.N; ++j) {
-            if (game->error_matrix[i][j] == 1)
+            if (game->error_matrix[i][j] == 1) {
                 return true;
+            }
         }
     }
     return false;
@@ -792,14 +793,10 @@ void executeCommand(Input input, Game **gameP) {
     if (input.command == COMMAND_SET ||
         input.command == COMMAND_AUTOFILL ||
         input.command == COMMAND_GENERATE ||
-        input.command == COMMAND_GUESS)
-    {
+        input.command == COMMAND_GUESS) {
         clearListFromNode(g_curNode->next);
-    }
-
-    else if(input.command == COMMAND_SOLVE ||
-            input.command == COMMAND_EDIT)
-    {
+    } else if (input.command == COMMAND_SOLVE ||
+               input.command == COMMAND_EDIT) {
         g_curNode = getFirstNode(g_curNode);
         clearListFromNode(g_curNode->next);
     }
@@ -808,7 +805,7 @@ void executeCommand(Input input, Game **gameP) {
         case COMMAND_SOLVE: {
             Game *newGame = createGameFromFile(input.path);
             if (newGame != NULL) {
-                if(game!=NULL){          /*skip if first game*/
+                if (game != NULL) {          /*skip if first game*/
                     destroyGame(game);
                 }
                 *gameP = newGame;
@@ -830,7 +827,7 @@ void executeCommand(Input input, Game **gameP) {
             }
 
             if (newGame != NULL) {
-                if(game!=NULL){         /*skip if first game*/
+                if (game != NULL) {         /*skip if first game*/
                     destroyGame(game);
                 }
                 *gameP = newGame;
@@ -865,7 +862,8 @@ void executeCommand(Input input, Game **gameP) {
         }
         case COMMAND_VALIDATE: {
             /*!isSolved(game) ? validate(game) : printError(EInvalidCommand);*/
-            validate(game);
+            /*validate(game);*/
+            fillSolutionMatrix(game->user_matrix, game->user_matrix);
             break;
         }
         case COMMAND_GUESS: {

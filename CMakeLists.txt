@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 project(sudoku-console C)
 
 set(CMAKE_C_STANDARD 90)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -ansi -O3 -Wall -Wextra -Werror -pedantic-errors")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -ansi -O3 -Wall -Wextra -Werror -pedantic-errors")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -ansi -O3 -Wall -Wextra -pedantic-errors")
 add_executable(sudoku-console
         src/main.c
         src/main_aux.c
@@ -16,4 +17,7 @@ add_executable(sudoku-console
         src/file_handler.c
         src/file_handler.h
         src/linked_list.c
-        src/linked_list.h)
+        src/linked_list.h
+     #   src/gurobi_c2.c
+      #  src/gurobi_c2.h
+        )

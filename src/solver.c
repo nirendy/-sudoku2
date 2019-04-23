@@ -6,11 +6,12 @@
 #include "gurobi_c.h"
 
 #define GUR_LOG_FILE "../log/gur"
-#define GUR_LOG_FILE2 "../log/gur2"
+#define GUR_LOG_FILE2 "../log/gur.lp"
 #define GUR_NAME "sud"
 
 GRBenv *env = NULL;
-Bool isGurobiEnvInitialized = false;
+GRBmodel *model = NULL;
+
 
 
 int getEmptyCells(Board board, Coordinate *emptyCells) {
@@ -466,7 +467,7 @@ void updateAfterSetErrorMatrix(Game *game, Input input) {
 }
 
 void updateWholeErrorMatrix(Game *game) {
-    int i, j , val;
+    int i, j, val;
     Input input;
     Coordinate cor;
     for (i = 0; i < g_gameDim.N; ++i) {
@@ -477,8 +478,8 @@ void updateWholeErrorMatrix(Game *game) {
             input.coordinate = cor;
             input.value = val;
 
-            if(val!=0){
-                updateAfterSetErrorMatrix(game , input);
+            if (val != 0) {
+                updateAfterSetErrorMatrix(game, input);
             }
         }
     }
@@ -486,14 +487,9 @@ void updateWholeErrorMatrix(Game *game) {
 
 
 /* Gurobi*/
-FinishCode initGurobi() {
+FinishCode initGurobiEnv() {
     int error;
 
-    if (isGurobiEnvInitialized == true) {
-        return FC_SUCCESS;
-    }
-
-    /* Create environment - log file is mip1.log */
     error = GRBloadenv(&env, GUR_LOG_FILE);
     if (error) {
         printf("ERROR %d GRBloadenv(): %s\n", error, GRBgeterrormsg(env));
@@ -501,27 +497,28 @@ FinishCode initGurobi() {
         return FC_INVALID_RECOVERABLE;
     }
 
-/*
-    error = GRBsetintparam(env, GRB_INT_PAR_LOGTOCONSOLE, 0);
+    error = GRBnewmodel(env, &model, GUR_NAME, 0, NULL, NULL, NULL, NULL, NULL);
     if (error) {
-        printf("ERROR %d GRBsetintattr(): %s\n", error, GRBgeterrormsg(env));
-        */
-/*TODO: is recoverable?*//*
-
+        printf("ERROR %d GRBnewmodel(): %s\n", error, GRBgeterrormsg(env));
+        /*TODO: is recoverable?*/
         return FC_INVALID_RECOVERABLE;
     }
-*/
 
 
-    isGurobiEnvInitialized = true;
     return FC_SUCCESS;
+}
+
+/* Gurobi*/
+void destroyGurobiEnv() {
+    GRBfreemodel(model);
+    GRBfreeenv(env);
 }
 
 typedef struct _PossibleVar {
     char name[10];
     int varIndex;
-    char type[1];
-    double coeff[1];
+    char type;
+    double coeff;
 } PossibleVar;
 
 int calculateIndex(Coordinate coor, int value) {
@@ -535,7 +532,6 @@ FinishCode createModelForBoard(Board board) {
     int i, j, k;
     PossibleVar *coorV2var; /* for the possibleVars[] */
     int error;
-    GRBmodel *model = NULL;
     int numOfVarsCreated = 0;
     int *constInd;
     double *constVals;
@@ -550,8 +546,8 @@ FinishCode createModelForBoard(Board board) {
             for (k = 1; k <= g_gameDim.N; k++) {
                 PossibleVar *posVar = &coorV2var[calculateIndex(createCoordinate(i, j), k)];
                 sprintf(posVar->name, "X_%d_%d_%d", i + 1, j + 1, k);
-                posVar->coeff[0] = 1.0;
-                posVar->type[0] = GRB_BINARY;
+                posVar->coeff = 1.0;
+                posVar->type = GRB_BINARY;
             }
         }
     }
@@ -562,17 +558,11 @@ FinishCode createModelForBoard(Board board) {
     emptyCellsCount = getEmptyCells(board, emptyCells);
 
 
-    error = GRBnewmodel(env, &model, GUR_NAME, 0, NULL, NULL, NULL, NULL, NULL);
-    if (error) {
-        printf("ERROR %d GRBnewmodel(): %s\n", error, GRBgeterrormsg(env));
-        return FC_INVALID_RECOVERABLE;
-    }
-
     for (i = 0; i < emptyCellsCount; i++) {
         int possibleValuesCount;
         Coordinate currentCoordinate;
-        /*create var for each possible values and cell*/
 
+        /*create var for each possible values and cell*/
         currentCoordinate = emptyCells[i];
         possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
         possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
@@ -582,7 +572,7 @@ FinishCode createModelForBoard(Board board) {
             posVar->varIndex = numOfVarsCreated;
 
             /* add variables to model */
-            error = GRBaddvars(model, 1, 0, NULL, NULL, NULL, posVar->coeff, NULL, NULL, posVar->type, NULL);
+            error = GRBaddvar(model, 0, NULL, NULL, posVar->coeff, 0.0, 1.0, posVar->type, posVar->name);
             if (error) {
                 printf("ERROR %d GRBaddvars(): %s\n", error, GRBgeterrormsg(env));
                 return -1;
@@ -591,6 +581,14 @@ FinishCode createModelForBoard(Board board) {
             numOfVarsCreated++;
         }
         free(possibleValues);
+    }
+
+    /* update the model - to integrate new variables */
+
+    error = GRBupdatemodel(model);
+    if (error) {
+        printf("ERROR %d GRBupdatemodel(): %s\n", error, GRBgeterrormsg(env));
+        return -1;
     }
 
 
@@ -669,12 +667,13 @@ FinishCode createModelForBoard(Board board) {
 
                 if (relvantVarsCount > 0) {
                     /*TODO: what if exactly 1?*/
-                    sprintf(constName, "%s number %d with value of %d", wwwName, j + 1, k);
+                    sprintf(constName, "%s #%d with value of %d", wwwName, i + 1, k);
+
                     /* add constraint to model*/
                     error = GRBaddconstr(model, relvantVarsCount, constInd, constVals, GRB_EQUAL, 1.0, constName);
                     if (error) {
                         printf("ERROR %d 1st GRBaddconstr(): %s\n", error, GRBgeterrormsg(env));
-                        return -1;
+                        /*return -1;*/
                     }
 
                 }
@@ -722,9 +721,6 @@ FinishCode createModelForBoard(Board board) {
         printf("Optimization was stopped early\n");
     }
 
-    /* IMPORTANT !!! - Free model and environment */
-    GRBfreemodel(model);
-    /*GRBfreeenv(env);*/
 
     free(constInd);
     free(constVals);
@@ -735,3 +731,8 @@ FinishCode createModelForBoard(Board board) {
     return FC_SUCCESS;
 }
 
+void fillSolutionMatrix(Board board, Board solutionBoard) {
+    initGurobiEnv();
+    createModelForBoard(board);
+    destroyGurobiEnv();
+}
