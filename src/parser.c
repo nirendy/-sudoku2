@@ -1,11 +1,94 @@
 #include "parser.h"
 
+char* getModeStr(){
+    switch (g_mode){
+        case Edit:
+            return "Edit";
+        case Solve:
+            return "Solve";
+        case Init:
+            return "Init";
+        case Exit:
+            return "Unreachable Code";
+    }
+    return "Unreachable Code";
+}
+
+char* getCommandStr(Command command){
+    switch (command) {
+        case COMMAND_SOLVE:
+            return "solve";
+
+        case COMMAND_EDIT:
+            return "edit";
+
+        case COMMAND_MARK_ERRORS:
+            return "mark_errors";
+
+        case COMMAND_PRINT_BOARD:
+            return "print_board";
+
+        case COMMAND_SET:
+            return "set";
+
+        case COMMAND_VALIDATE:
+            return "validate";
+
+        case COMMAND_GUESS:
+            return "guess";
+
+        case COMMAND_GENERATE:
+            return "generate";
+
+        case COMMAND_UNDO:
+            return "undo";
+
+        case COMMAND_REDO:
+            return "redo";
+
+        case COMMAND_SAVE:
+            return "save";
+
+        case COMMAND_HINT:
+            return "hint";
+
+        case COMMAND_GUESS_HINT:
+            return "guess_hint";
+
+        case COMMAND_NUM_SOLUTIONS:
+            return "num_solutions";
+
+        case COMMAND_AUTOFILL:
+            return "autofill";
+
+        case COMMAND_RESET:
+            return "reset";
+
+        case COMMAND_EXIT:
+            return "exit";
+
+        case COMMAND_INVALID:
+            return "Unreachable Code";
+
+    }
+
+    return "Unreachable Code";
+}
+
+void printModeError(Command command){
+    printf("Error: command <%s> is not valid in mode <%s>\n" , getCommandStr(command) , getModeStr() );
+    printf( "The command available in modes:" );
+    if( isCommandAllowedInMode(Init , command)) {printf( " <Init>" ); }
+    if( isCommandAllowedInMode(Edit , command)) {printf( " <Edit>" ); }
+    if( isCommandAllowedInMode(Solve , command)) {printf( " <Solve>" ); }
+    printf( "\n" );
+}
+
 int getType(Game *game, int i, int j) {
     if (game->fixed_matrix[i][j] == 1)  { return 1; }
     if (game->error_matrix[i][j] == 1 && (g_markError == 1 || g_mode == Edit)) { return 2; }
     return 0;
 }
-
 
 void printSepRow(int len) {
     int i = 0;
@@ -206,12 +289,16 @@ FinishCode parseCommand(Input *returnedInput) {
     }
 
     strcpy(command, token);
+
+    if (!isCommandAllowedInMode(g_mode, returnedInput->command)) {
+        printModeError(returnedInput->command);
+        return FC_INVALID_RECOVERABLE;
+    }
     token = strtok(NULL, " \t\r\n");
-    index = 0;
+    index = 1;
 
     /*while not all expected parameters has been interpreted*/
     while (token != NULL && index <= numOfVars) {
-        index++;
 
         switch (index) {
             case 1:
@@ -248,8 +335,6 @@ FinishCode parseCommand(Input *returnedInput) {
                     }
                 }
 
-
-
                 break;
             case 3:
                 if (!strcmp(command, "set")) { returnedInput->value = getNum(token); }
@@ -260,9 +345,11 @@ FinishCode parseCommand(Input *returnedInput) {
                 return FC_UNEXPECTED_ERROR;
         }
 
+        index ++;
         token = strtok(NULL, " \t\r\n");
     }
 
+    index--;
     if (index != numOfVars && strcmp(command, "edit") != 0) {
         printError(EInvalidNumOfParams);
         return FC_INVALID_RECOVERABLE;

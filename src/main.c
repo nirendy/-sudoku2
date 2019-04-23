@@ -34,7 +34,7 @@ int main() {
 
 
     while (g_mode != Exit) {
-        if (askUserForNextTurn(g_mode, &input)) {
+        if (askUserForNextTurn(&input)) {
             if (checkLegalInput(input, game)) {
                 executeCommand(input, &game);
             }

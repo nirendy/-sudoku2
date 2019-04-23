@@ -3,7 +3,7 @@
 
 #include "main_aux.h"
 
-void hint(Game *game, Coordinate coordinate);
+void hint(Game *game, Input input);
 
 void validate(Game *game);
 

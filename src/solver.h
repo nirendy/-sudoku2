@@ -13,7 +13,7 @@ Bool solveBoard(const Board userBoard, Board toSolveBoard, Bool isDeterministic)
 
 FinishCode countPossibleSolutions(Board board);
 
-Bool isSolved(Game *game);
+Bool isFullUserBoard(Game *game);
 
 void updateAfterSetErrorMatrix(Game *game, Input input);
 
@@ -21,13 +21,15 @@ void updateAfterClearErrorMatrix(Game *game, Input input);
 
 int getEmptyCells(Board board, Coordinate *emptyCells);
 
+int getFilledCells(Board board, Coordinate *emptyCells);
+
 void updateWholeErrorMatrix(Game *game);
 
 void clearBoolBoard(BoolBoard board);
 
-void fillSolutionMatrix(Board board, Board solutionBoard);
+Bool fillSolutionMatrix(Board board, Board solutionBoard);
 
-void fillSolutionProbabiltyMatrix(Board board, ProbBoard probBoard, Board solutionBoard);
+Bool fillSolutionProbabiltyMatrix(Board board, ProbBoard probBoard, Board solutionBoard);
 
 #endif
 
