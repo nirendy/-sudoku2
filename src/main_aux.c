@@ -934,8 +934,8 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_GUESS: {
-            printf("Command not implemented yet");
-            success = true; /*TODO: nir - please update if command executed successful*/
+            /* TODO: ALEN: add history*/
+            guessBoard(game->user_matrix, game->user_matrix, input.threshold);
             break;
         }
         case COMMAND_GENERATE: {
