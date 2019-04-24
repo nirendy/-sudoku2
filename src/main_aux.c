@@ -970,7 +970,7 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_GUESS_HINT: {
-            printf("Command not implemented yet");
+            guessHint(game->user_matrix, input.coordinate);
             break;
         }
         case COMMAND_NUM_SOLUTIONS: {

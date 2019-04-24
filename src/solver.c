@@ -551,6 +551,7 @@ PossibleVar *createCoor2Var(Bool isBinary) {
     int i, j, k;
     PossibleVar *coorV2var = (PossibleVar *) malloc(g_gameDim.cellsCount * g_gameDim.N * sizeof(PossibleVar));
 
+
     for (i = 0; i < g_gameDim.N; i++) {
         for (j = 0; j < g_gameDim.N; j++) {
             for (k = 1; k <= g_gameDim.N; k++) {
@@ -809,23 +810,19 @@ FinishCode optimizeModel() {
     }
 
     if (optimstatus == GRB_OPTIMAL) { /* solution found */
-        printf("Solution found\n");
+        /*printf("Solution found\n"); */ /*TODO: should print something?*/
         return FC_SUCCESS;
     } else if (optimstatus == GRB_INF_OR_UNBD) { /* no solution found */
-        printf("Model is infeasible or unbounded\n");
+        /*printf("Model is infeasible or unbounded\n");*/ /*TODO: should print something?*/
         return FC_SUCCESS_NOT_SOLVABLE;
     } else { /* error or calculation stopped */
-        printf("Optimization was stopped early\n");
+        perror("Optimization was stopped early\n");
         return FC_INVALID_RECOVERABLE;
     }
 }
 
-FinishCode fillBoard(Board board) {
+FinishCode fillModel(PossibleVar *coorV2var, Board board) {
     FinishCode finishCode;
-    PossibleVar *coorV2var; /* for the possibleVars[] */
-    int i, j, k;
-
-    coorV2var = createCoor2Var(true);
 
     finishCode = addVarsToModel(board, coorV2var);
     if (finishCode != FC_SUCCESS) {
@@ -838,10 +835,21 @@ FinishCode fillBoard(Board board) {
     }
 
 
-    finishCode = optimizeModel();
+    return (optimizeModel());
+}
+
+FinishCode fillBoard(Board board) {
+    int error;
+    FinishCode finishCode;
+    PossibleVar *coorV2var; /* for the possibleVars[] */
+    int i, j, k;
+
+    coorV2var = createCoor2Var(true);
+    finishCode = fillModel(coorV2var, board);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
+
 
     /*get solutions*/
     for (i = 0; i < g_gameDim.N; i++) {
@@ -849,7 +857,13 @@ FinishCode fillBoard(Board board) {
             for (k = 1; k <= g_gameDim.N; k++) {
                 PossibleVar *posVar = &coorV2var[calculateIndex(createCoordinate(i, j), k)];
                 if (posVar->varIndex >= 0) {
-                    GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
+                    error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
+
+                    if (error) {
+                        printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
+                        return FC_INVALID_RECOVERABLE;
+                    }
+
                     if (posVar->prob == 1) {
                         board[i][j] = k;
                     }
@@ -860,7 +874,41 @@ FinishCode fillBoard(Board board) {
 
     free(coorV2var);
 
-    return finishCode;
+    return FC_SUCCESS;
+}
+
+FinishCode fillBoardAndGuessHint(Board board, Coordinate coor) {
+    int error;
+    FinishCode finishCode;
+    PossibleVar *coorV2var; /* for the possibleVars[] */
+    int k;
+
+    coorV2var = createCoor2Var(false);
+
+    finishCode = fillModel(coorV2var, board);
+    if (finishCode != FC_SUCCESS) {
+        return finishCode;
+    }
+
+    for (k = 1; k <= g_gameDim.N; k++) {
+        PossibleVar *posVar = &coorV2var[calculateIndex(coor, k)];
+        if (posVar->varIndex >= 0) {
+            error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
+
+            if (error) {
+                printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
+                return FC_INVALID_RECOVERABLE;
+            }
+
+            if (posVar->prob > 0) {
+                printf("%d -> %f\n", k, posVar->prob);
+            }
+        }
+    }
+
+    free(coorV2var);
+
+    return FC_SUCCESS;
 }
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard) {
@@ -868,7 +916,25 @@ Bool fillSolutionMatrix(Board board, Board solutionBoard) {
     initGurobiEnv();
     copyBoard(solutionBoard, board);
     finishCode = fillBoard(solutionBoard);
-    copyBoard(board, solutionBoard); /*TODO: delete*/
     destroyGurobiEnv();
     return finishCode == FC_SUCCESS;
 }
+
+void guessHint(Board board, Coordinate coordinate) {
+    FinishCode finishCode;
+    Board tempBoard = createBoard();
+    copyBoard(tempBoard, board);
+
+    finishCode = initGurobiEnv();
+    if (finishCode == FC_SUCCESS) {
+        finishCode = fillBoardAndGuessHint(tempBoard, coordinate);
+    }
+
+    if (finishCode == FC_SUCCESS) {
+        printf("Could not guess hint"); /*TODO: better print*/
+    }
+
+    destroyBoard(tempBoard, g_gameDim);
+    destroyGurobiEnv();
+}
+

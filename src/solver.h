@@ -31,5 +31,7 @@ Bool fillSolutionMatrix(Board board, Board solutionBoard);
 
 Bool fillSolutionProbabiltyMatrix(Board board, ProbBoard probBoard, Board solutionBoard);
 
+void guessHint(Board board, Coordinate coordinate);
+
 #endif
 
