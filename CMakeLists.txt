@@ -3,7 +3,7 @@ project(sudoku-console C)
 
 set(CMAKE_C_STANDARD 90)
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -ansi -O3 -Wall -Wextra -Werror -pedantic-errors")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -ansi -O3 -Wall -Wextra -pedantic-errors")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -ansi -Wall -Wextra -pedantic-errors")
 add_executable(sudoku-console
         src/main.c
         src/main_aux.c

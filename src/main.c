@@ -8,6 +8,45 @@
 #include "file_handler.h"
 #include "linked_list.h"
 
+
+void mock(int mockI, Game **gameP) {
+    Input input;
+
+    switch (mockI) {
+        case 1: {
+            g_mode = Solve;
+            setGameDim(2, 2);
+            *gameP = createGame();
+            generateGame(*gameP, 0);
+
+            input.command = COMMAND_PRINT_BOARD;
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_VALIDATE;
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_PRINT_BOARD;
+            executeCommand(input, gameP);
+            break;
+        }
+        case 2: {
+            input.command = COMMAND_SOLVE;
+            sprintf(input.path, "%s", "../data/1");
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_VALIDATE;
+            executeCommand(input, gameP);
+
+            break;
+        }
+        default: {
+            perror("selected mock does not exist\n");
+        }
+
+    }
+}
+
+
 int main() {
     Input input;
     Game *game = NULL;
@@ -17,20 +56,7 @@ int main() {
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-
-    /*To avoid uninitialized game warning*/
-/*    setGameDim(1, 1);
-    game = createGame();
-    *//*destroyGame(game);*/
-
-    /*printf("%s", getenv("PATH"));*/
-    /* MOCK
-    g_mode = Solve;
-    setGameDim(2, 2);
-    generateGame(game, 0);
-    saveGameToFile("../data/1", game);
-    END MOCK*/
-
+    /*mock(1, &game);*/
 
     while (g_mode != Exit) {
         if (askUserForNextTurn(&input)) {
