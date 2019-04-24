@@ -561,47 +561,55 @@ typedef struct _PossibleVar {
     char type;
     double coeff;
     double prob;
+    Coordinate coordinate;
+    int value;
+    struct _PossibleVar *next;
 } PossibleVar;
 
-int calculateIndex(Coordinate coor, int value) {
-    return g_gameDim.N * ((g_gameDim.N * coor.i) + coor.j) + (value - 1);
+typedef struct _PossibleVarSentinel {
+    PossibleVar *first;
+    int length;
+} PossibleVarSentinel;
+
+
+int calculateCoordinateFlatIndex(Coordinate coor) {
+    return (g_gameDim.N * coor.i) + coor.j;
 }
 
-PossibleVar *createCoor2Var(Bool isBinary) {
-    int i, j, k;
-    PossibleVar *coorV2var = (PossibleVar *) malloc(g_gameDim.cellsCount * g_gameDim.N * sizeof(PossibleVar));
-
-
-    for (i = 0; i < g_gameDim.N; i++) {
-        for (j = 0; j < g_gameDim.N; j++) {
-            for (k = 1; k <= g_gameDim.N; k++) {
-                PossibleVar *posVar = &coorV2var[calculateIndex(createCoordinate(i, j), k)];
-                sprintf(posVar->name, "X_%d_%d_%d", i + 1, j + 1, k);
-                if (isBinary == true) {
-                    posVar->type = GRB_BINARY;
-                    posVar->coeff = 1.0;
-                } else {
-                    posVar->type = GRB_CONTINUOUS;
-                    posVar->coeff = rand() % g_gameDim.N; /*TODO: think of good limit */
-                }
-                posVar->varIndex = -1;
-                posVar->prob = -1;
-            }
+PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coorV2var, Coordinate coor, int value) {
+    PossibleVar *posVar;
+    posVar = coorV2var[calculateCoordinateFlatIndex(coor)].first;
+    while (posVar != NULL) {
+        if (posVar->value == value) {
+            return posVar;
         }
+        posVar = posVar->next;
     }
-
-    return coorV2var;
+    return NULL;
 }
 
-FinishCode addVarsToModel(Board board, PossibleVar *coorV2var) {
-    int error;
+PossibleVar *createPossibleVar(Coordinate coor, int value, Bool isBinary, Bool isOnlyOption) {
+    PossibleVar *newPosVar = (PossibleVar *) malloc(sizeof(PossibleVar));
+    sprintf(newPosVar->name, "X_%d_%d_%d", coor.i + 1, coor.j + 1, value);
+    newPosVar->varIndex = -1;
+    newPosVar->type = isBinary ? GRB_BINARY : GRB_CONTINUOUS;
+    newPosVar->coeff = isBinary ? 1.0 : randLimit(g_gameDim.N);
+    newPosVar->prob = isOnlyOption == true ? 1 : -1;
+    newPosVar->coordinate = coor;
+    newPosVar->value = value;
+    newPosVar->next = NULL;
+
+    return newPosVar;
+}
+
+PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
+    int i;
     int emptyCellsCount;
     int *possibleValues;
-    int i, j;
-    int numOfVarsCreated = 0;
     Coordinate *emptyCells;
+    PossibleVarSentinel *coorV2var;
 
-
+    coorV2var = (PossibleVarSentinel *) calloc(g_gameDim.cellsCount, sizeof(PossibleVar));
     emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
     /*find empty cells*/
     emptyCellsCount = getEmptyCells(board, emptyCells);
@@ -610,38 +618,76 @@ FinishCode addVarsToModel(Board board, PossibleVar *coorV2var) {
     for (i = 0; i < emptyCellsCount; i++) {
         int possibleValuesCount;
         Coordinate currentCoordinate;
+        PossibleVarSentinel *sentinel;
 
         /*create var for each possible values and cell*/
         currentCoordinate = emptyCells[i];
         possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
         possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
+        sentinel = &coorV2var[calculateCoordinateFlatIndex(currentCoordinate)];
+        sentinel->length = possibleValuesCount;
 
-        switch (possibleValuesCount) {
-            case 0: {
-                return FC_SUCCESS_NOT_SOLVABLE;
-            }
-            case 1: {
-                board[currentCoordinate.i][currentCoordinate.j] = possibleValues[0];
-                coorV2var[calculateIndex(currentCoordinate, possibleValues[0])].prob = 1;
-                break;
-            }
-            default: {
-                for (j = 0; j < possibleValuesCount; j++) {
-                    PossibleVar *posVar = &coorV2var[calculateIndex(currentCoordinate, possibleValues[j])];
-                    posVar->varIndex = numOfVarsCreated;
+        if (possibleValuesCount > 0) {
+            PossibleVar *last;
+            last = sentinel->first = createPossibleVar(currentCoordinate, possibleValues[0], isBinary,
+                                                       sentinel->length == 1);
 
-                    /* add variables to model */
-                    error = GRBaddvar(model, 0, NULL, NULL, posVar->coeff, 0.0, 1.0, posVar->type, posVar->name);
-                    if (error) {
-                        printf("ERROR %d GRBaddvars(): %s\n", error, GRBgeterrormsg(env));
-                        return FC_INVALID_RECOVERABLE;
-                    }
-
-                    numOfVarsCreated++;
-                }
+            while (--possibleValuesCount > 0) {
+                last = last->next = createPossibleVar(
+                        currentCoordinate, possibleValues[sentinel->length - possibleValuesCount], isBinary, false
+                );
             }
         }
         free(possibleValues);
+    }
+
+    free(emptyCells);
+
+    return coorV2var;
+}
+
+void destroyCoorV2Var(PossibleVarSentinel *coorV2var) {
+    int i;
+    PossibleVar *cur, *temp;
+
+    for (i = 0; i < g_gameDim.cellsCount; ++i) {
+        cur = coorV2var[i].first;
+        while (cur != NULL) {
+            temp = cur;
+            cur = cur->next;
+            free(temp);
+        }
+    }
+
+    free(coorV2var);
+}
+
+
+FinishCode addVarsToModel(PossibleVarSentinel *coorV2var) {
+    int error;
+    int i;
+    int numOfVarsCreated = 0;
+    PossibleVar *curPosVar;
+
+
+    for (i = 0; i < g_gameDim.cellsCount; i++) {
+        /*create var for each possible values and cell*/
+        if (coorV2var[i].length > 1) {
+            curPosVar = coorV2var[i].first;
+            while (curPosVar != NULL) {
+                curPosVar->varIndex = numOfVarsCreated;
+
+                /* add variables to model */
+                error = GRBaddvar(model, 0, NULL, NULL, curPosVar->coeff, 0.0, 1.0, curPosVar->type, curPosVar->name);
+                if (error) {
+                    printf("ERROR %d GRBaddvars(): %s\n", error, GRBgeterrormsg(env));
+                    return FC_INVALID_RECOVERABLE;
+                }
+
+                numOfVarsCreated++;
+                curPosVar = curPosVar->next;
+            }
+        }
     }
 
     /* Change objective sense to maximization */
@@ -659,8 +705,6 @@ FinishCode addVarsToModel(Board board, PossibleVar *coorV2var) {
         return FC_INVALID_RECOVERABLE;
     }
 
-    free(emptyCells);
-
     return FC_SUCCESS;
 }
 
@@ -673,7 +717,7 @@ Coordinate coordinateOfTheJCellInTheIBlock(int i, int j) {
     );
 }
 
-FinishCode addConstrainsToModel(PossibleVar *coorV2var) {
+FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
     int i, j, k;
     int error;
     int *constInd;
@@ -698,29 +742,28 @@ FinishCode addConstrainsToModel(PossibleVar *coorV2var) {
 
             for (k = 1; k <= g_gameDim.N; k++) {
                 PossibleVar *posVar;
-                posVar = &coorV2var[calculateIndex(createCoordinate(i, j), k)];
+                posVar = getPossibleVarFromCoor2Var(coorV2var, createCoordinate(i, j), k);
 
-                if (posVar->varIndex >= 0) {
+                if (posVar != NULL && posVar->varIndex >= 0) {
                     constInd[relvantVarsCount] = posVar->varIndex;
                     relvantVarsCount++;
                 }
             }
 
             if (relvantVarsCount > 1) {
-                sprintf(constName, "values of cell (%d,%d)", i + 1, k);
+                sprintf(constName, "values of cell (%d,%d)", i + 1, j + 1);
 
                 /* add constraint to model*/
                 error = GRBaddconstr(model, relvantVarsCount, constInd, constVals, GRB_EQUAL, 1.0, constName);
                 if (error) {
-                    printf("ERROR %d 1st GRBaddconstr(): %s\n", error, GRBgeterrormsg(env));
-                    /*return FC_INVALID_RECOVERABLE;*/
+                    printf("ERROR %d GRBaddconstr(%s): %s\n", error, constName, GRBgeterrormsg(env));
+                    /*return FC_INVALID_RECOVERABLE;*/ /*TODO: add this?*/
+                } else {
+                    /*printf("GRBaddconstr(%s)\n", constName);*/  /*TODO: delete*/
                 }
-
             }
-
         }
     }
-
 
     for (www = 0; www <= 2; www++) {
         char wwwName[10];
@@ -757,17 +800,17 @@ FinishCode addConstrainsToModel(PossibleVar *coorV2var) {
                     switch (www) {
                         case 0: {
                             /* rows */
-                            posVar = &coorV2var[calculateIndex(createCoordinate(i, j), k)];
+                            posVar = getPossibleVarFromCoor2Var(coorV2var, createCoordinate(i, j), k);
                             break;
                         }
                         case 1: {
                             /* columns */
-                            posVar = &coorV2var[calculateIndex(createCoordinate(j, i), k)];
+                            posVar = getPossibleVarFromCoor2Var(coorV2var, createCoordinate(j, i), k);
                             break;
                         }
                         case 2: {
                             /* blocks */
-                            posVar = &coorV2var[calculateIndex(coordinateOfTheJCellInTheIBlock(i, j), k)];
+                            posVar = getPossibleVarFromCoor2Var(coorV2var, coordinateOfTheJCellInTheIBlock(i, j), k);
                             break;
                         }
                         default: {
@@ -776,7 +819,7 @@ FinishCode addConstrainsToModel(PossibleVar *coorV2var) {
                         }
                     }
 
-                    if (posVar->varIndex >= 0) {
+                    if (posVar != NULL && posVar->varIndex >= 0) {
                         constInd[relvantVarsCount] = posVar->varIndex;
                         relvantVarsCount++;
                     }
@@ -789,8 +832,12 @@ FinishCode addConstrainsToModel(PossibleVar *coorV2var) {
                     /* add constraint to model*/
                     error = GRBaddconstr(model, relvantVarsCount, constInd, constVals, GRB_EQUAL, 1.0, constName);
                     if (error) {
-                        printf("ERROR %d 1st GRBaddconstr(): %s\n", error, GRBgeterrormsg(env));
-                        /*return FC_INVALID_RECOVERABLE;*/
+                        printf("ERROR %d GRBaddconstr(%s): %s\n", error, constName, GRBgeterrormsg(env));
+                        for (j = 0; j < relvantVarsCount; j++) { printf("%d,", constInd[j]); }
+                        printf("\n");
+                        /*return FC_INVALID_RECOVERABLE;*/ /*TODO: add this?*/
+                    } else {
+                        /*printf("GRBaddconstr(%s):\n", constName);*/ /*TODO: delete*/
                     }
 
                 }
@@ -832,19 +879,21 @@ FinishCode optimizeModel() {
     if (optimstatus == GRB_OPTIMAL) { /* solution found */
         /*printf("Solution found\n"); */ /*TODO: should print something?*/
         return FC_SUCCESS;
-    } else if (optimstatus == GRB_INF_OR_UNBD) { /* no solution found */
+    } else if (optimstatus == GRB_INF_OR_UNBD ||
+               optimstatus == GRB_INFEASIBLE ||
+               optimstatus == GRB_UNBOUNDED) { /* no solution found */
         /*printf("Model is infeasible or unbounded\n");*/ /*TODO: should print something?*/
         return FC_SUCCESS_NOT_SOLVABLE;
     } else { /* error or calculation stopped */
-        perror("Optimization was stopped early\n");
+        printf("Optimization was stopped early, status: %d\n", optimstatus);
         return FC_INVALID_RECOVERABLE;
     }
 }
 
-FinishCode fillModel(PossibleVar *coorV2var, Board board) {
+FinishCode fillModel(PossibleVarSentinel *coorV2var) {
     FinishCode finishCode;
 
-    finishCode = addVarsToModel(board, coorV2var);
+    finishCode = addVarsToModel(coorV2var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
@@ -861,11 +910,11 @@ FinishCode fillModel(PossibleVar *coorV2var, Board board) {
 FinishCode fillBoard(Board board) {
     int error;
     FinishCode finishCode;
-    PossibleVar *coorV2var; /* for the possibleVars[] */
+    PossibleVarSentinel *coorV2var; /* for the possibleVars[] */
     int i, j, k;
 
-    coorV2var = createCoor2Var(true);
-    finishCode = fillModel(coorV2var, board);
+    coorV2var = createCoor2Var(board, true);
+    finishCode = fillModel(coorV2var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
@@ -875,13 +924,17 @@ FinishCode fillBoard(Board board) {
     for (i = 0; i < g_gameDim.N; i++) {
         for (j = 0; j < g_gameDim.N; j++) {
             for (k = 1; k <= g_gameDim.N; k++) {
-                PossibleVar *posVar = &coorV2var[calculateIndex(createCoordinate(i, j), k)];
-                if (posVar->varIndex >= 0) {
-                    error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
+                PossibleVar *posVar = getPossibleVarFromCoor2Var(coorV2var, createCoordinate(i, j), k);
+                if (posVar != NULL) {
+                    if (posVar->varIndex >= 0) {
+                        error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
 
-                    if (error) {
-                        printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
-                        return FC_INVALID_RECOVERABLE;
+                        if (error) {
+                            printf("ERROR %d GRBgetdblattrelement(%s): %s\n", error, posVar->name, GRBgeterrormsg(env));
+                            /*return FC_INVALID_RECOVERABLE;*/ /*TODO: add this?*/
+                        } else {
+                            /*printf("GRBgetdblattrelement(%s)\n", posVar->name);*/  /*TODO: delete*/
+                        }
                     }
 
                     if (posVar->prob == 1) {
@@ -892,7 +945,7 @@ FinishCode fillBoard(Board board) {
         }
     }
 
-    free(coorV2var);
+    destroyCoorV2Var(coorV2var);
 
     return FC_SUCCESS;
 }
@@ -900,24 +953,26 @@ FinishCode fillBoard(Board board) {
 FinishCode guessFillBoardAndGuessHint(Board board, Coordinate coor) {
     int error;
     FinishCode finishCode;
-    PossibleVar *coorV2var; /* for the possibleVars[] */
+    PossibleVarSentinel *coorV2var; /* for the possibleVars[] */
     int k;
 
-    coorV2var = createCoor2Var(false);
+    coorV2var = createCoor2Var(board, false);
 
-    finishCode = fillModel(coorV2var, board);
+    finishCode = fillModel(coorV2var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
 
     for (k = 1; k <= g_gameDim.N; k++) {
-        PossibleVar *posVar = &coorV2var[calculateIndex(coor, k)];
-        if (posVar->varIndex >= 0) {
-            error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
+        PossibleVar *posVar = getPossibleVarFromCoor2Var(coorV2var, coor, k);
+        if (posVar != NULL) {
+            if (posVar->varIndex >= 0) {
+                error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
 
-            if (error) {
-                printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
-                return FC_INVALID_RECOVERABLE;
+                if (error) {
+                    printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
+                    return FC_INVALID_RECOVERABLE;
+                }
             }
 
             if (posVar->prob > 0) {
@@ -926,7 +981,7 @@ FinishCode guessFillBoardAndGuessHint(Board board, Coordinate coor) {
         }
     }
 
-    free(coorV2var);
+    destroyCoorV2Var(coorV2var);
 
     return FC_SUCCESS;
 }
@@ -934,7 +989,7 @@ FinishCode guessFillBoardAndGuessHint(Board board, Coordinate coor) {
 FinishCode guessFillBoard(Board board, double threshold) {
     int error;
     FinishCode finishCode;
-    PossibleVar *coorV2var; /* for the possibleVars[] */
+    PossibleVarSentinel *coorV2var; /* for the possibleVars[] */
     int i, j, k;
     int *valsOptions;
     int bestOptionsCount;
@@ -942,9 +997,9 @@ FinishCode guessFillBoard(Board board, double threshold) {
 
     valsOptions = (int *) malloc(g_gameDim.N * sizeof(int));
 
-    coorV2var = createCoor2Var(false);
+    coorV2var = createCoor2Var(board, false);
 
-    finishCode = fillModel(coorV2var, board);
+    finishCode = fillModel(coorV2var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
@@ -955,13 +1010,15 @@ FinishCode guessFillBoard(Board board, double threshold) {
             bestOptionVal = 0;
 
             for (k = 1; k <= g_gameDim.N; k++) {
-                PossibleVar *posVar = &coorV2var[calculateIndex(createCoordinate(i, j), k)];
-                if (posVar->varIndex >= 0) {
-                    error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
+                PossibleVar *posVar = getPossibleVarFromCoor2Var(coorV2var, createCoordinate(i, j), k);
+                if (posVar != NULL) {
+                    if (posVar->varIndex >= 0) {
+                        error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
 
-                    if (error) {
-                        printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
-                        return FC_INVALID_RECOVERABLE;
+                        if (error) {
+                            printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
+                            return FC_INVALID_RECOVERABLE;
+                        }
                     }
 
                     if (posVar->prob >= bestOptionVal && isPossibleValue(board, createCoordinate(i, j), k)) {
@@ -976,14 +1033,14 @@ FinishCode guessFillBoard(Board board, double threshold) {
                 }
             }
             if (bestOptionVal >= threshold) {
-                board[i][j] = valsOptions[rand() % bestOptionsCount];
+                board[i][j] = valsOptions[randLimit(bestOptionsCount)];
             }
         }
     }
 
 
     free(valsOptions);
-    free(coorV2var);
+    destroyCoorV2Var(coorV2var);
 
     return FC_SUCCESS;
 }
@@ -993,6 +1050,7 @@ Bool fillSolutionMatrix(Board board, Board solutionBoard) {
     initGurobiEnv();
     copyBoard(solutionBoard, board);
     finishCode = fillBoard(solutionBoard);
+    /*printUserBoard(solutionBoard);*/ /* TODO: REMOVE*/
     destroyGurobiEnv();
     return finishCode == FC_SUCCESS;
 }
