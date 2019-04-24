@@ -54,7 +54,8 @@ typedef enum _error {
     EErroneousBoard,
     EFileOpenFailure,
     EFileCloseFailure,
-    EFileScanFailure
+    EFileScanFailure,
+    EFUnsolvableBoard
 
 } Error;
 
@@ -78,7 +79,8 @@ typedef enum _prompt {
     PValidateSuccess,
     PNextCommand,
     PNumSolutionsOutput,
-    PPerformedChanges
+    PPerformedChanges,
+    PWrongSolution
 
 } Prompt;
 
@@ -173,13 +175,15 @@ void printError(Error err);
 
 void printPrompt(Prompt prompt, int num1);
 
-Bool askUserForNextTurn(Mode mode, Input *input);
+Bool askUserForNextTurn(Input *input);
 
 void executeCommand(Input input, Game **gameP);
 
 Bool checkLegalInput(Input input, Game *game);
 
 int randLimit(int limit);
+
+Bool isCommandAllowedInMode(Mode mode , Command command);
 
 #endif
 

@@ -25,7 +25,7 @@ DataNode *getFirstDataNode(DataNode *currDataNode);
 
 DataNode *getLastDataNode(DataNode *currDataNode);
 
-void clearDataListFromNode(DataNode *curNode);
+void clearWholeDataList(DataNode *curNode);
 
 
 #endif

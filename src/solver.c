@@ -31,7 +31,23 @@ int getEmptyCells(Board board, Coordinate *emptyCells) {
     return emptyCount;
 }
 
-Bool isSolved(Game *game) {
+int getFilledCells(Board board, Coordinate *emptyCells) {
+    int i, j, filledCount = 0;
+
+    /* go over each cell of the matrix*/
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
+            if (board[i][j] != 0) {
+                /* if filled*/
+                emptyCells[filledCount] = createCoordinate(i, j);
+                filledCount++;
+            }
+        }
+    }
+    return filledCount;
+}
+
+Bool isFullUserBoard(Game *game) {
     Coordinate *emptyCells;
     int emptyCellsCount;
 
@@ -203,8 +219,7 @@ Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, in
     return returnValue;
 }
 
-int
-countPossibleSolutionsRec(Board board, Coordinate *emptyCells, int emptyCellsCount, int start) {
+int countPossibleSolutionsRec(Board board, Coordinate *emptyCells, int emptyCellsCount, int start) {
     int possibleValuesCount;
     int *possibleValues;
     int returnValue = 0;
@@ -842,10 +857,11 @@ FinishCode fillBoard(Board board) {
     return finishCode;
 }
 
-void fillSolutionMatrix(Board board, Board solutionBoard) {
+Bool fillSolutionMatrix(Board board, Board solutionBoard) {
     initGurobiEnv();
     copyBoard(solutionBoard, board);
     fillBoard(solutionBoard);
     copyBoard(board, solutionBoard);
     destroyGurobiEnv();
+    return true; /*TODO: nir - please return the correct value*/
 }

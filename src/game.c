@@ -45,23 +45,35 @@ Bool setCoordinate(Game *game, Input input) {
         game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
     }
 
-    /*TODO: decide if print success after redo*/
-    if (isSolved(game)) {
-        printPrompt(PSuccess, 0);
-    }
-
     return 1;
 
 }
 
-void hint(Game *game, Coordinate coordinate) {
-    printPrompt(PHint, game->solved_matrix[coordinate.i][coordinate.j]);
+void hint(Game *game, Input input) {
+
+    Board solutionBoard;
+    solutionBoard = createBoard();
+
+    if (fillSolutionMatrix(game->user_matrix, solutionBoard)) {
+        printPrompt(PHint, solutionBoard[input.coordinate.i][input.coordinate.i]);
+    }
+
+    else{
+        printError(EFUnsolvableBoard);
+    }
+
+    destroyBoard(solutionBoard, g_gameDim);
+
 }
 
 void validate(Game *game) {
-    if (solveBoard(game->user_matrix, game->solved_matrix, true)) {
+    Board solutionBoard;
+    solutionBoard = createBoard();
+    if (fillSolutionMatrix(game->user_matrix, solutionBoard)) {
         printPrompt(PValidateSuccess, 0);
     } else {
         printPrompt(PValidateFailed, 0);
     }
+
+    destroyBoard(solutionBoard, g_gameDim);
 }

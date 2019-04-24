@@ -53,7 +53,7 @@ void clearListFromNode(Node *curNode) {
     Node *nextNode;
     while (curNode != NULL) {
         nextNode = curNode->next;
-        clearDataListFromNode(curNode->currDataNode);
+        clearWholeDataList(curNode->currDataNode);
         free(curNode);
         curNode = nextNode;
     }
@@ -117,9 +117,9 @@ DataNode *getLastDataNode(DataNode *currDataNode) {
     return currDataNode;
 }
 
-void clearDataListFromNode(DataNode *curNode) {
-
+void clearWholeDataList(DataNode *curNode) {
     DataNode *nextNode;
+    curNode = getFirstDataNode(curNode);
     while (curNode != NULL) {
         nextNode = curNode->next;
         free(curNode);
