@@ -90,6 +90,10 @@ void printError(Error err) {
             printf("Error: board is unsolvable\n");
             break;
         }
+        case EGenerationFailed : {
+            printf("Error: couldn't generate a solved board after 1000 iterations\n");
+            break;
+        }
         default: {
             printf("Unreachable Code Error\n");
         }
@@ -134,17 +138,18 @@ void printPrompt(Prompt prompt, int num1) {
             printf("There are: %d possible solutions\n", num1);
             break;
         }
-
         case PPerformedChanges: {
             printf("The performed changes are:\n");
             break;
         }
-
         case PWrongSolution: {
             printf("The solution to the board is wrong:\n");
             break;
         }
-
+        case PNoObviousCells: {
+            printf("There were no obvious cells to autofill\n");
+            break;
+        }
         default: {
             printf("Unreachable Code Error");
         }
@@ -396,7 +401,7 @@ void performRedo(Game *game, DataNode *currDataNode) {
     }
 }
 
-void setUndoRedoInputs(Game *game, Input in, Input *redo, Input *undo) {
+void updateRedoUndoInputsAfterSingleSet(Game *game, Input in, Input *redo, Input *undo) {
 
     redo->coordinate = in.coordinate;
     undo->coordinate = in.coordinate;
@@ -433,13 +438,12 @@ void chooseRandCords(Coordinate *source, int sourceSize, Coordinate *target, int
     free(randIndexes);
 }
 
-
-Bool fillXRandomCells(Board board , Coordinate *cellsToFill , int X) {
+Bool fillXRandomCells(Board board, Coordinate *cellsToFill, int numToFill) {
 
     int k, numOfPossibleValues;
-    int *possibleValues = (int*)malloc(g_gameDim.N* sizeof(int*));
+    int *possibleValues = (int *) malloc(g_gameDim.N * sizeof(int *));
 
-    for (k = 0; k < X; k++) {
+    for (k = 0; k < numToFill; k++) {
         numOfPossibleValues = getPossibleValues(board, cellsToFill[k], possibleValues);
         if (numOfPossibleValues == 0) { return false; }
         board[cellsToFill[k].i][cellsToFill[k].j] = possibleValues[randLimit(numOfPossibleValues)];
@@ -448,8 +452,48 @@ Bool fillXRandomCells(Board board , Coordinate *cellsToFill , int X) {
     return true;
 }
 
+void clearRandomCells(Board board, Coordinate *cellsToClear, int numToClear) {
 
-int generateFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
+    int k;
+    for (k = 0; k < numToClear; k++) {
+        board[cellsToClear[k].i][cellsToClear[k].j] = 0;
+    }
+
+}
+
+int diffToRedoUndoLists(Board original, Board final, Input *redoList, Input *undoList) {
+
+    int i, j, listIndex = 0;
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
+            if (original[i][j] != final[i][j]) {
+                redoList[listIndex].coordinate.i = i;
+                redoList[listIndex].coordinate.j = j;
+                undoList[listIndex].coordinate.i = i;
+                undoList[listIndex].coordinate.j = j;
+                redoList[listIndex].value = final[i][j];
+                undoList[listIndex].value = original[i][j];
+                listIndex++;
+            }
+        }
+    }
+
+    return listIndex;
+}
+
+int numOfDiffs(Board original, Board final) {
+    int i, j, diffs = 0;
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
+            if (original[i][j] != final[i][j]) {
+                diffs++;
+            }
+        }
+    }
+    return diffs;
+}
+
+int chooseCellsToFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
 
     Coordinate *emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
     int numOfEmpty = getEmptyCells(board, emptyCells);
@@ -459,7 +503,7 @@ int generateFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
     return numOfEmpty;
 }
 
-void generateClear(Game *game, Coordinate *cellsToClear, int sizeToKeep) {
+void chooseCellsToClear(Game *game, Coordinate *cellsToClear, int sizeToKeep) {
 
     int sizeToClear;
     Coordinate *filledCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
@@ -470,122 +514,133 @@ void generateClear(Game *game, Coordinate *cellsToClear, int sizeToKeep) {
     free(filledCells);
 }
 
-void setsToRedoUndoInputLists(Game *game, Input *sets, Input *redoInputs, Input *undoInputs, int len) {
-
-    /*works as long there is no set to the same co-ordinate twice*/
-    int k;
-    for (k = 0; k < len; k++) {
-        setUndoRedoInputs(game, sets[k], &redoInputs[k], &undoInputs[k]);
-    }
-
-}
-
-void performSetsFromInputList(Game *game, Input *sets, int len) {
+void performSetsFromRedoList(Game *game, Input *sets, int len) {
     int k;
     for (k = 0; k < len; k++) {
         setCoordinate(game, sets[k]);
     }
 }
 
-void performGenerate(Game *game, Input input) {
-    Board solutionBoard;
-    Board tempBoard;
-    Coordinate *cellsToFill;
-    Coordinate *cellsToClear;
-    int numOfEmpty, numOfFilled, numToKeep, numToClear, numToFill, numOfSets;
-    Input *redoInputs;
-    Input *undoInputs;
-    Input *listOfSets;
-    int k, t;
+Bool performGenerate(Game *game, Input input) {
 
+    /*variables deceleration*/
+    const int NUM_OF_ITERATIONS = 1000;
+    int k, numToFill, numToClear, numOfSets;
+    Bool flag = false;
 
+    Board newBoard, solutionBoard;
+    Coordinate *cellsToFill, *cellsToClear;
+    Input *redoInputs, *undoInputs;
+
+    /*variables deceleration*/
     numToFill = input.gen1;
-    numToKeep = input.gen2;
+    numToClear = g_gameDim.cellsCount - input.gen2;
 
-
-    tempBoard = createBoard();
+    newBoard = createBoard();
     solutionBoard = createBoard();
-    copyBoard(tempBoard , game->user_matrix);
 
 
+    /*step 1 - fill the board */
+
+    /*choose cells to fill*/
     cellsToFill = (Coordinate *) malloc(numToFill * sizeof(Coordinate));
+    chooseCellsToFill(newBoard, cellsToFill, numToFill);
 
-/*
-    for(k=0;k)
-    fillSolutionMatrix(game->user_matrix, solutionBoard);
-*/
-
-    numOfEmpty = generateFill(tempBoard, cellsToFill, numToFill);
-
-    numOfFilled = g_gameDim.cellsCount - numOfEmpty;
-    numToClear = numOfFilled - numToKeep;
-
-    cellsToClear = (Coordinate *) malloc(numToClear * sizeof(Coordinate));
-    generateClear(game, cellsToClear, numToClear);
-
-    numOfSets = numToFill + numToClear;
-    redoInputs = (Input *) malloc(numOfSets * sizeof(Input));
-    undoInputs = (Input *) malloc(numOfSets * sizeof(Input));
-    listOfSets = (Input *) malloc(numOfSets * sizeof(Input));
-
-
-    for (k = 0; k < numOfSets; k++) {
-        if (k < numToFill) {
-            listOfSets[k].coordinate = cellsToFill[k];
-            listOfSets[k].value = solutionBoard[cellsToFill[k].i][cellsToFill[k].j];
-        } else {
-            t = k - numToFill;
-            listOfSets[k].coordinate = cellsToClear[t];
-            listOfSets[k].value = 0;
-        }
+    /*try 1000 times to fill and solve*/
+    for (k = 0; k < NUM_OF_ITERATIONS; k++) {
+        copyBoard(newBoard, game->user_matrix);
+        if (!fillXRandomCells(newBoard, cellsToFill, numToFill)) { continue; }
+        if (!fillSolutionMatrix(newBoard, solutionBoard)) { continue; }
+        flag = true;
+        break;
     }
 
-    setsToRedoUndoInputLists(game, listOfSets, redoInputs, undoInputs, numOfSets);
-    if (numOfSets > 0) { insertInputsToList(redoInputs, undoInputs, numOfSets); }
+    if (!flag) {
+        printError(EGenerationFailed);
+        destroyBoard(solutionBoard, g_gameDim);
+        destroyBoard(newBoard, g_gameDim);
+        free(cellsToFill);
+        return false;
+    }
 
 
-    performSetsFromInputList(game, listOfSets, numOfSets);
+    /*step 2 - clear cells from the board */
+    cellsToClear = (Coordinate *) malloc(numToClear * sizeof(Coordinate));
+    chooseCellsToClear(game, cellsToClear, numToClear);
+    clearRandomCells(newBoard, cellsToClear, numToClear);
+
+    /*step 3 - perform changes and update the redo/undo list */
+    numOfSets = numOfDiffs(game->user_matrix, newBoard);
+    redoInputs = (Input *) malloc(numOfSets * sizeof(Input));
+    undoInputs = (Input *) malloc(numOfSets * sizeof(Input));
+
+    if (numOfSets > 0) {
+        diffToRedoUndoLists(game->user_matrix, newBoard, redoInputs, undoInputs);
+        insertInputsToList(redoInputs, undoInputs, numOfSets);
+        performSetsFromRedoList(game, redoInputs, numOfSets);
+    }
+
+    copyBoard(game->user_matrix, newBoard); /*update the user board*/
+
+    destroyBoard(solutionBoard, g_gameDim);
+    destroyBoard(newBoard, g_gameDim);
 
     free(cellsToFill);
     free(cellsToClear);
+
     free(redoInputs);
     free(undoInputs);
-    free(listOfSets);
 
+    return true;
 }
 
-void performAutoFill(Game *game) {
+int fillObviousValues(Board board) {
+
     Coordinate *emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
     int *possibleValues = (int *) malloc(g_gameDim.cellsCount * sizeof(int));
-    Input *cellsToFill = (Input *) malloc(g_gameDim.cellsCount * sizeof(Input));
-    Input *redoInputs = (Input *) malloc(g_gameDim.cellsCount * sizeof(Input));
-    Input *undoInputs = (Input *) malloc(g_gameDim.cellsCount * sizeof(Input));
 
-    int numOfEmpty = getEmptyCells(game->user_matrix, emptyCells);
+    int numOfEmpty = getEmptyCells(board, emptyCells);
     int numOfPossibleValues;
     int numOfCellsToFill = 0;
 
     int k;
     for (k = 0; k < numOfEmpty; k++) {
-        numOfPossibleValues = getPossibleValues(game->user_matrix, emptyCells[k], possibleValues);
+        numOfPossibleValues = getPossibleValues(board, emptyCells[k], possibleValues);
         if (numOfPossibleValues == 1) {
-            cellsToFill[numOfCellsToFill].value = possibleValues[0];
-            cellsToFill[numOfCellsToFill].coordinate = emptyCells[k];
+            board[emptyCells[k].i][emptyCells[k].j] = possibleValues[0];
             numOfCellsToFill++;
         }
     }
 
-
-    setsToRedoUndoInputLists(game, cellsToFill, redoInputs, undoInputs, numOfCellsToFill);
-    if (numOfCellsToFill > 0) { insertInputsToList(redoInputs, undoInputs, numOfCellsToFill); }
-    performSetsFromInputList(game, cellsToFill, numOfCellsToFill);
-
-
     free(emptyCells);
     free(possibleValues);
-    free(cellsToFill);
+    return numOfCellsToFill;
+}
+
+Bool performAutoFill(Game *game) {
+
+    Board newBoard = createBoard();
+    int numOfSets;
+    Input *redoInputs;
+    Input *undoInputs;
+
+    copyBoard(newBoard, game->user_matrix);
+    numOfSets = fillObviousValues(newBoard);
+    redoInputs = (Input *) malloc(numOfSets * sizeof(Input));
+    undoInputs = (Input *) malloc(numOfSets * sizeof(Input));
+
+    if (numOfSets > 0) {
+        diffToRedoUndoLists(game->user_matrix, newBoard, redoInputs, undoInputs);
+        insertInputsToList(redoInputs, undoInputs, numOfSets);
+        performSetsFromRedoList(game, redoInputs, numOfSets);
+    } else { printPrompt(PNoObviousCells, 0); }
+
+    copyBoard(game->user_matrix, newBoard); /*update the user board*/
+    destroyBoard(newBoard, g_gameDim);
     free(redoInputs);
     free(undoInputs);
+
+    return (numOfSets > 0);
 }
 
 Bool checkLegalInput(Input input, Game *game) {
@@ -914,7 +969,7 @@ void executeCommand(Input input, Game **gameP) {
         }
         case COMMAND_SET: {
             Input redoInput, undoInput;
-            setUndoRedoInputs(game, input, &redoInput, &undoInput);
+            updateRedoUndoInputsAfterSingleSet(game, input, &redoInput, &undoInput);
             if (setCoordinate(game, input)) {
                 insertInputsToList(&redoInput, &undoInput, 1);
                 if (g_mode == Solve && isFullUserBoard(game)) {
@@ -939,8 +994,7 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_GENERATE: {
-            performGenerate(game, input);
-            success = true; /*TODO: nir - please update if command executed successful*/
+            success = performGenerate(game, input);
             break;
         }
         case COMMAND_UNDO: {
@@ -978,8 +1032,7 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_AUTOFILL: {
-            performAutoFill(game);
-            success = true; /*fail condition checked in isLegalMove*/
+            success = performAutoFill(game); /* another failed condition checked in isLegalMove*/
             break;
         }
         case COMMAND_RESET: {
