@@ -55,7 +55,8 @@ typedef enum _error {
     EFileOpenFailure,
     EFileCloseFailure,
     EFileScanFailure,
-    EFUnsolvableBoard
+    EFUnsolvableBoard,
+    EGenerationFailed
 
 } Error;
 
@@ -80,7 +81,8 @@ typedef enum _prompt {
     PNextCommand,
     PNumSolutionsOutput,
     PPerformedChanges,
-    PWrongSolution
+    PWrongSolution,
+    PNoObviousCells
 
 } Prompt;
 
