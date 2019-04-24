@@ -1016,6 +1016,8 @@ void guessHint(Board board, Coordinate coordinate) {
     destroyGurobiEnv();
 }
 
+
+
 void guessBoard(Board board, Board solutionBoard, double threshold) {
     FinishCode finishCode;
     copyBoard(solutionBoard, board);
