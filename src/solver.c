@@ -860,10 +860,11 @@ Bool fillSolutionMatrix(Board board, Board solutionBoard) {
     initGurobiEnv();
     copyBoard(solutionBoard, board);
     fillBoard(solutionBoard);
-    copyBoard(board, solutionBoard);
+    copyBoard(board, solutionBoard); /*TODO: delete*/
     destroyGurobiEnv();
     return true; /*TODO: nir - please return the correct value*/
 }
+/*
 
 Bool validateSolutionExistence(Board board) {
     Board tempBoard;
@@ -876,7 +877,9 @@ Bool validateSolutionExistence(Board board) {
     destroyGurobiEnv();
     destroyBoard(tempBoard, g_gameDim);
 
-    /*TODO: testing required (eg. non solvable board...)*/
+    */
+/*TODO: testing required (eg. non solvable board...)*//*
+
     if (finishCode != FC_SUCCESS) {
         return false;
     } else {
@@ -895,7 +898,9 @@ Bool hint(Board board, Coordinate coor) {
 
     if (finishCode == FC_SUCCESS) {
         printf("Hint: for cell (%d,%d), the value can be %d\n", coor.i, coor.j, tempBoard[coor.i][coor.j]);
-        /*TODO: print better message*/
+        */
+/*TODO: print better message*//*
+
     }
 
     destroyGurobiEnv();
@@ -909,3 +914,4 @@ Bool hint(Board board, Coordinate coor) {
     }
 }
 
+*/

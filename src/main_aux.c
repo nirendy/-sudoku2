@@ -916,8 +916,7 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_VALIDATE: {
-            /*TODO: print someting*/
-            validateSolutionExistence(game->user_matrix);
+            validate(game);
             break;
         }
         case COMMAND_GUESS: {
@@ -946,14 +945,14 @@ void executeCommand(Input input, Game **gameP) {
         }
         case COMMAND_SAVE: {
             solutionBoard = createBoard();
-            if (fillSolutionMatrix(game->user_matrix, solutionBoard) && g_mode == Edit) {
+            if (!fillSolutionMatrix(game->user_matrix, solutionBoard) && g_mode == Edit) {
                 printError(EFUnsolvableBoard);
             } else { saveGameToFile(input.path, game); }
 
             break;
         }
         case COMMAND_HINT: {
-            hint(game->user_matrix, input.coordinate);
+            hint(game, input);
             break;
         }
         case COMMAND_GUESS_HINT: {

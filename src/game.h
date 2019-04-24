@@ -3,6 +3,10 @@
 
 #include "main_aux.h"
 
+void hint(Game *game, Input input);
+
+void validate(Game *game);
+
 Bool setCoordinate(Game *game, Input input);
 
 Bool isCoordinateFixed(Game *game, Coordinate coordinate);
