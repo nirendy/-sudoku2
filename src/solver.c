@@ -525,7 +525,6 @@ FinishCode initGurobiEnv() {
     return FC_SUCCESS;
 }
 
-/* Gurobi*/
 void destroyGurobiEnv() {
     GRBfreemodel(model);
     GRBfreeenv(env);
