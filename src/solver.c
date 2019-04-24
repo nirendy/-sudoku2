@@ -413,7 +413,7 @@ void generateFixedBoard(BoolBoard board, int fixedAmount) {
     }
 }
 
-void generateGame(Game *game, int fixedAmount) {
+void old_generateGame(Game *game, int fixedAmount) {
     int i, j;
 
     /*init the user board*/
@@ -864,10 +864,11 @@ FinishCode fillBoard(Board board) {
 }
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard) {
+    FinishCode finishCode;
     initGurobiEnv();
     copyBoard(solutionBoard, board);
-    fillBoard(solutionBoard);
+    finishCode = fillBoard(solutionBoard);
     copyBoard(board, solutionBoard); /*TODO: delete*/
     destroyGurobiEnv();
-    return true; /*TODO: nir - please return the correct value*/
+    return finishCode == FC_SUCCESS;
 }

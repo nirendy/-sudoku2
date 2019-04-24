@@ -468,7 +468,7 @@ void __stdcall
   GRBmsg(GRBenv *env, const char *message){ }
 
 
-/* The following four routines are deprecated in Gurobi 2.0.
+/* The following four routines are deprecated in Gurobi -2.0.
    Use the 'LogFile' parameter to control logging instead. */
 
 int __stdcall

@@ -13,11 +13,11 @@ void mock(int mockI, Game **gameP) {
     Input input;
 
     switch (mockI) {
-        case 1: {
+        case -1: {
             g_mode = Solve;
             setGameDim(2, 2);
             *gameP = createGame();
-            generateGame(*gameP, 0);
+            old_generateGame(*gameP, 0);
 
             input.command = COMMAND_PRINT_BOARD;
             executeCommand(input, gameP);
@@ -26,17 +26,69 @@ void mock(int mockI, Game **gameP) {
             executeCommand(input, gameP);
 
             input.command = COMMAND_PRINT_BOARD;
+            executeCommand(input, gameP);
+
+            break;
+        }
+        case -2: {
+            /*solvable board*/
+
+            input.command = COMMAND_SOLVE;
+            sprintf(input.path, "%s", "../data/-2");
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_PRINT_BOARD;
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_VALIDATE;
+            executeCommand(input, gameP);
+
+            break;
+        }
+        case -3: {
+            /*non solvable board*/
+
+            input.command = COMMAND_SOLVE;
+            sprintf(input.path, "%s", "../data/-3");
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_PRINT_BOARD;
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_VALIDATE;
+            executeCommand(input, gameP);
+            break;
+
+        }
+        case -4: {
+            /*4X4 solvable board*/
+
+            input.command = COMMAND_SOLVE;
+            sprintf(input.path, "%s", "../data/-4");
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_PRINT_BOARD;
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_VALIDATE;
             executeCommand(input, gameP);
             break;
         }
-        case 2: {
+        case -5: {
+            /*5X5 solvable board*/
+
             input.command = COMMAND_SOLVE;
-            sprintf(input.path, "%s", "../data/1");
+            sprintf(input.path, "%s", "../data/-5");
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_PRINT_BOARD;
             executeCommand(input, gameP);
 
             input.command = COMMAND_VALIDATE;
             executeCommand(input, gameP);
-
+            break;
+        }
+        case -6: {
             break;
         }
         default: {
@@ -56,7 +108,7 @@ int main() {
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-    /*mock(1, &game);*/
+    mock(-4, &game);
 
     while (g_mode != Exit) {
         if (askUserForNextTurn(&input)) {

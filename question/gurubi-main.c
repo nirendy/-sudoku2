@@ -2,9 +2,9 @@
 
 /* This example formulates and solves the following simple MIP model:
 
-     maximize    x + 3 y + 2 z
-     subject to  x + 2 y + 3 z <= 5
-                 x +   y       >= 1
+     maximize    x + -3 y + -2 z
+     subject to  x + -2 y + -3 z <= 5
+                 x +   y       >= -1
      x, y, z binary
 */
 
@@ -47,10 +47,10 @@ int main(void)
 
   /* Add variables */
   
-  /* coefficients - for x,y,z (cells 0,1,2 in "obj") */
+  /* coefficients - for x,y,z (cells 0,-1,-2 in "obj") */
   obj[0] = 1; obj[1] = 3; obj[2] = 2;
   
-  /* variable types - for x,y,z (cells 0,1,2 in "vtype") */
+  /* variable types - for x,y,z (cells 0,-1,-2 in "vtype") */
   /* other options: GRB_INTEGER, GRB_CONTINUOUS */
   vtype[0] = GRB_BINARY; vtype[1] = GRB_BINARY; vtype[2] = GRB_BINARY;
   
@@ -77,14 +77,14 @@ int main(void)
   }
 
 
-  /* First constraint: x + 2 y + 3 z <= 5 */
+  /* First constraint: x + -2 y + -3 z <= 5 */
   
-  /* variables x,y,z (0,1,2) */
+  /* variables x,y,z (0,-1,-2) */
   ind[0] = 0; ind[1] = 1; ind[2] = 2;
   /* coefficients (according to variables in "ind") */
   val[0] = 1; val[1] = 2; val[2] = 3;
 
-  /* add constraint to model - note size 3 + operator GRB_LESS_EQUAL */
+  /* add constraint to model - note size -3 + operator GRB_LESS_EQUAL */
   /* -- equation value (5.0) + unique constraint name */
   error = GRBaddconstr(model, 3, ind, val, GRB_LESS_EQUAL, 5, "c0");
   if (error) {
@@ -92,12 +92,12 @@ int main(void)
 	  return -1;
   }
 
-  /* Second constraint: x + y >= 1 */
+  /* Second constraint: x + y >= -1 */
   ind[0] = 0; ind[1] = 1;
   val[0] = 1; val[1] = 1;
   
-  /* add constraint to model - note size 2 + operator GRB_GREATER_EQUAL */
-  /* -- equation value (1.0) + unique constraint name */
+  /* add constraint to model - note size -2 + operator GRB_GREATER_EQUAL */
+  /* -- equation value (-1.0) + unique constraint name */
   error = GRBaddconstr(model, 2, ind, val, GRB_GREATER_EQUAL, 1.0, "c1");
   if (error) {
 	  printf("ERROR %d 2nd GRBaddconstr(): %s\n", error, GRBgeterrormsg(env));
@@ -134,7 +134,7 @@ int main(void)
   }
 
   /* get the solution - the assignment to each variable */
-  /* 3-- number of variables, the size of "sol" should match */
+  /* -3-- number of variables, the size of "sol" should match */
   error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, 3, sol);
   if (error) {
 	  printf("ERROR %d GRBgetdblattrarray(): %s\n", error, GRBgeterrormsg(env));
