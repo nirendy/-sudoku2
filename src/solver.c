@@ -624,6 +624,13 @@ FinishCode addVarsToModel(Board board, PossibleVar *coorV2var) {
         free(possibleValues);
     }
 
+    /* Change objective sense to maximization */
+    error = GRBsetintattr(model, GRB_INT_ATTR_MODELSENSE, GRB_MAXIMIZE);
+    if (error) {
+        printf("ERROR %d GRBsetintattr(): %s\n", error, GRBgeterrormsg(env));
+        return -1;
+    }
+
     /* update the model - to integrate new variables */
 
     error = GRBupdatemodel(model);
