@@ -1046,6 +1046,7 @@ FinishCode guessFillBoard(Board board, double threshold) {
 }
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard) {
+
     FinishCode finishCode;
     initGurobiEnv();
     copyBoard(solutionBoard, board);

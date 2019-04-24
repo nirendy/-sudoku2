@@ -426,12 +426,11 @@ void chooseRandCords(Coordinate *source, int sourceSize, Coordinate *target, int
     int *randIndexes = (int *) malloc(sourceSize * sizeof(int));
 
     for (i = 0; i < sourceSize; i++) { randIndexes[i] = i; }
-
     limit = sourceSize;
     for (i = 0; i < targetSize; i++) {
-        r = randIndexes[randLimit(limit)];
-        source[i] = target[r];
-        randIndexes[r] = randIndexes[limit];
+        r = randLimit(limit);
+        target[i] = source[randIndexes[r]];
+        randIndexes[r] = randIndexes[limit - 1];
         limit--;
     }
 
@@ -448,7 +447,6 @@ Bool fillXRandomCells(Board board, Coordinate *cellsToFill, int numToFill) {
         if (numOfPossibleValues == 0) { return false; }
         board[cellsToFill[k].i][cellsToFill[k].j] = possibleValues[randLimit(numOfPossibleValues)];
     }
-
     return true;
 }
 
@@ -498,18 +496,15 @@ int chooseCellsToFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
     Coordinate *emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
     int numOfEmpty = getEmptyCells(board, emptyCells);
     chooseRandCords(emptyCells, numOfEmpty, cellsToFill, sizeToFill);
-
     free(emptyCells);
     return numOfEmpty;
 }
 
-void chooseCellsToClear(Game *game, Coordinate *cellsToClear, int sizeToKeep) {
+void chooseCellsToClear(Board board, Coordinate *cellsToClear, int numToClear) {
 
-    int sizeToClear;
     Coordinate *filledCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
-    int numOfFilled = getFilledCells(game->user_matrix, filledCells);
-    sizeToClear = numOfFilled - sizeToKeep;
-    chooseRandCords(filledCells, numOfFilled, cellsToClear, sizeToClear);
+    getFilledCells(board, filledCells);
+    chooseRandCords(filledCells, g_gameDim.cellsCount, cellsToClear, numToClear);
 
     free(filledCells);
 }
@@ -539,11 +534,11 @@ Bool performGenerate(Game *game, Input input) {
     newBoard = createBoard();
     solutionBoard = createBoard();
 
-
     /*step 1 - fill the board */
 
     /*choose cells to fill*/
     cellsToFill = (Coordinate *) malloc(numToFill * sizeof(Coordinate));
+    copyBoard(newBoard, game->user_matrix);
     chooseCellsToFill(newBoard, cellsToFill, numToFill);
 
     /*try 1000 times to fill and solve*/
@@ -555,6 +550,7 @@ Bool performGenerate(Game *game, Input input) {
         break;
     }
 
+    copyBoard(newBoard, solutionBoard);
     if (!flag) {
         printError(EGenerationFailed);
         destroyBoard(solutionBoard, g_gameDim);
@@ -566,8 +562,10 @@ Bool performGenerate(Game *game, Input input) {
 
     /*step 2 - clear cells from the board */
     cellsToClear = (Coordinate *) malloc(numToClear * sizeof(Coordinate));
-    chooseCellsToClear(game, cellsToClear, numToClear);
-    clearRandomCells(newBoard, cellsToClear, numToClear);
+    if (numToClear > 0) {
+        chooseCellsToClear(newBoard, cellsToClear, numToClear);
+        clearRandomCells(newBoard, cellsToClear, numToClear);
+    }
 
     /*step 3 - perform changes and update the redo/undo list */
     numOfSets = numOfDiffs(game->user_matrix, newBoard);
@@ -756,7 +754,7 @@ Bool checkLegalInput(Input input, Game *game) {
 
             if (input.gen1 > numOfEmptyCells) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be smaller or equal than the number of empty cells");
+                printf("parameter must be smaller or equal than the number of empty cells\n");
                 return false;
             }
 
