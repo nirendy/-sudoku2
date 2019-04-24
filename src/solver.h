@@ -29,6 +29,10 @@ void clearBoolBoard(BoolBoard board);
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard);
 
+Bool validateSolutionExistence(Board board);
+
+Bool hint(Board board, Coordinate coor);
+
 Bool fillSolutionProbabiltyMatrix(Board board, ProbBoard probBoard, Board solutionBoard);
 
 #endif
