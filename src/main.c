@@ -10,7 +10,7 @@
 
 int main() {
     Input input;
-    Game *game;
+    Game *game = NULL;
     g_mode = Init;
     g_markError = true;
     g_curNode = CreateFirstNode();
@@ -19,9 +19,9 @@ int main() {
 
 
     /*To avoid uninitialized game warning*/
-    setGameDim(1, 1);
+/*    setGameDim(1, 1);
     game = createGame();
-    /*destroyGame(game);*/
+    *//*destroyGame(game);*/
 
     /*printf("%s", getenv("PATH"));*/
     /* MOCK
