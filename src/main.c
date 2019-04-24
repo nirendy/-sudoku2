@@ -11,8 +11,33 @@
 
 void mock(int mockI, Game **gameP) {
     Input input;
+    Input setInput;
+    Input generateInput;
 
     switch (mockI) {
+        case 1: {
+            input.command = COMMAND_EDIT;
+            sprintf(input.path, "%s", "../data/1");
+
+            input.command = COMMAND_PRINT_BOARD;
+            executeCommand(input, gameP);
+
+            setInput.command = COMMAND_SET;
+            setInput.coordinate.i = 0;
+            setInput.coordinate.j = 0;
+            setInput.value = 0;
+            executeCommand(setInput, gameP);
+
+            input.command = COMMAND_PRINT_BOARD;
+            executeCommand(input, gameP);
+
+            generateInput.command = COMMAND_GENERATE;
+            generateInput.gen1 = 3;
+            generateInput.gen2 = 0;
+            executeCommand(generateInput , gameP);
+
+            break;
+        }
         case -1: {
             g_mode = Solve;
             setGameDim(3, 3);
@@ -108,7 +133,7 @@ int main() {
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-    mock(-1, &game);
+    /*mock(1, &game);*/
 
     while (g_mode != Exit) {
         if (askUserForNextTurn(&input)) {

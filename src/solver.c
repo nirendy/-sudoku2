@@ -912,6 +912,7 @@ FinishCode fillBoardAndGuessHint(Board board, Coordinate coor) {
 }
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard) {
+
     FinishCode finishCode;
     initGurobiEnv();
     copyBoard(solutionBoard, board);
