@@ -64,7 +64,8 @@ typedef enum _finish_code {
     FC_EOF,
     FC_INVALID_RECOVERABLE,
     FC_INVALID_TERMINATE,
-    FC_UNEXPECTED_ERROR
+    FC_UNEXPECTED_ERROR,
+    FC_SUCCESS_NOT_SOLVABLE
 } FinishCode;
 
 typedef enum _prompt {

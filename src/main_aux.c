@@ -8,7 +8,6 @@
 #include "linked_list.h"
 
 
-
 void printError(Error err) {
 
     switch (err) {
@@ -284,7 +283,7 @@ void copyBoard(Board targetBoard, Board copyFromBoard) {
 
 }
 
-Bool isCommandAllowedInMode(Mode mode , Command command) {
+Bool isCommandAllowedInMode(Mode mode, Command command) {
     switch (command) {
         case COMMAND_SOLVE: {
             return true;
@@ -417,15 +416,15 @@ void insertInputsToList(Input *redoInputs, Input *undoInputs, int numOfInputs) {
 
 }
 
-void chooseRandCords (Coordinate *source , int sourceSize ,Coordinate *target, int targetSize){
-    int i, r , limit;
+void chooseRandCords(Coordinate *source, int sourceSize, Coordinate *target, int targetSize) {
+    int i, r, limit;
     int *randIndexes = (int *) malloc(sourceSize * sizeof(int));
 
-    for (i = 0; i < sourceSize; i++) {  randIndexes[i] = i;  }
+    for (i = 0; i < sourceSize; i++) { randIndexes[i] = i; }
 
     limit = sourceSize;
     for (i = 0; i < targetSize; i++) {
-        r =  randIndexes[randLimit(limit)];
+        r = randIndexes[randLimit(limit)];
         source[i] = target[r];
         randIndexes[r] = randIndexes[limit];
         limit--;
@@ -457,7 +456,7 @@ void generateClear(Game *game, Coordinate *cellsToClear, int sizeToKeep) {
 }
 
 
-void setsToRedoUndoInputLists (Game *game , Input *sets , Input *redoInputs , Input *undoInputs , int len){
+void setsToRedoUndoInputLists(Game *game, Input *sets, Input *redoInputs, Input *undoInputs, int len) {
 
     /*works as long there is no set to the same co-ordinate twice*/
     int k;
@@ -467,24 +466,24 @@ void setsToRedoUndoInputLists (Game *game , Input *sets , Input *redoInputs , In
 
 }
 
-void performSetsFromInputList(Game *game , Input *sets , int len){
+void performSetsFromInputList(Game *game, Input *sets, int len) {
     int k;
     for (k = 0; k < len; k++) {
         setCoordinate(game, sets[k]);
     }
 }
 
-void performGenerate(Game *game, Input input){
+void performGenerate(Game *game, Input input) {
     Board solutionBoard;
     Coordinate *cellsToFill;
     Coordinate *cellsToClear;
-    int numOfEmpty , numOfFilled , numToKeep , numToClear , numToFill , numOfSets;
+    int numOfEmpty, numOfFilled, numToKeep, numToClear, numToFill, numOfSets;
     Input *redoInputs;
     Input *undoInputs;
     Input *listOfSets;
-    int k , t;
+    int k, t;
 
-    numToFill =input.gen1;
+    numToFill = input.gen1;
     numToKeep = input.gen2;
 
     solutionBoard = createBoard();
@@ -507,10 +506,10 @@ void performGenerate(Game *game, Input input){
 
 
     for (k = 0; k < numOfSets; k++) {
-        if(k<numToFill){
+        if (k < numToFill) {
             listOfSets[k].coordinate = cellsToFill[k];
             listOfSets[k].value = solutionBoard[cellsToFill[k].i][cellsToFill[k].j];
-        } else{
+        } else {
             t = k - numToFill;
             listOfSets[k].coordinate = cellsToClear[t];
             listOfSets[k].value = 0;
@@ -554,7 +553,7 @@ void performAutoFill(Game *game) {
     }
 
 
-    setsToRedoUndoInputLists(game, cellsToFill , redoInputs ,undoInputs , numOfCellsToFill);
+    setsToRedoUndoInputLists(game, cellsToFill, redoInputs, undoInputs, numOfCellsToFill);
     if (numOfCellsToFill > 0) { insertInputsToList(redoInputs, undoInputs, numOfCellsToFill); }
     performSetsFromInputList(game, cellsToFill, numOfCellsToFill);
 
@@ -908,8 +907,7 @@ void executeCommand(Input input, Game **gameP) {
                     if (!isBoardErroneous(game)) {
                         printPrompt(PSuccess, 0);
                         g_mode = Init;
-                    }
-                    else{
+                    } else {
                         printPrompt(PWrongSolution, 0);
                     }
                 }
@@ -918,8 +916,8 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_VALIDATE: {
-            /*validate(game);*/
-            fillSolutionMatrix(game->user_matrix, game->user_matrix);
+            /*TODO: print someting*/
+            validateSolutionExistence(game->user_matrix);
             break;
         }
         case COMMAND_GUESS: {
@@ -928,7 +926,7 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_GENERATE: {
-            performGenerate(game,input);
+            performGenerate(game, input);
             success = true; /*TODO: nir - please update if command executed successful*/
             break;
         }
@@ -948,15 +946,14 @@ void executeCommand(Input input, Game **gameP) {
         }
         case COMMAND_SAVE: {
             solutionBoard = createBoard();
-            if (fillSolutionMatrix(game->user_matrix, solutionBoard) &&  g_mode == Edit){
+            if (fillSolutionMatrix(game->user_matrix, solutionBoard) && g_mode == Edit) {
                 printError(EFUnsolvableBoard);
-            }
-            else{ saveGameToFile(input.path, game); }
+            } else { saveGameToFile(input.path, game); }
 
             break;
         }
         case COMMAND_HINT: {
-            hint(game,input);
+            hint(game->user_matrix, input.coordinate);
             break;
         }
         case COMMAND_GUESS_HINT: {
@@ -990,16 +987,16 @@ void executeCommand(Input input, Game **gameP) {
         }
     }
 
-    if ( success ==true &&
-         (input.command == COMMAND_SOLVE ||
-          input.command == COMMAND_EDIT ||
-          input.command == COMMAND_SET ||
-          input.command == COMMAND_AUTOFILL ||
-          input.command == COMMAND_UNDO ||
-          input.command == COMMAND_REDO ||
-          input.command == COMMAND_GENERATE ||
-          input.command == COMMAND_GUESS ||
-          input.command == COMMAND_RESET)) {
+    if (success == true &&
+        (input.command == COMMAND_SOLVE ||
+         input.command == COMMAND_EDIT ||
+         input.command == COMMAND_SET ||
+         input.command == COMMAND_AUTOFILL ||
+         input.command == COMMAND_UNDO ||
+         input.command == COMMAND_REDO ||
+         input.command == COMMAND_GENERATE ||
+         input.command == COMMAND_GUESS ||
+         input.command == COMMAND_RESET)) {
         printBoard(game);
     }
 

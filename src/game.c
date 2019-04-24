@@ -48,32 +48,3 @@ Bool setCoordinate(Game *game, Input input) {
     return 1;
 
 }
-
-void hint(Game *game, Input input) {
-
-    Board solutionBoard;
-    solutionBoard = createBoard();
-
-    if (fillSolutionMatrix(game->user_matrix, solutionBoard)) {
-        printPrompt(PHint, solutionBoard[input.coordinate.i][input.coordinate.i]);
-    }
-
-    else{
-        printError(EFUnsolvableBoard);
-    }
-
-    destroyBoard(solutionBoard, g_gameDim);
-
-}
-
-void validate(Game *game) {
-    Board solutionBoard;
-    solutionBoard = createBoard();
-    if (fillSolutionMatrix(game->user_matrix, solutionBoard)) {
-        printPrompt(PValidateSuccess, 0);
-    } else {
-        printPrompt(PValidateFailed, 0);
-    }
-
-    destroyBoard(solutionBoard, g_gameDim);
-}
