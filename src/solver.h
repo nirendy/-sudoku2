@@ -29,7 +29,7 @@ void clearBoolBoard(BoolBoard board);
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard);
 
-Bool fillSolutionProbabiltyMatrix(Board board, ProbBoard probBoard, Board solutionBoard);
+void guessBoard(Board board, Board solutionBoard, double threshold);
 
 void guessHint(Board board, Coordinate coordinate);
 
