@@ -7,7 +7,7 @@
 
 int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues);
 
-void generateGame(Game *game, int fixedAmount);
+void old_generateGame(Game *game, int fixedAmount);
 
 Bool solveBoard(const Board userBoard, Board toSolveBoard, Bool isDeterministic);
 
@@ -30,6 +30,8 @@ void clearBoolBoard(BoolBoard board);
 Bool fillSolutionMatrix(Board board, Board solutionBoard);
 
 Bool fillSolutionProbabiltyMatrix(Board board, ProbBoard probBoard, Board solutionBoard);
+
+void guessHint(Board board, Coordinate coordinate);
 
 #endif
 

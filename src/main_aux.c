@@ -659,7 +659,7 @@ Bool checkLegalInput(Input input, Game *game) {
             /*     parameter range check    */
             if (!(input.value == 0 || input.value == 1)) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be a binary number - 0 or 1\n");
+                printf("parameter must be a binary number - 0 or -1\n");
                 return false;
             }
 
@@ -676,14 +676,14 @@ Bool checkLegalInput(Input input, Game *game) {
             /*First Parameter Check*/
             if (!(input.coordinate.i >= 0 && input.coordinate.i <= g_gameDim.N - 1)) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be an integer number between 1 and %d\n", g_gameDim.N);
+                printf("parameter must be an integer number between -1 and %d\n", g_gameDim.N);
                 return false;
             }
 
             /*Second Parameter Check*/
             if (!(input.coordinate.j >= 0 && input.coordinate.j <= g_gameDim.N - 1)) {
                 printError(EInvalidSecondParam);
-                printf("parameter must be an integer number between 1 and %d\n", g_gameDim.N);
+                printf("parameter must be an integer number between -1 and %d\n", g_gameDim.N);
                 return false;
             }
 
@@ -718,7 +718,7 @@ Bool checkLegalInput(Input input, Game *game) {
 
             if (!(input.threshold >= 0 && input.threshold <= 1)) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be a float number between 0 and 1\n");
+                printf("parameter must be a float number between 0 and -1\n");
                 return false;
             }
 
@@ -938,7 +938,7 @@ void executeCommand(Input input, Game **gameP) {
             if (strlen(input.path) == 0) {
                 setGameDim(3, 3);
                 newGame = createGame();
-                generateGame(newGame, 0);
+                old_generateGame(newGame, 0);
             } else {
                 newGame = createGameFromFile(input.path);
             }
@@ -1024,7 +1024,7 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_GUESS_HINT: {
-            printf("Command not implemented yet");
+            guessHint(game->user_matrix, input.coordinate);
             break;
         }
         case COMMAND_NUM_SOLUTIONS: {
