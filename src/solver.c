@@ -530,7 +530,6 @@ FinishCode initGurobiEnv() {
     return FC_SUCCESS;
 }
 
-/* Gurobi*/
 void destroyGurobiEnv() {
     GRBfreemodel(model);
     GRBfreeenv(env);
@@ -868,52 +867,7 @@ Bool fillSolutionMatrix(Board board, Board solutionBoard) {
     initGurobiEnv();
     copyBoard(solutionBoard, board);
     fillBoard(solutionBoard);
-    copyBoard(board, solutionBoard);
+    copyBoard(board, solutionBoard); /*TODO: delete*/
     destroyGurobiEnv();
     return true; /*TODO: nir - please return the correct value*/
 }
-
-Bool validateSolutionExistence(Board board) {
-    Board tempBoard;
-    FinishCode finishCode;
-
-    initGurobiEnv();
-    tempBoard = createBoard();
-    copyBoard(tempBoard, board);
-    finishCode = fillBoard(tempBoard);
-    destroyGurobiEnv();
-    destroyBoard(tempBoard, g_gameDim);
-
-    /*TODO: testing required (eg. non solvable board...)*/
-    if (finishCode != FC_SUCCESS) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
-Bool hint(Board board, Coordinate coor) {
-    Board tempBoard;
-    FinishCode finishCode;
-
-    initGurobiEnv();
-    tempBoard = createBoard();
-    copyBoard(tempBoard, board);
-    finishCode = fillBoard(tempBoard);
-
-    if (finishCode == FC_SUCCESS) {
-        printf("Hint: for cell (%d,%d), the value can be %d\n", coor.i, coor.j, tempBoard[coor.i][coor.j]);
-        /*TODO: print better message*/
-    }
-
-    destroyGurobiEnv();
-    destroyBoard(tempBoard, g_gameDim);
-
-
-    if (finishCode != FC_SUCCESS) {
-        return false;
-    } else {
-        return true;
-    }
-}
-

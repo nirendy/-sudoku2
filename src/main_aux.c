@@ -434,10 +434,25 @@ void chooseRandCords(Coordinate *source, int sourceSize, Coordinate *target, int
 }
 
 
-int generateFill(Game *game, Coordinate *cellsToFill, int sizeToFill) {
+Bool fillXRandomCells(Board board , Coordinate *cellsToFill , int X) {
+
+    int k, numOfPossibleValues;
+    int *possibleValues = (int*)malloc(g_gameDim.N* sizeof(int*));
+
+    for (k = 0; k < X; k++) {
+        numOfPossibleValues = getPossibleValues(board, cellsToFill[k], possibleValues);
+        if (numOfPossibleValues == 0) { return false; }
+        board[cellsToFill[k].i][cellsToFill[k].j] = possibleValues[randLimit(numOfPossibleValues)];
+    }
+
+    return true;
+}
+
+
+int generateFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
 
     Coordinate *emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
-    int numOfEmpty = getEmptyCells(game->user_matrix, emptyCells);
+    int numOfEmpty = getEmptyCells(board, emptyCells);
     chooseRandCords(emptyCells, numOfEmpty, cellsToFill, sizeToFill);
 
     free(emptyCells);
@@ -454,7 +469,6 @@ void generateClear(Game *game, Coordinate *cellsToClear, int sizeToKeep) {
 
     free(filledCells);
 }
-
 
 void setsToRedoUndoInputLists(Game *game, Input *sets, Input *redoInputs, Input *undoInputs, int len) {
 
@@ -475,6 +489,7 @@ void performSetsFromInputList(Game *game, Input *sets, int len) {
 
 void performGenerate(Game *game, Input input) {
     Board solutionBoard;
+    Board tempBoard;
     Coordinate *cellsToFill;
     Coordinate *cellsToClear;
     int numOfEmpty, numOfFilled, numToKeep, numToClear, numToFill, numOfSets;
@@ -483,15 +498,24 @@ void performGenerate(Game *game, Input input) {
     Input *listOfSets;
     int k, t;
 
+
     numToFill = input.gen1;
     numToKeep = input.gen2;
 
+
+    tempBoard = createBoard();
     solutionBoard = createBoard();
-    fillSolutionMatrix(game->user_matrix, solutionBoard);
-    /*TODO: nir - watch section f in 'generate' command in PDF*/
+    copyBoard(tempBoard , game->user_matrix);
+
 
     cellsToFill = (Coordinate *) malloc(numToFill * sizeof(Coordinate));
-    numOfEmpty = generateFill(game, cellsToFill, numToFill);
+
+/*
+    for(k=0;k)
+    fillSolutionMatrix(game->user_matrix, solutionBoard);
+*/
+
+    numOfEmpty = generateFill(tempBoard, cellsToFill, numToFill);
 
     numOfFilled = g_gameDim.cellsCount - numOfEmpty;
     numToClear = numOfFilled - numToKeep;
@@ -530,7 +554,6 @@ void performGenerate(Game *game, Input input) {
 
 }
 
-
 void performAutoFill(Game *game) {
     Coordinate *emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
     int *possibleValues = (int *) malloc(g_gameDim.cellsCount * sizeof(int));
@@ -568,7 +591,7 @@ void performAutoFill(Game *game) {
 Bool checkLegalInput(Input input, Game *game) {
     /*generate_command vars*/
     Coordinate *tempCorArray;
-    int numOfEmptyCells, numOfFilledCells;
+    int numOfEmptyCells;
 
     switch (input.command) {
         case COMMAND_SOLVE: {
@@ -681,15 +704,6 @@ Bool checkLegalInput(Input input, Game *game) {
                 printf("parameter must be smaller or equal than the number of empty cells");
                 return false;
             }
-
-            numOfFilledCells = g_gameDim.cellsCount - numOfEmptyCells;
-            if (input.gen2 > numOfFilledCells + input.gen1) {
-                printError(EInvalidSecondParam);
-                printf("second parameter must be smaller or equal "
-                       "than the sum of the filled cells and the first parameter\n");
-                return false;
-            }
-
 
             return true;
         }
@@ -916,8 +930,7 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_VALIDATE: {
-            /*TODO: print someting*/
-            validateSolutionExistence(game->user_matrix);
+            validate(game);
             break;
         }
         case COMMAND_GUESS: {
@@ -946,14 +959,14 @@ void executeCommand(Input input, Game **gameP) {
         }
         case COMMAND_SAVE: {
             solutionBoard = createBoard();
-            if (fillSolutionMatrix(game->user_matrix, solutionBoard) && g_mode == Edit) {
+            if (!fillSolutionMatrix(game->user_matrix, solutionBoard) && g_mode == Edit) {
                 printError(EFUnsolvableBoard);
             } else { saveGameToFile(input.path, game); }
 
             break;
         }
         case COMMAND_HINT: {
-            hint(game->user_matrix, input.coordinate);
+            hint(game, input);
             break;
         }
         case COMMAND_GUESS_HINT: {
