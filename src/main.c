@@ -128,6 +128,20 @@ void mock(int mockI, Game **gameP) {
             break;
         }
         case -7: {
+            /*non solvable board*/
+
+            input.command = COMMAND_SOLVE;
+            sprintf(input.path, "%s", "../data/-7");
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_PRINT_BOARD;
+            executeCommand(input, gameP);
+
+            input.command = COMMAND_VALIDATE;
+            executeCommand(input, gameP);
+            break;
+        }
+        case -8: {
             break;
         }
         default: {
@@ -147,7 +161,7 @@ int main() {
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-    /*mock(-1, &game);*/
+    mock(-7, &game);
 
     while (g_mode != Exit) {
         if (askUserForNextTurn(&input)) {

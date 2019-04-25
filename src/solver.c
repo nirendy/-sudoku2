@@ -468,7 +468,7 @@ void updateAfterClearErrorMatrix(Game *game, Input input) {
     }
 
     for (k = 0; k < g_gameDim.cellNeighboursCount; k++) {
-        in.coordinate = createCoordinate(neighbours[k].i,neighbours[k].j);
+        in.coordinate = createCoordinate(neighbours[k].i, neighbours[k].j);
         in.value = game->user_matrix[in.coordinate.i][in.coordinate.j];
         if (in.value != 0) {
             updateAfterSetErrorMatrix(game, in);
@@ -660,7 +660,6 @@ void destroyCoorV2Var(PossibleVarSentinel *coorV2var) {
     free(coorV2var);
 }
 
-
 FinishCode addVarsToModel(PossibleVarSentinel *coorV2var) {
     int error;
     int i;
@@ -789,6 +788,7 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
 
         for (k = 1; k <= g_gameDim.N; k++) {
             for (i = 0; i < g_gameDim.N; i++) {
+                Bool hadObviousCell = false;
                 int relvantVarsCount = 0;
                 char constName[100];
 
@@ -817,11 +817,20 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
                         }
                     }
 
-                    if (posVar != NULL && posVar->varIndex >= 0) {
-                        constInd[relvantVarsCount] = posVar->varIndex;
-                        relvantVarsCount++;
+                    if (posVar != NULL) {
+                        if (posVar->prob == 1) {
+                            hadObviousCell = true;
+                            break;
+                        }
+                        if (posVar->varIndex >= 0) {
+                            constInd[relvantVarsCount] = posVar->varIndex;
+                            relvantVarsCount++;
+                        }
                     }
 
+                }
+                if (hadObviousCell == true) {
+                    continue;
                 }
 
                 if (relvantVarsCount > 1) {
@@ -1049,7 +1058,6 @@ Bool fillSolutionMatrix(Board board, Board solutionBoard) {
     initGurobiEnv();
     copyBoard(solutionBoard, board);
     finishCode = fillBoard(solutionBoard);
-    /*printUserBoard(solutionBoard);*/ /* TODO: REMOVE*/
     destroyGurobiEnv();
     return finishCode == FC_SUCCESS;
 }
@@ -1071,8 +1079,6 @@ void guessHint(Board board, Coordinate coordinate) {
     destroyBoard(tempBoard, g_gameDim);
     destroyGurobiEnv();
 }
-
-
 
 void guessBoard(Board board, Board solutionBoard, double threshold) {
     FinishCode finishCode;
