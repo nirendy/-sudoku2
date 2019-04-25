@@ -1080,7 +1080,7 @@ void guessHint(Board board, Coordinate coordinate) {
     destroyGurobiEnv();
 }
 
-void guessBoard(Board board, Board solutionBoard, double threshold) {
+Bool guessBoard(Board board, Board solutionBoard, double threshold) {
     FinishCode finishCode;
     copyBoard(solutionBoard, board);
 
@@ -1094,5 +1094,6 @@ void guessBoard(Board board, Board solutionBoard, double threshold) {
     }
 
     destroyGurobiEnv();
+    return finishCode == FC_SUCCESS;
 }
 
