@@ -1,0 +1,13 @@
+Sudoku Game
+Please enter the desired command:
+-------------------
+|  1   2 |  3     |
+|        |        |
+-------------------
+|        |        |
+|        |        |
+-------------------
+Please enter the desired command:
+Validation failed: board is unsolvable
+Please enter the desired command:
+Exiting...
