@@ -1009,7 +1009,7 @@ void executeCommand(Input input, Game **gameP) {
             if (!fillSolutionMatrix(game->user_matrix, solutionBoard) && g_mode == Edit) {
                 printError(EFUnsolvableBoard);
             } else { saveGameToFile(input.path, game); }
-
+            destroyBoard(solutionBoard, g_gameDim);
             break;
         }
         case COMMAND_HINT: {

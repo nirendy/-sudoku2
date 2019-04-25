@@ -609,7 +609,8 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
     Coordinate *emptyCells;
     PossibleVarSentinel *coorV2var;
 
-    coorV2var = (PossibleVarSentinel *) calloc(g_gameDim.cellsCount, sizeof(PossibleVar));
+    coorV2var = (PossibleVarSentinel *) calloc(g_gameDim.cellsCount, sizeof(PossibleVarSentinel));
+
     emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
     /*find empty cells*/
     emptyCellsCount = getEmptyCells(board, emptyCells);

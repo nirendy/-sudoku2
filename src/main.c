@@ -40,9 +40,9 @@ void mock(int mockI, Game **gameP) {
         }
         case -1: {
             g_mode = Solve;
-            setGameDim(3, 3);
+            setGameDim(5, 2);
             *gameP = createGame();
-            old_generateGame(*gameP, 17);
+            old_generateGame(*gameP, 95);
 
             input.command = COMMAND_PRINT_BOARD;
             executeCommand(input, gameP);
@@ -147,7 +147,7 @@ int main() {
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-    /*mock(1, &game);*/
+    /*mock(-1, &game);*/
 
     while (g_mode != Exit) {
         if (askUserForNextTurn(&input)) {
@@ -156,6 +156,7 @@ int main() {
             }
         }
     }
+
     return 0;
 }
 
