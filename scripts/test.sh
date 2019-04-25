@@ -1,8 +1,5 @@
 #!/bin/bash 
-cd $(dirname $0)
-cd src
-make
-cd ..
+cd $(dirname $0)/..
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -12,11 +9,7 @@ mkdir -p output
 mkdir -p output/expected
 
 for file in $(ls tests); do
-    if [[ "$file" != "results_test15" ]]; then
-        continue
-    fi
     echo "Running test: $file"
-     question/HW3 3 < tests/"$file" > output/expected/"$file".exp
      src/HW3 3 < tests/"$file" > output/"$file".out
     if diff output/"$file".out output/expected/"$file".exp; then
         echo -e "Result: ${GREEN}PASS${NC}"
