@@ -1,0 +1,5 @@
+solve ../data/empty_2X2_num_solution
+print_board
+validate
+num_solutions
+exit

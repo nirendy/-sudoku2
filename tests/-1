@@ -1,0 +1,5 @@
+edit ../data/-1
+print_board
+validate
+print_board
+exit
