@@ -459,7 +459,6 @@ void old_generateGame(Game *game, int fixedAmount) {
 void updateAfterClearErrorMatrix(Game *game, Input input) {
     int k;
     Input in;
-    Coordinate cor;
     Coordinate *neighbours;
     neighbours = (Coordinate *) malloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
     coordinateNeighbours(input.coordinate, neighbours);
@@ -469,10 +468,8 @@ void updateAfterClearErrorMatrix(Game *game, Input input) {
     }
 
     for (k = 0; k < g_gameDim.cellNeighboursCount; k++) {
-        cor.i = neighbours[k].i;
-        cor.j = neighbours[k].j;
-        in.coordinate = cor;
-        in.value = game->user_matrix[cor.i][cor.j];
+        in.coordinate = createCoordinate(neighbours[k].i,neighbours[k].j);
+        in.value = game->user_matrix[in.coordinate.i][in.coordinate.j];
         if (in.value != 0) {
             updateAfterSetErrorMatrix(game, in);
         }

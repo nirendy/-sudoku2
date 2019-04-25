@@ -589,7 +589,6 @@ Bool performGenerate(Game *game, Input input) {
 
     /*choose cells to fill*/
     cellsToFill = (Coordinate *) malloc(numToFill * sizeof(Coordinate));
-    chooseCellsToFill(game->user_matrix, cellsToFill, numToFill);
 
     /*try 1000 times to fill and solve*/
     success = false;
@@ -597,6 +596,7 @@ Bool performGenerate(Game *game, Input input) {
     solutionBoard = createBoard();
 
     for (k = 0; k < NUM_OF_ITERATIONS; k++) {
+        chooseCellsToFill(game->user_matrix, cellsToFill, numToFill);
         copyBoard(newBoard, game->user_matrix);
         if (!fillXRandomCells(newBoard, cellsToFill, numToFill)) { continue; }
         if (!fillSolutionMatrix(newBoard, solutionBoard)) { continue; }
@@ -1036,7 +1036,7 @@ void executeCommand(Input input, Game **gameP) {
             success = true; /*fail condition checked in isLegalMove*/
             break;
         }
-        case COMMAND_EXIT: {
+        case COMMAND_EXIT: { /*TODO: nir make sure that free all resorces*/
             terminate(game, FC_SUCCESS);
             break;
         }
