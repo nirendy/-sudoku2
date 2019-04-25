@@ -1,0 +1,159 @@
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:24:15 2019
+
+Optimize a model with 0 rows, 0 columns and 0 nonzeros
+Presolve time: 0.00s
+Presolve: All rows and columns removed
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0   -0.0000000e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 0 iterations and 0.00 seconds
+Optimal objective -0.000000000e+00
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:25:00 2019
+
+Optimize a model with 0 rows, 0 columns and 0 nonzeros
+Presolve time: 0.00s
+Presolve: All rows and columns removed
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0   -0.0000000e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 0 iterations and 0.00 seconds
+Optimal objective -0.000000000e+00
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:25:25 2019
+
+Optimize a model with 0 rows, 0 columns and 0 nonzeros
+Presolve time: 0.00s
+Presolve: All rows and columns removed
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0   -0.0000000e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 0 iterations and 0.00 seconds
+Optimal objective -0.000000000e+00
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:25:30 2019
+
+Optimize a model with 0 rows, 0 columns and 0 nonzeros
+Presolve time: 0.00s
+Presolve: All rows and columns removed
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0   -0.0000000e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 0 iterations and 0.00 seconds
+Optimal objective -0.000000000e+00
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:25:40 2019
+
+Optimize a model with 0 rows, 0 columns and 0 nonzeros
+Presolve time: 0.00s
+Presolve: All rows and columns removed
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0   -0.0000000e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 0 iterations and 0.00 seconds
+Optimal objective -0.000000000e+00
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:26:03 2019
+
+Optimize a model with 0 rows, 0 columns and 0 nonzeros
+Presolve time: 0.00s
+Presolve: All rows and columns removed
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0   -0.0000000e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 0 iterations and 0.00 seconds
+Optimal objective -0.000000000e+00
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:28:08 2019
+
+Optimize a model with 0 rows, 0 columns and 0 nonzeros
+Presolve time: 0.00s
+Presolve: All rows and columns removed
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0   -0.0000000e+00   0.000000e+00   0.000000e+00      0s
+
+Solved in 0 iterations and 0.00 seconds
+Optimal objective -0.000000000e+00
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:28:56 2019
+
+Optimize a model with 37 rows, 26 columns and 100 nonzeros
+Presolve removed 12 rows and 12 columns
+Presolve time: 0.00s
+
+Explored 0 nodes (0 simplex iterations) in 0.00 seconds
+Thread count was 1 (of 24 available processors)
+
+Model is infeasible
+Best objective -, best bound -, gap -
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:29:38 2019
+
+Optimize a model with 43 rows, 30 columns and 117 nonzeros
+Presolve removed 20 rows and 19 columns
+Presolve time: 0.00s
+
+Explored 0 nodes (0 simplex iterations) in 0.00 seconds
+Thread count was 1 (of 24 available processors)
+
+Model is infeasible
+Best objective -, best bound -, gap -
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:30:40 2019
+
+Optimize a model with 50 rows, 36 columns and 144 nonzeros
+Presolve removed 9 rows and 9 columns
+Presolve time: 0.00s
+
+Explored 0 nodes (0 simplex iterations) in 0.00 seconds
+Thread count was 1 (of 24 available processors)
+
+Model is infeasible
+Best objective -, best bound -, gap -
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:32:46 2019
+
+Optimize a model with 50 rows, 36 columns and 144 nonzeros
+Presolve removed 9 rows and 9 columns
+Presolve time: 0.00s
+
+Explored 0 nodes (0 simplex iterations) in 0.00 seconds
+Thread count was 1 (of 24 available processors)
+
+Model is infeasible
+Best objective -, best bound -, gap -
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:35:13 2019
+
+Optimize a model with 56 rows, 44 columns and 176 nonzeros
+Found heuristic solution: objective 14
+Presolve removed 32 rows and 20 columns
+Presolve time: 0.00s
+Presolved: 24 rows, 24 columns, 96 nonzeros
+Variable types: 0 continuous, 24 integer (24 binary)
+
+Root relaxation: cutoff, 6 iterations, 0.00 seconds
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0     cutoff    0        14.00000   14.99998  7.14%     -    0s
+
+Explored 0 nodes (6 simplex iterations) in 0.00 seconds
+Thread count was 24 (of 24 available processors)
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.400000000000e+01, best bound 1.400000000000e+01, gap 0.0%
+
+Gurobi 5.6.3 (linux64) logging started Thu Apr 25 20:36:52 2019
+
+Optimize a model with 50 rows, 36 columns and 144 nonzeros
+Presolve removed 9 rows and 9 columns
+Presolve time: 0.00s
+
+Explored 0 nodes (0 simplex iterations) in 0.00 seconds
+Thread count was 1 (of 24 available processors)
+
+Model is infeasible
+Best objective -, best bound -, gap -

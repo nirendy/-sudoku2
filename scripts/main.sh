@@ -1,7 +1,6 @@
 #!/bin/bash 
 
 # ./create_golden.sh
-
 # ./create_expected.sh
 
 cd ../src
