@@ -358,9 +358,10 @@ Bool isCommandAllowedInMode(Mode mode, Command command) {
 }
 
 void terminate(Game *game, FinishCode finishCode) {
-    destroyGame(game);
-    g_curNode = getFirstNode(g_curNode);
-    clearListFromNode(g_curNode);
+    if(game!=NULL){
+        destroyGame(game);
+    }
+    clearListFromNode(getFirstNode(g_curNode));
     printPrompt(PExit, COMMAND_INVALID);
 
     if (finishCode == FC_UNEXPECTED_ERROR || finishCode == FC_INVALID_TERMINATE) {

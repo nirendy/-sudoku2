@@ -161,7 +161,7 @@ int main() {
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-    mock(-7, &game);
+    /*mock(-7, &game);*/
 
     while (g_mode != Exit) {
         if (askUserForNextTurn(&input)) {

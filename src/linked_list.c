@@ -36,8 +36,8 @@ Node *insertAfterNode(Node *curNode) {
     return curNode->next;
 }
 
-Node *getFirstNode(Node *curNode){
-    if (curNode== NULL) {
+Node *getFirstNode(Node *curNode) {
+    if (curNode == NULL) {
         printError(ENullNode);
         return NULL;
     }
@@ -51,12 +51,11 @@ Node *getFirstNode(Node *curNode){
 
 void clearListFromNode(Node *curNode) {
     Node *nextNode;
-    if(curNode->isFirst){
-        free(curNode);
-    }
     while (curNode != NULL) {
         nextNode = curNode->next;
-        clearWholeDataList(curNode->currDataNode);
+        if (!curNode->isFirst) {   /*first node has no data to free*/
+            clearWholeDataList(curNode->currDataNode);
+        }
         free(curNode);
         curNode = nextNode;
     }
@@ -89,7 +88,7 @@ DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInpu
     new_node->next = curNode->next;
     curNode->next = new_node;
     new_node->prev = curNode;
-    if (new_node->next != NULL){
+    if (new_node->next != NULL) {
         printError(EInsertionInMiddle);
     }
 
@@ -97,7 +96,7 @@ DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInpu
 }
 
 DataNode *getFirstDataNode(DataNode *currDataNode) {
-    if (currDataNode== NULL) {
+    if (currDataNode == NULL) {
         printError(ENullDataNode);
         return NULL;
     }
@@ -109,7 +108,7 @@ DataNode *getFirstDataNode(DataNode *currDataNode) {
 }
 
 DataNode *getLastDataNode(DataNode *currDataNode) {
-    if (currDataNode== NULL) {
+    if (currDataNode == NULL) {
         printError(ENullDataNode);
         return NULL;
     }
