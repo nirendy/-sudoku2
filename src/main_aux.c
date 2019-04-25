@@ -359,6 +359,8 @@ Bool isCommandAllowedInMode(Mode mode, Command command) {
 
 void terminate(Game *game, FinishCode finishCode) {
     destroyGame(game);
+    g_curNode = getFirstNode(g_curNode);
+    clearListFromNode(g_curNode);
     printPrompt(PExit, COMMAND_INVALID);
 
     if (finishCode == FC_UNEXPECTED_ERROR || finishCode == FC_INVALID_TERMINATE) {
@@ -484,30 +486,28 @@ void performSetsFromRedoList(Game *game, Input *sets, int len) {
     }
 }
 
-Bool updateHistoryList (Game *game , Board final) {
+void updateHistoryList (Game *game , Board final) {
 
-    Bool success = true;
     int numOfSets;
     Input *redoInputs;
     Input *undoInputs;
 
     Board original = game->user_matrix;
     numOfSets = numOfDiffs(original, final);
+    if (numOfSets == 0) {
+        destroyBoard(final, g_gameDim);
+        return;
+    }
     redoInputs = (Input *) malloc(numOfSets * sizeof(Input));
     undoInputs = (Input *) malloc(numOfSets * sizeof(Input));
 
-
-    if (numOfSets > 0) {
-        diffToRedoUndoLists(original, final, redoInputs, undoInputs);
-        insertInputsToList(redoInputs, undoInputs, numOfSets);
-        performSetsFromRedoList(game, redoInputs, numOfSets); /*update the user board*/
-    } else { success = false; }
+    diffToRedoUndoLists(original, final, redoInputs, undoInputs);
+    insertInputsToList(redoInputs, undoInputs, numOfSets);
+    performSetsFromRedoList(game, redoInputs, numOfSets); /*update the user board*/
 
     destroyBoard(final, g_gameDim);
     free(redoInputs);
     free(undoInputs);
-
-    return success;
 }
 
 Bool fillXRandomCells(Board board, Coordinate *cellsToFill, int numToFill) {
@@ -575,8 +575,12 @@ void fillObviousValues(Board board) {
 Bool performGuess(Game* game , Input input){
 
     Board solutionBoard = createBoard();
-    guessBoard(game->user_matrix , solutionBoard, input.threshold );
-    return updateHistoryList(game , solutionBoard);
+    if(!guessBoard(game->user_matrix , solutionBoard, input.threshold )){
+        destroyBoard(solutionBoard , g_gameDim);
+        return false;
+    }
+    updateHistoryList(game , solutionBoard);  /*destroys newBoard*/
+    return true;
 }
 
 Bool performGenerate(Game *game, Input input) {
@@ -625,24 +629,26 @@ Bool performGenerate(Game *game, Input input) {
     }
 
     /*step 2 - clear cells from the board */
-    cellsToClear = (Coordinate *) malloc(numToClear * sizeof(Coordinate));
     if (numToClear > 0) {
+        cellsToClear = (Coordinate *) malloc(numToClear * sizeof(Coordinate));
         chooseCellsToClear(newBoard, cellsToClear, numToClear);
         clearRandomCells(newBoard, cellsToClear, numToClear);
+        free(cellsToClear);
     }
-    free(cellsToClear);
 
     /*step 3 - perform changes and update the redo/undo list */
-    return updateHistoryList(game , newBoard);
+
+    updateHistoryList(game , newBoard); /*destroys newBoard*/
+    return true;
 
 }
 
-Bool performAutoFill(Game *game) {
+void performAutoFill(Game *game) {
 
     Board newBoard = createBoard();
     copyBoard(newBoard, game->user_matrix);
     fillObviousValues(newBoard);
-    return updateHistoryList(game, newBoard);
+    updateHistoryList(game, newBoard); /*destroys newBoard*/
 }
 
 Bool checkLegalInput(Input input, Game *game) {
@@ -1014,7 +1020,7 @@ void executeCommand(Input input, Game **gameP) {
         }
         case COMMAND_SAVE: {
             solutionBoard = createBoard();
-            if (!fillSolutionMatrix(game->user_matrix, solutionBoard) && g_mode == Edit) {
+            if (g_mode == Edit && !fillSolutionMatrix(game->user_matrix, solutionBoard)) {
                 printError(EFUnsolvableBoard);
             } else { saveGameToFile(input.path, game); }
             destroyBoard(solutionBoard, g_gameDim);
@@ -1033,7 +1039,8 @@ void executeCommand(Input input, Game **gameP) {
             break;
         }
         case COMMAND_AUTOFILL: {
-            success = performAutoFill(game); /* another failed condition checked in isLegalMove*/
+            performAutoFill(game);
+            success = true;    /*fail condition checked in isLegalMove*/
             break;
         }
         case COMMAND_RESET: {

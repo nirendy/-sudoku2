@@ -51,6 +51,9 @@ Node *getFirstNode(Node *curNode){
 
 void clearListFromNode(Node *curNode) {
     Node *nextNode;
+    if(curNode->isFirst){
+        free(curNode);
+    }
     while (curNode != NULL) {
         nextNode = curNode->next;
         clearWholeDataList(curNode->currDataNode);
