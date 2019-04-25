@@ -30,8 +30,12 @@ void printError(Error err) {
             printf("Error: invalid command\n");
             break;
         }
-        case EInvalidNumOfParams: {
-            printf("Error: number of parameters don't suit the command\n");
+        case ETooFewParams: {
+            printf("Error: not enough parameters were entered\n");
+            break;
+        }
+        case ETooManyParams: {
+            printf("Error: too many parameters were entered\n");
             break;
         }
         case EInvalidFile: {
@@ -92,6 +96,10 @@ void printError(Error err) {
         }
         case EGenerationFailed : {
             printf("Error: couldn't generate a solved board after 1000 iterations\n");
+            break;
+        }
+        case EInputTooLong : {
+            printf("Error: too many characters where entered in a single line\n");
             break;
         }
         default: {
@@ -712,7 +720,7 @@ Bool checkLegalInput(Input input, Game *game) {
 
             if (!(input.threshold >= 0 && input.threshold <= 1)) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be a float number between 0 and -1\n");
+                printf("parameter must be a float number between 0 and 1\n");
                 return false;
             }
 

@@ -7,7 +7,8 @@
 
 #define INVALID_VALUE -1;
 #define INVALID_THRESHOLD -1;
-#define MAX_STRING_LEN 1024
+#define MAX_PATH_LEN 1024
+#define MAX_INPUT_STR_LEN 256
 
 /* Typedefs */
 
@@ -41,7 +42,8 @@ typedef enum _error {
     ECellIsNotEmpty,
     EValueIsInvalid,
     EInvalidCommand,
-    EInvalidNumOfParams,
+    ETooFewParams,
+    ETooManyParams,
     EInvalidFirstParam,
     EInvalidSecondParam,
     EInvalidThirdParam,
@@ -56,7 +58,8 @@ typedef enum _error {
     EFileCloseFailure,
     EFileScanFailure,
     EFUnsolvableBoard,
-    EGenerationFailed
+    EGenerationFailed,
+    EInputTooLong
 
 } Error;
 
@@ -130,7 +133,7 @@ typedef struct _input {
     int gen1;
     int gen2;
     float threshold;
-    char path[MAX_STRING_LEN];
+    char path[MAX_PATH_LEN];
 } Input;
 
 

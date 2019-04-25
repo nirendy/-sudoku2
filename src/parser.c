@@ -1,7 +1,7 @@
 #include "parser.h"
 
-char* getModeStr(){
-    switch (g_mode){
+char *getModeStr() {
+    switch (g_mode) {
         case Edit:
             return "Edit";
         case Solve:
@@ -14,7 +14,7 @@ char* getModeStr(){
     return "Unreachable Code";
 }
 
-char* getCommandStr(Command command){
+char *getCommandStr(Command command) {
     switch (command) {
         case COMMAND_SOLVE:
             return "solve";
@@ -75,17 +75,21 @@ char* getCommandStr(Command command){
     return "Unreachable Code";
 }
 
-void printModeError(Command command){
-    printf("Error: command <%s> is not valid in mode <%s>\n" , getCommandStr(command) , getModeStr() );
-    printf( "The command available in modes:" );
-    if( isCommandAllowedInMode(Init , command)) {printf( " <Init>" ); }
-    if( isCommandAllowedInMode(Edit , command)) {printf( " <Edit>" ); }
-    if( isCommandAllowedInMode(Solve , command)) {printf( " <Solve>" ); }
-    printf( "\n" );
+void printModeError(Command command) {
+    printf("Error: command <%s> is not valid in mode <%s>\n", getCommandStr(command), getModeStr());
+    printf("The command available in modes:");
+    if (isCommandAllowedInMode(Init, command)) { printf(" <Init>"); }
+    if (isCommandAllowedInMode(Edit, command)) { printf(" <Edit>"); }
+    if (isCommandAllowedInMode(Solve, command)) { printf(" <Solve>"); }
+    printf("\n");
+}
+
+void printParamError(Command command, int numOfVars) {
+    printf("The command <%s> demands exactly %d parameters\n", getCommandStr(command), numOfVars);
 }
 
 int getType(Game *game, int i, int j) {
-    if (game->fixed_matrix[i][j] == 1)  { return 1; }
+    if (game->fixed_matrix[i][j] == 1) { return 1; }
     if (game->error_matrix[i][j] == 1 && (g_markError == 1 || g_mode == Edit)) { return 2; }
     return 0;
 }
@@ -266,7 +270,6 @@ float getFloat(char *str) {
 
 FinishCode parseCommand(Input *returnedInput) {
 
-
     char str[MAX_STRING_LEN];
     char *token, command[MAX_COMMAND_LEN + 1];
     int numOfVars;
@@ -277,6 +280,10 @@ FinishCode parseCommand(Input *returnedInput) {
     do {
         if (fgets(str, MAX_STRING_LEN, stdin) == NULL) {
             return FC_EOF;
+        }
+        if (strlen(str) >= MAX_INPUT_STR_LEN) {
+            printError(EInputTooLong);
+            return FC_INVALID_RECOVERABLE;
         }
         token = strtok(str, " \t\r\n");
     } while (token == NULL);
@@ -298,8 +305,13 @@ FinishCode parseCommand(Input *returnedInput) {
     index = 1;
 
     /*while not all expected parameters has been interpreted*/
-    while (token != NULL && index <= numOfVars) {
+    while (token != NULL) {
 
+        if (index > numOfVars) {
+            printError(ETooManyParams);
+            printParamError(returnedInput->command, numOfVars);
+            return FC_INVALID_RECOVERABLE;
+        }
         switch (index) {
             case 1:
                 if (!strcmp(command, "solve") || !strcmp(command, "edit") || !strcmp(command, "save")) {
@@ -313,10 +325,9 @@ FinishCode parseCommand(Input *returnedInput) {
                 if (!strcmp(command, "mark_errors")) { returnedInput->value = getNum(token); }
 
                 if (!strcmp(command, "hint") || !strcmp(command, "guess_hint") ||
-                    !strcmp(command, "set"))
-                {
+                    !strcmp(command, "set")) {
                     returnedInput->coordinate.i = getNum(token) - 1;
-                    if( returnedInput->coordinate.i<0){
+                    if (returnedInput->coordinate.i < 0) {
                         returnedInput->coordinate.i = INVALID_VALUE
                     }
                 }
@@ -327,10 +338,9 @@ FinishCode parseCommand(Input *returnedInput) {
                 if (!strcmp(command, "generate")) { returnedInput->gen2 = getNum(token); }
 
                 if (!strcmp(command, "hint") || !strcmp(command, "guess_hint") ||
-                    !strcmp(command, "set"))
-                {
+                    !strcmp(command, "set")) {
                     returnedInput->coordinate.j = getNum(token) - 1;
-                    if( returnedInput->coordinate.j<0){
+                    if (returnedInput->coordinate.j < 0) {
                         returnedInput->coordinate.j = INVALID_VALUE
                     }
                 }
@@ -345,13 +355,14 @@ FinishCode parseCommand(Input *returnedInput) {
                 return FC_UNEXPECTED_ERROR;
         }
 
-        index ++;
+        index++;
         token = strtok(NULL, " \t\r\n");
     }
 
     index--;
     if (index != numOfVars && strcmp(command, "edit") != 0) {
-        printError(EInvalidNumOfParams);
+        printError(ETooFewParams);
+        printParamError(returnedInput->command, numOfVars);
         return FC_INVALID_RECOVERABLE;
     }
 
