@@ -17,6 +17,26 @@
 GRBenv *env = NULL;
 GRBmodel *model = NULL;
 
+/* Typedefs */
+
+typedef struct _PossibleVar {
+    char name[MAX_VAR_NAME_LEN];
+    int varIndex;
+    char type;
+    double coeff;
+    double prob;
+    Coordinate coordinate;
+    int value;
+    struct _PossibleVar *next;
+} PossibleVar;
+
+typedef struct _PossibleVarSentinel {
+    PossibleVar *first;
+    int length;
+} PossibleVarSentinel;
+
+/* Environment Constructor / Destructor */
+
 FinishCode initGurobiEnv() {
     int error;
 
@@ -49,21 +69,6 @@ void destroyGurobiEnv() {
     GRBfreeenv(env);
 }
 
-typedef struct _PossibleVar {
-    char name[MAX_VAR_NAME_LEN];
-    int varIndex;
-    char type;
-    double coeff;
-    double prob;
-    Coordinate coordinate;
-    int value;
-    struct _PossibleVar *next;
-} PossibleVar;
-
-typedef struct _PossibleVarSentinel {
-    PossibleVar *first;
-    int length;
-} PossibleVarSentinel;
 
 int calculateCoordinateFlatIndex(Coordinate coor) {
     return (g_gameDim.N * coor.i) + coor.j;
@@ -569,6 +574,8 @@ FinishCode guessFillBoard(Board board, double threshold) {
 
     return FC_SUCCESS;
 }
+
+/* Public Functions */
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard) {
 

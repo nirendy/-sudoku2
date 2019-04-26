@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include "solver.h"
 
+/* TODO: module explanation */
+/* TODO: classify */
+
+
+/* Cell Functions*/
+
 int getEmptyCells(Board board, Coordinate *emptyCells) {
     int i, j, emptyCount = 0;
 
@@ -31,37 +37,6 @@ int getFilledCells(Board board, Coordinate *emptyCells) {
         }
     }
     return filledCount;
-}
-
-Bool isFullUserBoard(Game *game) {
-    Coordinate *emptyCells;
-    int emptyCellsCount;
-
-    emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
-
-    emptyCellsCount = getEmptyCells(game->user_matrix, emptyCells);
-
-    free(emptyCells);
-    /* if 0 empty cells */
-    return emptyCellsCount == 0;
-}
-
-void clearBoard(Board board) {
-    int i, j;
-    for (i = 0; i < g_gameDim.N; ++i) {
-        for (j = 0; j < g_gameDim.N; ++j) {
-            board[i][j] = 0;
-        }
-    }
-}
-
-void clearBoolBoard(BoolBoard board) {
-    int i, j;
-    for (i = 0; i < g_gameDim.N; ++i) {
-        for (j = 0; j < g_gameDim.N; ++j) {
-            board[i][j] = false;
-        }
-    }
 }
 
 void calculateCoordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
@@ -96,6 +71,35 @@ void calculateCoordinateNeighbours(Coordinate coordinate, Coordinate *neighbours
         }
     }
 }
+
+Bool hasEmptyCellWithNoPossibleValues(Board board) {
+    Bool returnValue = false;
+    Coordinate *emptyCells;
+    int *possibleValues;
+    int numOfEmpty;
+    int numOfPossibleValues;
+    int i;
+
+    emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    numOfEmpty = getEmptyCells(board, emptyCells);
+
+    possibleValues = (int *) smartMalloc(g_gameDim.cellsCount * sizeof(int));
+
+    for (i = 0; i < numOfEmpty; i++) {
+        numOfPossibleValues = getPossibleValues(board, emptyCells[i], possibleValues);
+        if (numOfPossibleValues == 0) {
+            returnValue = true;
+            break;
+        }
+    }
+
+    free(emptyCells);
+    free(possibleValues);
+
+    return returnValue;
+}
+
+/* Values Functions*/
 
 int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
     int i, possibleValuesCount = 0;
@@ -160,31 +164,37 @@ Bool isPossibleValue(Board board, Coordinate coordinate, int value) {
     return returnValue;
 }
 
-Bool hasEmptyCellWithNoPossibleValues(Board board) {
-    Bool returnValue = false;
+/* Board Functions*/
+
+Bool isFullUserBoard(Game *game) {
     Coordinate *emptyCells;
-    int *possibleValues;
-    int numOfEmpty;
-    int numOfPossibleValues;
-    int i;
+    int emptyCellsCount;
 
     emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
-    numOfEmpty = getEmptyCells(board, emptyCells);
 
-    possibleValues = (int *) smartMalloc(g_gameDim.cellsCount * sizeof(int));
-
-    for (i = 0; i < numOfEmpty; i++) {
-        numOfPossibleValues = getPossibleValues(board, emptyCells[i], possibleValues);
-        if (numOfPossibleValues == 0) {
-            returnValue = true;
-            break;
-        }
-    }
+    emptyCellsCount = getEmptyCells(game->user_matrix, emptyCells);
 
     free(emptyCells);
-    free(possibleValues);
+    /* if 0 empty cells */
+    return emptyCellsCount == 0;
+}
 
-    return returnValue;
+void clearBoard(Board board) {
+    int i, j;
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
+            board[i][j] = 0;
+        }
+    }
+}
+
+void clearBoolBoard(BoolBoard board) {
+    int i, j;
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
+            board[i][j] = false;
+        }
+    }
 }
 
 Bool isBoardErroneous(Board board) {

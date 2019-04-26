@@ -22,4 +22,4 @@ add_executable(sudoku-console
         src/gurobi_c2.h
         src/lp_solver.c
         src/lp_solver.h
-        )
+        src/game_aux.c src/game_aux.h)

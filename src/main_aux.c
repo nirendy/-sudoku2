@@ -378,3 +378,11 @@ Bool getBoolBoardValue(BoolBoard board, Coordinate coordinate) {
 void setBoolBoardValue(BoolBoard board, Coordinate coordinate, Bool value) {
     board[coordinate.i][coordinate.j] = value;
 }
+
+Bool isCoordinateFixed(Game *game, Coordinate coordinate) {
+    return game->fixed_matrix[coordinate.i][coordinate.j] == true;
+}
+
+Bool isCoordinateEmpty(Game *game, Coordinate coordinate) {
+    return game->user_matrix[coordinate.i][coordinate.j] == 0;
+}

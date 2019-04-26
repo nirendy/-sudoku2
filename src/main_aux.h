@@ -211,5 +211,10 @@ Bool getBoolBoardValue(BoolBoard board, Coordinate coordinate);
 
 void setBoolBoardValue(BoolBoard board, Coordinate coordinate, Bool value);
 
+Bool isCoordinateFixed(Game *game, Coordinate coordinate);
+
+Bool isCoordinateEmpty(Game *game, Coordinate coordinate);
+
+
 #endif
 
