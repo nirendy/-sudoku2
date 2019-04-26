@@ -12,12 +12,8 @@
 /*Parser module - responsible for parsing user's command to the program as well as printing the board*/
 
 void printBoard(Game *game);
-void initInput(Input *returnedInput);
-float getFloat(char *str);
 
 FinishCode parseCommand(Input *input);
-
-void printUserBoard(Board board);
 
 #endif
 

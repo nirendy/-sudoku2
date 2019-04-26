@@ -2,6 +2,71 @@
 #include <stdlib.h>
 #include "linked_list.h"
 
+/* Data Node Funcs */
+
+DataNode *CreateFirstDataNode() {
+    DataNode *new_node = (DataNode *) smartMalloc(sizeof(DataNode));
+    new_node->isFirst = true;
+    new_node->next = NULL;
+    new_node->prev = NULL;
+    return new_node;
+}
+
+DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInput) {
+    DataNode *new_node;
+
+    if (curNode == NULL) {
+        printError(ENullDataNode);
+        return NULL;
+    }
+
+    new_node = (DataNode *) smartMalloc(sizeof(DataNode));
+    new_node->redoInput = redoInput;
+    new_node->undoInput = undoInput;
+    new_node->isFirst = false;
+    new_node->next = curNode->next;
+    curNode->next = new_node;
+    new_node->prev = curNode;
+    if (new_node->next != NULL) {
+        printError(EInsertionInMiddle);
+    }
+
+    return curNode->next;
+}
+
+DataNode *getFirstDataNode(DataNode *currDataNode) {
+    if (currDataNode == NULL) {
+        printError(ENullDataNode);
+        return NULL;
+    }
+
+    while (currDataNode->isFirst == false) {
+        currDataNode = currDataNode->prev;
+    }
+    return currDataNode;
+}
+
+DataNode *getLastDataNode(DataNode *currDataNode) {
+    if (currDataNode == NULL) {
+        printError(ENullDataNode);
+        return NULL;
+    }
+
+    while (currDataNode->next != NULL) {
+        currDataNode = currDataNode->next;
+    }
+    return currDataNode;
+}
+
+void clearWholeDataList(DataNode *curNode) {
+    DataNode *nextNode;
+    curNode = getFirstDataNode(curNode);
+    while (curNode != NULL) {
+        nextNode = curNode->next;
+        free(curNode);
+        curNode = nextNode;
+    }
+}
 
 /* Data Node Funcs */
 
@@ -60,71 +125,4 @@ void clearListFromNode(Node *curNode) {
         curNode = nextNode;
     }
 
-}
-
-/* Data Node Funcs */
-
-DataNode *CreateFirstDataNode() {
-    DataNode *new_node = (DataNode *) smartMalloc(sizeof(DataNode));
-    new_node->isFirst = true;
-    new_node->next = NULL;
-    new_node->prev = NULL;
-    return new_node;
-
-}
-
-DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInput) {
-    DataNode *new_node;
-
-    if (curNode == NULL) {
-        printError(ENullDataNode);
-        return NULL;
-    }
-
-    new_node = (DataNode *) smartMalloc(sizeof(DataNode));
-    new_node->redoInput = redoInput;
-    new_node->undoInput = undoInput;
-    new_node->isFirst = false;
-    new_node->next = curNode->next;
-    curNode->next = new_node;
-    new_node->prev = curNode;
-    if (new_node->next != NULL) {
-        printError(EInsertionInMiddle);
-    }
-
-    return curNode->next;
-}
-
-DataNode *getFirstDataNode(DataNode *currDataNode) {
-    if (currDataNode == NULL) {
-        printError(ENullDataNode);
-        return NULL;
-    }
-
-    while (currDataNode->isFirst == false) {
-        currDataNode = currDataNode->prev;
-    }
-    return currDataNode;
-}
-
-DataNode *getLastDataNode(DataNode *currDataNode) {
-    if (currDataNode == NULL) {
-        printError(ENullDataNode);
-        return NULL;
-    }
-
-    while (currDataNode->next != NULL) {
-        currDataNode = currDataNode->next;
-    }
-    return currDataNode;
-}
-
-void clearWholeDataList(DataNode *curNode) {
-    DataNode *nextNode;
-    curNode = getFirstDataNode(curNode);
-    while (curNode != NULL) {
-        nextNode = curNode->next;
-        free(curNode);
-        curNode = nextNode;
-    }
 }

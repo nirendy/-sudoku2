@@ -19,8 +19,6 @@ void clearListFromNode(Node *curNode);
 
 /* Data Node Funcs */
 
-DataNode *CreateFirstDataNode();
-
 DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInput);
 
 DataNode *getFirstDataNode(DataNode *currDataNode);

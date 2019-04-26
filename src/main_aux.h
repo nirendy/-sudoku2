@@ -31,8 +31,6 @@ typedef enum _bool {
 
 typedef int **Board;
 
-typedef double **ProbBoard;
-
 typedef Bool **BoolBoard;
 
 typedef enum _mode {
@@ -144,15 +142,15 @@ typedef struct _DataNode {
     Bool isFirst;
     Input redoInput;
     Input undoInput;
-    struct _DataNode* next;
-    struct _DataNode* prev;
+    struct _DataNode *next;
+    struct _DataNode *prev;
 } DataNode;
 
 typedef struct _Node {
     Bool isFirst;
-    DataNode* currDataNode;
-    struct _Node* next;
-    struct _Node* prev;
+    DataNode *currDataNode;
+    struct _Node *next;
+    struct _Node *prev;
 } Node;
 
 /* Global variables */
@@ -161,7 +159,27 @@ GameDim g_gameDim;
 Bool g_markError;
 Node *g_curNode;
 
-void setGameDim(int n, int m);
+/* globals setters*/
+
+void setGameDim(int n, int m); /* TODO: decide what module*/
+
+void setMode(Mode newMode);
+
+/* Prints */
+
+void printError(Error err);
+
+void printPrompt(Prompt prompt, int num1);
+
+/* General Utilities*/
+
+void *smartMalloc(size_t size);
+
+void *smartCalloc(size_t numOfElements, size_t sizeOfElements);
+
+int randLimit(int limit);
+
+/* Constructors and Destructors*/
 
 Board createBoard();
 
@@ -169,29 +187,19 @@ void destroyBoard(Board board, GameDim dim);
 
 Game *createGame();
 
+Game *createGameFromFile(char *filePath);
+
 void destroyGame(Game *game);
 
-void copyBoard(Board targetBoard, Board copyFromBoard);
+void terminateProgram(Game *game, FinishCode finishCode);
+
+/* Static Methods */
 
 Coordinate createCoordinate(int i, int j);
 
-void printError(Error err);
+void copyBoard(Board targetBoard, Board copyFromBoard);
 
-void printPrompt(Prompt prompt, int num1);
-
-Bool askUserForNextTurn(Input *input);
-
-void executeCommand(Input input, Game **gameP);
-
-Bool checkLegalInput(Input input, Game *game);
-
-int randLimit(int limit);
-
-Bool isCommandAllowedInMode(Mode mode , Command command);
-
-void *smartMalloc(size_t size);
-
-void *smartCalloc(size_t numOfElements,size_t sizeOfElements);
+void printUserBoard(Board board); /* TODO: remove*/
 
 int getBoardValue(Board board, Coordinate coordinate);
 

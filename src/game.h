@@ -17,4 +17,12 @@ void validate(Game *game);
 
 void clearGame(Game *game);
 
+Bool askUserForNextTurn(Input *input);
+
+void executeCommand(Input input, Game **gameP);
+
+Bool checkLegalInput(Input input, Game *game);
+
+
+
 #endif
