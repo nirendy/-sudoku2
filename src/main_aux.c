@@ -1006,6 +1006,7 @@ void executeCommand(Input input, Game **gameP) {
             Input redoInput, undoInput;
             updateRedoUndoInputsAfterSingleSet(game, input, &redoInput, &undoInput);
             insertInputsToList(&redoInput, &undoInput, 1);
+            setCoordinate(game, input);
             if (g_mode == Solve && isFullUserBoard(game)) {
                 if (!isBoardErroneous(game)) {
                     printPrompt(PSuccess, 0);
