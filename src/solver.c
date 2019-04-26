@@ -4,8 +4,12 @@
 
 /* Gurobi*/
 #include "gurobi_c2.h"
+/* TODO: REMOVE*/
 /*#include "gurobi_c.h"*/
 
+
+#define MAX_VAR_NAME_LEN 30
+#define MAX_CONST_NAME_LEN 100
 
 #define GUR_LOG_FILE "../log/gur"
 #define GUR_LOG_FILE2 "../log/gur.lp"
@@ -78,7 +82,7 @@ void clearBoolBoard(BoolBoard board) {
     }
 }
 
-void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
+void calculateCoordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
     int i, j, k, neighboursCreated = 0;
 
     /* find leftmost coordinate*/
@@ -87,7 +91,7 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
             coordinate.j - (coordinate.j % g_gameDim.n)
     );
 
-    /* go over all cell in the block*/
+    /* go over all cell in the block expect of the one's in the row/column */
     for (i = leftMostBlockCoordinate.i + 0; i < leftMostBlockCoordinate.i + g_gameDim.m; ++i) {
         for (j = leftMostBlockCoordinate.j + 0; j < leftMostBlockCoordinate.j + g_gameDim.n; ++j) {
             if (i != coordinate.i && j != coordinate.j) {
@@ -97,7 +101,7 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
         }
     }
 
-    /* go over all cells in the column and row expect of the one's in the block*/
+    /* go over all cells in the column and row*/
     for (k = 0; k < g_gameDim.N; ++k) {
         if (coordinate.i != k) {
             neighbours[neighboursCreated] = createCoordinate(k, coordinate.j);
@@ -121,7 +125,7 @@ int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
         possibleValues[i] = i + 1;
     }
 
-    coordinateNeighbours(coordinate, neighbours);
+    calculateCoordinateNeighbours(coordinate, neighbours);
 
     /* zeroing values from the array of used numbers*/
     for (i = 0; i < g_gameDim.cellNeighboursCount; ++i) {
@@ -161,6 +165,8 @@ Bool isPossibleValue(Board board, Coordinate coordinate, int value) {
     possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
 
     possibleValuesCount = getPossibleValues(board, coordinate, possibleValues);
+
+    /* checks if one of the possible values is the value*/
     for (i = 0; i < possibleValuesCount; i++) {
         if (possibleValues[i] == value) {
             returnValue = true;
@@ -189,123 +195,10 @@ int randomRemoveArrayIndex(int *arr, int arrLength) {
     return removeArrayIndex(arr, arrLength, randLimit(arrLength));
 }
 
-Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, int emptyCellsCount, int start) {
-    int possibleValuesCount;
-    int *possibleValues;
-    Bool returnValue = false;
-    Coordinate currentCoordinate = emptyCells[start];
+/* Count soloutions */
 
-    possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
-
-    possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
-
-    /*if any option available*/
-    if (possibleValuesCount > 0) {
-        /* as long there are more possible values that we didn't check*/
-        while (possibleValuesCount > 0) {
-            int nextValue;
-
-            /*if it is deterministic or there are only one option left*/
-            if (possibleValuesCount == 1 || isDeterministic) {
-                /* remove the lowest option*/
-                nextValue = removeArrayIndex(possibleValues, possibleValuesCount, 0);
-            } else {
-                /* remove a random option*/
-                nextValue = randomRemoveArrayIndex(possibleValues, possibleValuesCount);
-            }
-
-            /*change the value to the next value*/
-            board[currentCoordinate.i][currentCoordinate.j] = nextValue;
-
-            /* if this is the last cell
-             * OR
-             * if this configuration leads to a winning configuration
-             * */
-            if ((start == emptyCellsCount - 1) ||
-                (solveBoardRec(board, isDeterministic, emptyCells, emptyCellsCount, start + 1))) {
-                returnValue = true;
-                break;
-            }
-
-            /* clears the unsuccessful cell guess*/
-            board[currentCoordinate.i][currentCoordinate.j] = 0;
-
-            /*decrease the available options amount left*/
-            possibleValuesCount--;
-        }
-    }
-
-    free(possibleValues);
-    return returnValue;
-}
-
-int countPossibleSolutionsRec(Board board, Coordinate *emptyCells, int emptyCellsCount, int start) {
-    int possibleValuesCount;
-    int *possibleValues;
-    int returnValue = 0;
-    Coordinate currentCoordinate = emptyCells[start];
-
-    possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
-
-    possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
-
-    /*if any option available*/
-    if (possibleValuesCount > 0) {
-        /* as long there are more possible values that we didn't check*/
-        while (possibleValuesCount > 0) {
-            int nextValue;
-
-            /* remove the lowest option*/
-            nextValue = removeArrayIndex(possibleValues, possibleValuesCount, 0);
-
-            /*change the value to the next value*/
-            board[currentCoordinate.i][currentCoordinate.j] = nextValue;
-
-            /* if this is the last cell
-             * OR
-             * if this configuration leads to a winning configuration
-             * */
-            if (start == emptyCellsCount - 1) {
-                returnValue += 1;
-            } else {
-                returnValue += countPossibleSolutionsRec(board, emptyCells, emptyCellsCount, start + 1);
-            }
-
-
-
-            /* clears the unsuccessful cell guess*/
-            board[currentCoordinate.i][currentCoordinate.j] = 0;
-
-            /*decrease the available options amount left*/
-            possibleValuesCount--;
-        }
-    }
-
-    free(possibleValues);
-    return returnValue;
-}
-
-/*solve the second parameter based on the first parameter*/
-Bool solveBoard(Board userBoard, Board toSolveBoard, Bool isDeterministic) {
-    Coordinate *emptyCells;
-    int emptyCellsCount;
-    Bool returnValue;
-
-    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
-
-    /* make a copy of the current board to solve*/
-    copyBoard(toSolveBoard, userBoard);
-
-    /*needed for the init of the recursion*/
-    emptyCellsCount = getEmptyCells(userBoard, emptyCells);
-
-    /*solve the board cursively*/
-    returnValue = solveBoardRec(toSolveBoard, isDeterministic, emptyCells, emptyCellsCount, 0);
-    free(emptyCells);
-    return returnValue;
-}
-
-typedef struct _CountPossibleSolutionsScope {
+/* Stack Node*/
+typedef struct _CPSFrame {
     int start;
     Coordinate currentCoordinate;
     int *possibleValues;
@@ -313,101 +206,127 @@ typedef struct _CountPossibleSolutionsScope {
     int nextValue;
     Bool beforeChildPoped;
     Bool isInitialized;
-    struct _CountPossibleSolutionsScope *parentScope;
-} CountPossibleSolutionsScope;
+    struct _CPSFrame *parentScope;
+} CPSFrame;
+
 
 FinishCode countPossibleSolutions(Board board) {
+    /* This function will exhaust all possible solutions to the board, using backtracking
+     * that stimulates recursion with stack of frames */
+
     Coordinate *emptyCells;
     int emptyCellsCount;
     int returnValue = 0;
     Board tempBoard;
-    CountPossibleSolutionsScope *curScope;
+    CPSFrame *CPSStackTop; /* frame stack */
 
-    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    /* init stack */
+    CPSStackTop = NULL;
+
+    /* make a copy of the current board to solve on*/
     tempBoard = createBoard();
-
-    /* make a copy of the current board to solve*/
     copyBoard(tempBoard, board);
 
-    /*needed for the init of the recursion*/
+
+    /* needed for the init of the recursion */
+    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
     emptyCellsCount = getEmptyCells(tempBoard, emptyCells);
 
+    /* push first frame to stack */
+    CPSStackTop = (CPSFrame *) malloc(sizeof(CPSFrame));
+    CPSStackTop->parentScope = NULL;
+    CPSStackTop->beforeChildPoped = true;
+    CPSStackTop->isInitialized = false;
+    CPSStackTop->start = 0;
 
-    curScope = (CountPossibleSolutionsScope *) malloc(sizeof(CountPossibleSolutionsScope));
-    curScope->parentScope = NULL;
-    curScope->beforeChildPoped = true;
-    curScope->isInitialized = false;
-    curScope->start = 0;
-
-    /* Begin */
-    /*returnValue = countPossibleSolutionsRec(tempBoard, emptyCells, emptyCellsCount, 0);*/
+    /* Begin Recursion part - separated to 4 parts that has to happen in the following order,
+     * init frame (1) (happens when the frame is pushed to the stack),
+     * before push child frame (2),
+     * handling child result (3)
+     * destroying frame (4) (happens before popping the frame)
+     *
+     * parts 2,3 happens repeatably until all the options exhausted
+     */
     do {
-        if (curScope->isInitialized == false) {
-            /* initialize*/
-            curScope->currentCoordinate = emptyCells[curScope->start];
-            curScope->possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
-            curScope->possibleValuesCount = getPossibleValues(tempBoard, curScope->currentCoordinate,
-                                                              curScope->possibleValues);
-            curScope->isInitialized = true;
+
+        if (CPSStackTop->isInitialized == false) {
+            /* initialize (1)*/
+            CPSStackTop->currentCoordinate = emptyCells[CPSStackTop->start];
+            CPSStackTop->possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
+            CPSStackTop->possibleValuesCount = getPossibleValues(
+                    tempBoard, CPSStackTop->currentCoordinate, CPSStackTop->possibleValues
+            );
+            CPSStackTop->isInitialized = true;
         }
 
         /* as long there are more possible values that we didn't check*/
-        while (curScope->possibleValuesCount > 0) {
-            if (curScope->beforeChildPoped == true) {
+        while (CPSStackTop->possibleValuesCount > 0) {
+            if (CPSStackTop->beforeChildPoped == true) {
+                /* part (2)*/
+
                 /* remove the lowest option*/
-                curScope->nextValue = removeArrayIndex(curScope->possibleValues, curScope->possibleValuesCount, 0);
+                CPSStackTop->nextValue = removeArrayIndex(CPSStackTop->possibleValues, CPSStackTop->possibleValuesCount,
+                                                          0);
 
                 /*change the value to the next value*/
-                tempBoard[curScope->currentCoordinate.i][curScope->currentCoordinate.j] = curScope->nextValue;
+                tempBoard[CPSStackTop->currentCoordinate.i][CPSStackTop->currentCoordinate.j] = CPSStackTop->nextValue;
 
                 /* if this is the last cell
                  * */
-                if (curScope->start == emptyCellsCount - 1) {
+                if (CPSStackTop->start == emptyCellsCount - 1) {
                     /*pop*/
                     returnValue += 1;
-                    tempBoard[curScope->currentCoordinate.i][curScope->currentCoordinate.j] = 0;
+                    tempBoard[CPSStackTop->currentCoordinate.i][CPSStackTop->currentCoordinate.j] = 0;
 
                     /*if got to here, the value must be the last than no need to go over to next child*/
                     break;
                 } else {
                     /*push*/
 
-                    CountPossibleSolutionsScope *newScope =
-                            (CountPossibleSolutionsScope *) malloc(sizeof(CountPossibleSolutionsScope));
-                    newScope->parentScope = curScope;
+                    CPSFrame *newScope =
+                            (CPSFrame *) malloc(sizeof(CPSFrame));
+                    newScope->parentScope = CPSStackTop;
                     newScope->beforeChildPoped = true;
                     newScope->isInitialized = false;
-                    newScope->start = curScope->start + 1;
+                    newScope->start = CPSStackTop->start + 1;
 
-                    curScope->beforeChildPoped = false;
-                    curScope = newScope;
+                    CPSStackTop->beforeChildPoped = false;
+                    CPSStackTop = newScope;
 
                     /* so the new scope will be initialized*/
                     break;
                 }
             } else {
-                /* clears the unsuccessful cell guess*/
-                tempBoard[curScope->currentCoordinate.i][curScope->currentCoordinate.j] = 0;
+                /* part (3) */
+
+                /* clears the exhausted value option */
+                tempBoard[CPSStackTop->currentCoordinate.i][CPSStackTop->currentCoordinate.j] = 0;
+
                 /*decrease the available options amount left*/
-                curScope->possibleValuesCount--;
+                CPSStackTop->possibleValuesCount--;
 
-                /* get ready for next child to be pushed*/
-                curScope->beforeChildPoped = true;
+                /* marking ready for next child to be pushed*/
+                CPSStackTop->beforeChildPoped = true;
 
-                /* so the scope won't get destroyed, if there is more options, */
+                /* for clarity - exa
+                 * so the scope won't get destroyed, if there is more options
+                 */
                 continue;
             }
         }
 
-        if (curScope->isInitialized == true) {
+
+        if (CPSStackTop->isInitialized == true) {
+            /* part 4 */
+            CPSFrame *parentScope = CPSStackTop->parentScope;
+            free(CPSStackTop->possibleValues);
+            free(CPSStackTop);
+
             /* pop */
-            CountPossibleSolutionsScope *parentScope = curScope->parentScope;
-            free(curScope->possibleValues);
-            free(curScope);
-            curScope = parentScope;
+            CPSStackTop = parentScope;
         }
 
-    } while (curScope != NULL);
+    } while (CPSStackTop != NULL);
 
     /* End */
 
@@ -417,6 +336,8 @@ FinishCode countPossibleSolutions(Board board) {
     printPrompt(PNumSolutionsOutput, returnValue);
     return returnValue;
 }
+
+/* End Count soloutions */
 
 void generateFixedBoard(BoolBoard board, int fixedAmount) {
     int i, j, fixedCellsFound = 0;
@@ -433,35 +354,12 @@ void generateFixedBoard(BoolBoard board, int fixedAmount) {
     }
 }
 
-void old_generateGame(Game *game, int fixedAmount) {
-    int i, j;
-
-    /*init the user board*/
-    clearBoard(game->user_matrix);
-
-    /*solve the board randomly*/
-    solveBoard(game->user_matrix, game->solved_matrix, false);
-
-    generateFixedBoard(game->fixed_matrix, fixedAmount);
-    clearBoolBoard(game->error_matrix);
-
-    /* fill the fixed cells only*/
-    for (i = 0; i < g_gameDim.N; ++i) {
-        for (j = 0; j < g_gameDim.N; ++j) {
-            if (game->fixed_matrix[i][j]) {
-                game->user_matrix[i][j] = game->solved_matrix[i][j];
-            }
-        }
-    }
-}
-
-
 void updateAfterClearErrorMatrix(Game *game, Input input) {
     int k;
     Input in;
     Coordinate *neighbours;
     neighbours = (Coordinate *) malloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
-    coordinateNeighbours(input.coordinate, neighbours);
+    calculateCoordinateNeighbours(input.coordinate, neighbours);
 
     for (k = 0; k < g_gameDim.cellNeighboursCount; k++) {
         game->error_matrix[neighbours[k].i][neighbours[k].j] = 0;
@@ -484,7 +382,7 @@ void updateAfterSetErrorMatrix(Game *game, Input input) {
     Bool flag = false;
     Coordinate *neighbours;
     neighbours = (Coordinate *) malloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
-    coordinateNeighbours(input.coordinate, neighbours);
+    calculateCoordinateNeighbours(input.coordinate, neighbours);
     for (k = 0; k < g_gameDim.cellNeighboursCount; k++) {
         if (game->user_matrix[neighbours[k].i][neighbours[k].j] == input.value) {
             flag = true;
@@ -516,6 +414,65 @@ void updateWholeErrorMatrix(Game *game) {
             }
         }
     }
+}
+
+Bool hasEmptyCellWithNoPossibleValues(Board board) {
+    Bool returnValue = false;
+    Coordinate *emptyCells;
+    int *possibleValues;
+    int numOfEmpty;
+    int numOfPossibleValues;
+    int i;
+
+    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    numOfEmpty = getEmptyCells(board, emptyCells);
+
+    possibleValues = (int *) malloc(g_gameDim.cellsCount * sizeof(int));
+
+    for (i = 0; i < numOfEmpty; i++) {
+        numOfPossibleValues = getPossibleValues(board, emptyCells[i], possibleValues);
+        if (numOfPossibleValues == 0) {
+            returnValue = true;
+            break;
+        }
+    }
+
+    free(emptyCells);
+    free(possibleValues);
+
+    return returnValue;
+}
+
+Bool isBoardErroneous(Board board) {
+    Bool returnValue = false;
+    Coordinate *nonEmptyCells;
+    Coordinate *coordinateNeighbours;
+    int nonEmptyCount;
+    int i, j;
+
+    nonEmptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    nonEmptyCount = getFilledCells(board, nonEmptyCells);
+
+    coordinateNeighbours = (Coordinate *) malloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
+
+    for (i = 0; i < nonEmptyCount; i++) {
+        calculateCoordinateNeighbours(nonEmptyCells[i], coordinateNeighbours);
+
+        for (j = 0; j < g_gameDim.cellNeighboursCount; j++) {
+            if (getBoardValue(board, nonEmptyCells[i]) == getBoardValue(board, coordinateNeighbours[j])) {
+                returnValue = true;
+                break;
+            }
+        }
+        if (returnValue == true) {
+            break;
+        }
+    }
+
+    free(nonEmptyCells);
+    free(coordinateNeighbours);
+
+    return returnValue;
 }
 
 
@@ -553,7 +510,7 @@ void destroyGurobiEnv() {
 }
 
 typedef struct _PossibleVar {
-    char name[10];
+    char name[MAX_VAR_NAME_LEN];
     int varIndex;
     char type;
     double coeff;
@@ -585,13 +542,13 @@ PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coorV2var, Coordina
     return NULL;
 }
 
-PossibleVar *createPossibleVar(Coordinate coor, int value, Bool isBinary, Bool isOnlyOption) {
+PossibleVar *createPossibleVar(Coordinate coor, int value, Bool isBinary) {
     PossibleVar *newPosVar = (PossibleVar *) malloc(sizeof(PossibleVar));
     sprintf(newPosVar->name, "X_%d_%d_%d", coor.i + 1, coor.j + 1, value);
     newPosVar->varIndex = -1;
     newPosVar->type = isBinary ? GRB_BINARY : GRB_CONTINUOUS;
     newPosVar->coeff = isBinary ? 1.0 : randLimit(g_gameDim.N);
-    newPosVar->prob = isOnlyOption == true ? 1 : -1;
+    newPosVar->prob = -1;
     newPosVar->coordinate = coor;
     newPosVar->value = value;
     newPosVar->next = NULL;
@@ -605,6 +562,12 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
     int *possibleValues;
     Coordinate *emptyCells;
     PossibleVarSentinel *coorV2var;
+
+    /* TODO: test if 2 cells both has only one conflicting option*/
+    /* Check the board isn't erroneous and all cells has at least one available option*/
+    if (hasEmptyCellWithNoPossibleValues(board) == true || isBoardErroneous(board) == true) {
+        return NULL;
+    }
 
     coorV2var = (PossibleVarSentinel *) calloc(g_gameDim.cellsCount, sizeof(PossibleVarSentinel));
 
@@ -625,14 +588,19 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
         sentinel = &coorV2var[calculateCoordinateFlatIndex(currentCoordinate)];
         sentinel->length = possibleValuesCount;
 
+        /* TODO: remove - should never get here because checked before */
+        if (possibleValuesCount == 0) {
+            printf("Unreachable Code Error");
+            exit(FC_UNEXPECTED_ERROR);
+        }
+
         if (possibleValuesCount > 0) {
             PossibleVar *last;
-            last = sentinel->first = createPossibleVar(currentCoordinate, possibleValues[0], isBinary,
-                                                       sentinel->length == 1);
+            last = sentinel->first = createPossibleVar(currentCoordinate, possibleValues[0], isBinary);
 
             while (--possibleValuesCount > 0) {
                 last = last->next = createPossibleVar(
-                        currentCoordinate, possibleValues[sentinel->length - possibleValuesCount], isBinary, false
+                        currentCoordinate, possibleValues[sentinel->length - possibleValuesCount], isBinary
                 );
             }
         }
@@ -669,7 +637,7 @@ FinishCode addVarsToModel(PossibleVarSentinel *coorV2var) {
 
     for (i = 0; i < g_gameDim.cellsCount; i++) {
         /*create var for each possible values and cell*/
-        if (coorV2var[i].length > 1) {
+        if (coorV2var[i].length > 0) {
             curPosVar = coorV2var[i].first;
             while (curPosVar != NULL) {
                 curPosVar->varIndex = numOfVarsCreated;
@@ -735,7 +703,7 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
     for (i = 0; i < g_gameDim.N; i++) {
         for (j = 0; j < g_gameDim.N; j++) {
             int relvantVarsCount = 0;
-            char constName[100];
+            char constName[MAX_CONST_NAME_LEN];
 
             for (k = 1; k <= g_gameDim.N; k++) {
                 PossibleVar *posVar;
@@ -790,7 +758,7 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
             for (i = 0; i < g_gameDim.N; i++) {
                 Bool hadObviousCell = false;
                 int relvantVarsCount = 0;
-                char constName[100];
+                char constName[MAX_CONST_NAME_LEN];
 
                 for (j = 0; j < g_gameDim.N; j++) {
                     PossibleVar *posVar;
@@ -921,6 +889,10 @@ FinishCode fillBoard(Board board) {
     int i, j, k;
 
     coorV2var = createCoor2Var(board, true);
+    if (coorV2var == NULL) {
+        return FC_INVALID_RECOVERABLE;
+    }
+
     finishCode = fillModel(coorV2var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
@@ -964,6 +936,9 @@ FinishCode guessFillBoardAndGuessHint(Board board, Coordinate coor) {
     int k;
 
     coorV2var = createCoor2Var(board, false);
+    if (coorV2var == NULL) {
+        return FC_INVALID_RECOVERABLE;
+    }
 
     finishCode = fillModel(coorV2var);
     if (finishCode != FC_SUCCESS) {
@@ -1002,14 +977,17 @@ FinishCode guessFillBoard(Board board, double threshold) {
     int bestOptionsCount;
     double bestOptionVal;
 
-    valsOptions = (int *) malloc(g_gameDim.N * sizeof(int));
-
     coorV2var = createCoor2Var(board, false);
+    if (coorV2var == NULL) {
+        return FC_INVALID_RECOVERABLE;
+    }
 
     finishCode = fillModel(coorV2var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
+
+    valsOptions = (int *) malloc(g_gameDim.N * sizeof(int));
 
     for (i = 0; i < g_gameDim.N; i++) {
         for (j = 0; j < g_gameDim.N; j++) {
@@ -1039,7 +1017,7 @@ FinishCode guessFillBoard(Board board, double threshold) {
                     }
                 }
             }
-            if (bestOptionVal >= threshold) {
+            if (bestOptionVal >= threshold) { /* TODO: test with thres=0 */
                 board[i][j] = valsOptions[randLimit(bestOptionsCount)];
             }
         }

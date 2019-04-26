@@ -3,14 +3,16 @@
 
 #include "main_aux.h"
 
+Bool isCoordinateFixed(Game *game, Coordinate coordinate);
+
+Bool isCoordinateEmpty(Game *game, Coordinate coordinate);
+
+Bool setCoordinate(Game *game, Input input);
+
 void hint(Game *game, Input input);
 
 void validate(Game *game);
 
-Bool setCoordinate(Game *game, Input input);
-
-Bool isCoordinateFixed(Game *game, Coordinate coordinate);
-
-Bool isCoordinateEmpty(Game *game, Coordinate coordinate);
+void clearGame(Game *game);
 
 #endif

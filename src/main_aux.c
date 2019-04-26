@@ -231,7 +231,7 @@ void destroyBoolBoard(BoolBoard board, GameDim dim) {
     free(board);
 }
 
-Bool isBoardErroneous(Game *game) {
+Bool isGameErroneous(Game *game) {
     int i, j;
     for (i = 0; i < g_gameDim.N; ++i) {
         for (j = 0; j < g_gameDim.N; ++j) {
@@ -358,7 +358,7 @@ Bool isCommandAllowedInMode(Mode mode, Command command) {
 }
 
 void terminate(Game *game, FinishCode finishCode) {
-    if(game!=NULL){
+    if (game != NULL) {
         destroyGame(game);
     }
     clearListFromNode(getFirstNode(g_curNode));
@@ -487,7 +487,7 @@ void performSetsFromRedoList(Game *game, Input *sets, int len) {
     }
 }
 
-void updateHistoryList (Game *game , Board final) {
+void updateHistoryList(Game *game, Board final) {
 
     int numOfSets;
     Input *redoInputs;
@@ -545,7 +545,7 @@ int chooseCellsToFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
 void chooseCellsToClear(Board board, Coordinate *cellsToClear, int numToClear) {
 
     Coordinate *filledCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
-    getFilledCells(board, filledCells);
+    getFilledCells(board, filledCells); /* TODO: before submitting, use the returned value*/
     chooseRandCords(filledCells, g_gameDim.cellsCount, cellsToClear, numToClear);
 
     free(filledCells);
@@ -573,14 +573,14 @@ void fillObviousValues(Board board) {
     free(possibleValues);
 }
 
-Bool performGuess(Game* game , Input input){
+Bool performGuess(Game *game, Input input) {
 
     Board solutionBoard = createBoard();
-    if(!guessBoard(game->user_matrix , solutionBoard, input.threshold )){
-        destroyBoard(solutionBoard , g_gameDim);
+    if (!guessBoard(game->user_matrix, solutionBoard, input.threshold)) {
+        destroyBoard(solutionBoard, g_gameDim);
         return false;
     }
-    updateHistoryList(game , solutionBoard);  /*destroys newBoard*/
+    updateHistoryList(game, solutionBoard);  /*destroys newBoard*/
     return true;
 }
 
@@ -639,7 +639,7 @@ Bool performGenerate(Game *game, Input input) {
 
     /*step 3 - perform changes and update the redo/undo list */
 
-    updateHistoryList(game , newBoard); /*destroys newBoard*/
+    updateHistoryList(game, newBoard); /*destroys newBoard*/
     return true;
 
 }
@@ -716,7 +716,7 @@ Bool checkLegalInput(Input input, Game *game) {
         case COMMAND_VALIDATE: {
             /*   is parameter legal in current board state check    */
 
-            if (isBoardErroneous(game)) {
+            if (isGameErroneous(game)) {
                 printError(EErroneousBoard);
                 return false;
             }
@@ -733,7 +733,7 @@ Bool checkLegalInput(Input input, Game *game) {
 
             /*   is parameter legal in current board state check    */
 
-            if (isBoardErroneous(game)) {
+            if (isGameErroneous(game)) {
                 printError(EErroneousBoard);
                 return false;
             }
@@ -765,7 +765,7 @@ Bool checkLegalInput(Input input, Game *game) {
 
             if (input.gen1 > numOfEmptyCells) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be smaller or equal than the number of empty cells\n");
+                printf("parameter must be smaller or equal than the number of empty cells\n"); /* TODO: show range */
                 return false;
             }
 
@@ -793,7 +793,7 @@ Bool checkLegalInput(Input input, Game *game) {
         case COMMAND_SAVE: {
             /*   is parameter legal in current board state check    */
 
-            if (isBoardErroneous(game) && g_mode == Edit) {
+            if (isGameErroneous(game) && g_mode == Edit) {
                 printError(EErroneousBoard);
                 return false;
             }
@@ -819,7 +819,7 @@ Bool checkLegalInput(Input input, Game *game) {
             }
 
             /*   is parameter legal in current board state check    */
-            if (isBoardErroneous(game)) {
+            if (isGameErroneous(game)) {
                 printError(EErroneousBoard);
                 return false;
             }
@@ -854,7 +854,7 @@ Bool checkLegalInput(Input input, Game *game) {
             }
 
             /*   is parameter legal in current board state check    */
-            if (isBoardErroneous(game)) {
+            if (isGameErroneous(game)) {
                 printError(EErroneousBoard);
                 return false;
             }
@@ -874,7 +874,7 @@ Bool checkLegalInput(Input input, Game *game) {
         case COMMAND_NUM_SOLUTIONS: {
             /*   is parameter legal in current board state check    */
 
-            if (isBoardErroneous(game)) {
+            if (isGameErroneous(game)) {
                 printError(EErroneousBoard);
                 return false;
             }
@@ -883,7 +883,7 @@ Bool checkLegalInput(Input input, Game *game) {
         case COMMAND_AUTOFILL: {
             /*   is parameter legal in current board state check    */
 
-            if (isBoardErroneous(game)) {
+            if (isGameErroneous(game)) {
                 printError(EErroneousBoard);
                 return false;
             }
@@ -947,7 +947,8 @@ void executeCommand(Input input, Game **gameP) {
             if (strlen(input.path) == 0) {
                 setGameDim(3, 3);
                 newGame = createGame();
-                old_generateGame(newGame, 0);
+                clearGame(newGame);
+
             } else {
                 newGame = createGameFromFile(input.path);
             }
@@ -982,7 +983,7 @@ void executeCommand(Input input, Game **gameP) {
             if (setCoordinate(game, input)) {
                 insertInputsToList(&redoInput, &undoInput, 1);
                 if (g_mode == Solve && isFullUserBoard(game)) {
-                    if (!isBoardErroneous(game)) {
+                    if (!isGameErroneous(game)) {
                         printPrompt(PSuccess, 0);
                         g_mode = Init;
                     } else {
@@ -1075,5 +1076,21 @@ void executeCommand(Input input, Game **gameP) {
         printBoard(game);
     }
 
+}
+
+int getBoardValue(Board board, Coordinate coordinate) {
+    return board[coordinate.i][coordinate.j];
+}
+
+void setBoardValue(Board board, Coordinate coordinate, int value) {
+    board[coordinate.i][coordinate.j] = value;
+}
+
+Bool getBoolBoardValue(BoolBoard board, Coordinate coordinate) {
+    return board[coordinate.i][coordinate.j];
+}
+
+void setBoolBoardValue(BoolBoard board, Coordinate coordinate, Bool value) {
+    board[coordinate.i][coordinate.j] = value;
 }
 

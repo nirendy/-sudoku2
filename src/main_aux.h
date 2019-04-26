@@ -1,5 +1,5 @@
-#ifndef MAPS_H
-#define MAPS_H
+#ifndef MAIN_AUX_H
+#define MAIN_AUX_H
 
 #include "time.h"
 #include "stdlib.h"
@@ -189,6 +189,14 @@ Bool checkLegalInput(Input input, Game *game);
 int randLimit(int limit);
 
 Bool isCommandAllowedInMode(Mode mode , Command command);
+
+int getBoardValue(Board board, Coordinate coordinate);
+
+void setBoardValue(Board board, Coordinate coordinate, int value);
+
+Bool getBoolBoardValue(BoolBoard board, Coordinate coordinate);
+
+void setBoolBoardValue(BoolBoard board, Coordinate coordinate, Bool value);
 
 #endif
 

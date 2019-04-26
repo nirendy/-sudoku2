@@ -10,28 +10,6 @@ Bool isCoordinateEmpty(Game *game, Coordinate coordinate) {
     return game->user_matrix[coordinate.i][coordinate.j] == 0;
 }
 
-Bool isValueInNeighbours(Game *game, Coordinate coordinate, int value) {
-    int *possibleValues;
-    Bool returnValue = true;
-    int i, possibleValuesCount;
-
-    possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
-
-    possibleValuesCount = getPossibleValues(game->user_matrix, coordinate, possibleValues);
-
-    /*will return false if the value is found in one of the neighbours*/
-    for (i = 0; i < possibleValuesCount; ++i) {
-        if (possibleValues[i] == value) {
-            returnValue = false;
-            break;
-        }
-    }
-
-    /* did not find - return true*/
-    free(possibleValues);
-    return returnValue;
-}
-
 Bool setCoordinate(Game *game, Input input) {
     if (isCoordinateFixed(game, input.coordinate)) {
         printError(ECellIsFixed);
@@ -56,9 +34,7 @@ void hint(Game *game, Input input) {
 
     if (fillSolutionMatrix(game->user_matrix, solutionBoard)) {
         printPrompt(PHint, solutionBoard[input.coordinate.i][input.coordinate.i]);
-    }
-
-    else{
+    } else {
         printError(EFUnsolvableBoard);
     }
 
@@ -76,4 +52,10 @@ void validate(Game *game) {
     }
 
     destroyBoard(solutionBoard, g_gameDim);
+}
+
+void clearGame(Game *game) {
+    clearBoard(game->user_matrix);
+    clearBoolBoard(game->fixed_matrix);
+    clearBoolBoard(game->error_matrix);
 }
