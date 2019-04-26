@@ -8,6 +8,8 @@
 #define MAX_VAR_NAME_LEN 30
 #define MAX_CONST_NAME_LEN 100
 
+/* TODO: change from log directory */
+
 #define GUR_LOG_FILE "../log/gur"
 #define GUR_LOG_FILE2 "../log/gur.lp"
 #define GUR_NAME "sud"
