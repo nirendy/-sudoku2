@@ -1,6 +1,6 @@
 solve ../data/-10
 num_solutions
 validate
-save ../data/saved_-5
-edit ../data/saved_-5
+save ../data/saved_-10
+edit ../data/saved_-10
 exit
