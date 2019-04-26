@@ -4,6 +4,7 @@
 #include "game.h"
 #include "main_aux.h"
 
+/*Solver module - responsible for board solving using the backtracking algorithm*/
 
 int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues);
 

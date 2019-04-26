@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include "main_aux.h"
 
+/* Linked list module - responsible for handling the linked-list data structure that holds all the moves history */
+
 /* Data Node Funcs */
 
 Node *CreateFirstNode();

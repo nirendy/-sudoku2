@@ -615,6 +615,9 @@ Bool performGuess(Game *game, Input input) {
         destroyBoard(solutionBoard, g_gameDim);
         return false;
     }
+
+    clearListFromNode(g_curNode->next);
+    g_curNode->next = NULL;
     updateHistoryList(game, solutionBoard);  /*destroys newBoard*/
     return true;
 }
@@ -673,7 +676,8 @@ Bool performGenerate(Game *game, Input input) {
     }
 
     /*step 3 - perform changes and update the redo/undo list */
-
+    clearListFromNode(g_curNode->next);
+    g_curNode->next = NULL;
     updateHistoryList(game, newBoard); /*destroys newBoard*/
     return true;
 
@@ -828,7 +832,7 @@ Bool checkLegalInput(Input input, Game *game) {
         case COMMAND_SAVE: {
             /*   is parameter legal in current board state check    */
 
-            if (isGameErroneous(game) && g_mode == Edit) {
+            if (g_mode == Edit && isGameErroneous(game)) {
                 printError(EErroneousBoard);
                 return false;
             }
@@ -948,15 +952,11 @@ void executeCommand(Input input, Game **gameP) {
     Bool success = false;
     Board solutionBoard;
 
+    /*this commands cannot fail in this stage so its safe to clear the redo list
+     * guess and generate command can fail so clearing the redo list is done after we get success*/
+
     if (input.command == COMMAND_SET ||
-        input.command == COMMAND_AUTOFILL ||
-        input.command == COMMAND_GENERATE ||
-        input.command == COMMAND_GUESS) {
-        clearListFromNode(g_curNode->next);
-        g_curNode->next = NULL;
-    } else if (input.command == COMMAND_SOLVE ||
-               input.command == COMMAND_EDIT) {
-        g_curNode = getFirstNode(g_curNode);
+        input.command == COMMAND_AUTOFILL ) {
         clearListFromNode(g_curNode->next);
         g_curNode->next = NULL;
     }
@@ -972,6 +972,9 @@ void executeCommand(Input input, Game **gameP) {
                 game = newGame;
                 setMode(modePtr, Solve);
                 updateWholeErrorMatrix(game);
+                g_curNode = getFirstNode(g_curNode);
+                clearListFromNode(g_curNode->next);
+                g_curNode->next = NULL;
                 success = true;
             }
 
@@ -997,6 +1000,9 @@ void executeCommand(Input input, Game **gameP) {
                 setMode(modePtr, Edit);
                 clearBoolBoard(game->fixed_matrix);
                 updateWholeErrorMatrix(game);
+                g_curNode = getFirstNode(g_curNode);
+                clearListFromNode(g_curNode->next);
+                g_curNode->next = NULL;
                 success = true;
             }
             break;
@@ -1015,15 +1021,14 @@ void executeCommand(Input input, Game **gameP) {
         case COMMAND_SET: {
             Input redoInput, undoInput;
             updateRedoUndoInputsAfterSingleSet(game, input, &redoInput, &undoInput);
-            if (setCoordinate(game, input)) {
-                insertInputsToList(&redoInput, &undoInput, 1);
-                if (g_mode == Solve && isFullUserBoard(game)) {
-                    if (!isGameErroneous(game)) {
-                        printPrompt(PSuccess, 0);
-                        g_mode = Init;
-                    } else {
-                        printPrompt(PWrongSolution, 0);
-                    }
+            insertInputsToList(&redoInput, &undoInput, 1);
+            setCoordinate(game, input);
+            if (g_mode == Solve && isFullUserBoard(game)) {
+                if (!isGameErroneous(game)) {
+                    printPrompt(PSuccess, 0);
+                    g_mode = Init;
+                } else {
+                    printPrompt(PWrongSolution, 0);
                 }
             }
             success = true; /*fail condition checked in isLegalMove*/

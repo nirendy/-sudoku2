@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include "main_aux.h"
 
+/*File handling module - responsible for dealing with reading|writing data from files  */
+
 FinishCode saveGameToFile(char *filePath, Game *game);
 
 FinishCode setDimensionsFromFile(char *filePath);

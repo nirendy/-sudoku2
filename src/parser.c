@@ -133,7 +133,8 @@ void printBoard(Game *game) {
                     case 2:
                         printf("%c", ASTERISK);
                         break;
-
+                    default:
+                        printf("Unreachable Code Error");
                 }
 
             }
@@ -150,78 +151,78 @@ void printBoard(Game *game) {
 
 /* Categorize token to commands */
 int ClassifyCommand(char *token, Input *returnedInputP) {
-    int numOfVars = -1;
+    int numOfCommandParams= -1;
 
     if (!strcmp(token, "solve")) {
-        numOfVars = 1;
+        numOfCommandParams= 1;
         returnedInputP->command = COMMAND_SOLVE;
     }
     if (!strcmp(token, "edit")) {
-        numOfVars = 1;
+        numOfCommandParams= 1;
         returnedInputP->command = COMMAND_EDIT;
     }
     if (!strcmp(token, "mark_errors")) {
-        numOfVars = 1;
+        numOfCommandParams= 1;
         returnedInputP->command = COMMAND_MARK_ERRORS;
     }
     if (!strcmp(token, "print_board")) {
-        numOfVars = 0;
+        numOfCommandParams= 0;
         returnedInputP->command = COMMAND_PRINT_BOARD;
     }
     if (!strcmp(token, "set")) {
-        numOfVars = 3;
+        numOfCommandParams= 3;
         returnedInputP->command = COMMAND_SET;
     }
     if (!strcmp(token, "validate")) {
-        numOfVars = 0;
+        numOfCommandParams= 0;
         returnedInputP->command = COMMAND_VALIDATE;
     }
     if (!strcmp(token, "guess")) {
-        numOfVars = 1;
+        numOfCommandParams= 1;
         returnedInputP->command = COMMAND_GUESS;
     }
     if (!strcmp(token, "generate")) {
-        numOfVars = 2;
+        numOfCommandParams= 2;
         returnedInputP->command = COMMAND_GENERATE;
     }
     if (!strcmp(token, "undo")) {
-        numOfVars = 0;
+        numOfCommandParams= 0;
         returnedInputP->command = COMMAND_UNDO;
     }
     if (!strcmp(token, "redo")) {
-        numOfVars = 0;
+        numOfCommandParams= 0;
         returnedInputP->command = COMMAND_REDO;
     }
     if (!strcmp(token, "save")) {
-        numOfVars = 1;
+        numOfCommandParams= 1;
         returnedInputP->command = COMMAND_SAVE;
     }
     if (!strcmp(token, "hint")) {
-        numOfVars = 2;
+        numOfCommandParams= 2;
         returnedInputP->command = COMMAND_HINT;
     }
     if (!strcmp(token, "guess_hint")) {
-        numOfVars = 2;
+        numOfCommandParams= 2;
         returnedInputP->command = COMMAND_GUESS_HINT;
     }
     if (!strcmp(token, "num_solutions")) {
-        numOfVars = 0;
+        numOfCommandParams= 0;
         returnedInputP->command = COMMAND_NUM_SOLUTIONS;
     }
     if (!strcmp(token, "autofill")) {
-        numOfVars = 0;
+        numOfCommandParams= 0;
         returnedInputP->command = COMMAND_AUTOFILL;
     }
     if (!strcmp(token, "reset")) {
-        numOfVars = 0;
+        numOfCommandParams= 0;
         returnedInputP->command = COMMAND_RESET;
     }
     if (!strcmp(token, "exit")) {
-        numOfVars = 0;
+        numOfCommandParams= 0;
         returnedInputP->command = COMMAND_EXIT;
     }
 
-    return numOfVars;
+    return numOfCommandParams;
 }
 
 void initInput(Input *returnedInput) {
@@ -272,7 +273,7 @@ FinishCode parseCommand(Input *returnedInput) {
 
     char str[MAX_STRING_LEN];
     char *token, command[MAX_COMMAND_LEN + 1];
-    int numOfVars;
+    int numOfCommandParams;
     int index = 0;
     initInput(returnedInput);
 
@@ -288,9 +289,9 @@ FinishCode parseCommand(Input *returnedInput) {
         token = strtok(str, " \t\r\n");
     } while (token == NULL);
 
-    numOfVars = ClassifyCommand(token, returnedInput);
+    numOfCommandParams= ClassifyCommand(token, returnedInput);
 
-    if (numOfVars == -1) {
+    if (numOfCommandParams== -1) {
         printError(EInvalidCommand);
         return FC_INVALID_RECOVERABLE;
     }
@@ -307,9 +308,9 @@ FinishCode parseCommand(Input *returnedInput) {
     /*while not all expected parameters has been interpreted*/
     while (token != NULL) {
 
-        if (index > numOfVars) {
+        if (index > numOfCommandParams) { /*too many parameters*/
             printError(ETooManyParams);
-            printParamError(returnedInput->command, numOfVars);
+            printParamError(returnedInput->command, numOfCommandParams);
             return FC_INVALID_RECOVERABLE;
         }
         switch (index) {
@@ -360,9 +361,9 @@ FinishCode parseCommand(Input *returnedInput) {
     }
 
     index--;
-    if (index != numOfVars && strcmp(command, "edit") != 0) {
+    if (index != numOfCommandParams&& strcmp(command, "edit") != 0) {
         printError(ETooFewParams);
-        printParamError(returnedInput->command, numOfVars);
+        printParamError(returnedInput->command, numOfCommandParams);
         return FC_INVALID_RECOVERABLE;
     }
 
@@ -376,4 +377,4 @@ void printUserBoard(Board board) {
     game.fixed_matrix = (BoolBoard) board;
     game.error_matrix = (BoolBoard) board;
     printBoard(&game);
-}
+}  /*TODO: delete*/
