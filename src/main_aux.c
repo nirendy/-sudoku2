@@ -685,14 +685,14 @@ Bool checkLegalInput(Input input, Game *game) {
             /*First Parameter Check*/
             if (!(input.coordinate.i >= 0 && input.coordinate.i <= g_gameDim.N - 1)) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be an integer number between -1 and %d\n", g_gameDim.N);
+                printf("parameter must be an integer number between 1 and %d\n", g_gameDim.N);
                 return false;
             }
 
             /*Second Parameter Check*/
             if (!(input.coordinate.j >= 0 && input.coordinate.j <= g_gameDim.N - 1)) {
                 printError(EInvalidSecondParam);
-                printf("parameter must be an integer number between -1 and %d\n", g_gameDim.N);
+                printf("parameter must be an integer number between 1 and %d\n", g_gameDim.N);
                 return false;
             }
 

@@ -1,0 +1,18 @@
+edit ../allen/11
+set 1 2 0
+set 000
+set 0 0  0
+set 1 1 0
+guess
+autofill
+mark_errors 0
+set 1 1 1
+solve ../allen/11
+set 1 1 1
+solve ../allen/1
+solve ../allen 1
+solve ../allen/11
+guesshint 1 1
+num_solutions
+set 1 1 2
+exit

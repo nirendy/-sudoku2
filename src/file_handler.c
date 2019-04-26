@@ -126,7 +126,6 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
                 tav = (char) c;
             }
 
-            if (c == EOF) { break; } /*break if second step failed*/
             if (!isLegalNum(num)) {
                 printFileError("number not in range exists");
                 isFailed = true;
@@ -136,8 +135,12 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
             game->user_matrix[i][j] = num;
 
 
+            /*third step - find if the last char is EOF or dot or whitespace*/
 
-            /*third step - find if the last char is dot or whitespace*/
+            if (c == EOF) {
+                j++;
+                break;
+            }
 
             if (!isWhiteSpace(tav) && !isDot(tav)) {
                 printFileError("invalid char exists");

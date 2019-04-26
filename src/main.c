@@ -11,30 +11,60 @@
 
 void mock(int mockI, Game **gameP) {
     Input input;
-    Input setInput;
-    Input generateInput;
 
     switch (mockI) {
         case 1: {
-            input.command = COMMAND_EDIT;
-            sprintf(input.path, "%s", "../data/1");
+            g_mode = Solve;
+            setGameDim(1, 1);
+            *gameP = createGame();
+            old_generateGame(*gameP, 0);
+            saveGameToFile("../data/11" , *gameP);
 
-            input.command = COMMAND_PRINT_BOARD;
-            executeCommand(input, gameP);
+            setGameDim(2, 2);
+            *gameP = createGame();
+            old_generateGame(*gameP, 0);
+            saveGameToFile("../data/22", *gameP);
 
-            setInput.command = COMMAND_SET;
-            setInput.coordinate.i = 0;
-            setInput.coordinate.j = 0;
-            setInput.value = 0;
-            executeCommand(setInput, gameP);
+            setGameDim(3, 3);
+            *gameP = createGame();
+            old_generateGame(*gameP, 0);
+            saveGameToFile("../data/33", *gameP);
 
-            input.command = COMMAND_PRINT_BOARD;
-            executeCommand(input, gameP);
+            setGameDim(4, 4);
+            *gameP = createGame();
+            old_generateGame(*gameP, 0);
+            saveGameToFile("../data/44", *gameP);
 
-            generateInput.command = COMMAND_GENERATE;
-            generateInput.gen1 = 3;
-            generateInput.gen2 = 0;
-            executeCommand(generateInput , gameP);
+            setGameDim(5, 5);
+            *gameP = createGame();
+            old_generateGame(*gameP, 0);
+            saveGameToFile("../data/55", *gameP);
+
+            setGameDim(2, 3);
+            *gameP = createGame();
+            old_generateGame(*gameP, 0);
+            saveGameToFile("../data/23", *gameP);
+
+            setGameDim(4, 3);
+            *gameP = createGame();
+            old_generateGame(*gameP, 0);
+            saveGameToFile("../data/43", *gameP);
+
+            setGameDim(1, 4);
+            *gameP = createGame();
+            old_generateGame(*gameP, 0);
+            saveGameToFile("../data/14", *gameP);
+
+            setGameDim(2, 5);
+            *gameP = createGame();
+            old_generateGame(*gameP, 0);
+            saveGameToFile("../data/25", *gameP);
+
+            setGameDim(3, 1);
+            *gameP = createGame();
+            old_generateGame(*gameP, 0);
+            saveGameToFile("../data/31", *gameP);
+
 
             break;
         }
@@ -161,7 +191,7 @@ int main() {
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-    /*mock(-7, &game);*/
+    /*mock(1, &game);*/
 
     while (g_mode != Exit) {
         if (askUserForNextTurn(&input)) {
