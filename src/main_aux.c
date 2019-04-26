@@ -804,7 +804,8 @@ Bool checkLegalInput(Input input, Game *game) {
 
             if (input.gen1 > numOfEmptyCells) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be smaller or equal than the number of empty cells\n"); /* TODO: show range */
+                printf("parameter must be smaller or equal than the number of empty cells: %d\n",
+                       numOfEmptyCells);
                 return false;
             }
 
@@ -956,7 +957,7 @@ void executeCommand(Input input, Game **gameP) {
      * guess and generate command can fail so clearing the redo list is done after we get success*/
 
     if (input.command == COMMAND_SET ||
-        input.command == COMMAND_AUTOFILL ) {
+        input.command == COMMAND_AUTOFILL) {
         clearListFromNode(g_curNode->next);
         g_curNode->next = NULL;
     }
