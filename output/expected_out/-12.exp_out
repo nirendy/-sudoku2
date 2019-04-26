@@ -1,23 +1,14 @@
 Sudoku Game
 Please enter the desired command:
 -------------------
-|        |        |
+|  1   2 |  3     |
 |        |        |
 -------------------
-|        |        |
+|  2   3 |  1     |
 |        |        |
 -------------------
 Please enter the desired command:
--------------------
-|        |        |
-|        |        |
--------------------
-|        |        |
-|        |        |
--------------------
+There are: 0 possible solutions
 Please enter the desired command:
 Validation passed: board is solvable
 Please enter the desired command:
-There are: 288 possible solutions
-Please enter the desired command:
-Exiting...

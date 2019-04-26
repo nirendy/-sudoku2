@@ -1,5 +1,4 @@
-edit ../data/-1
-print_board
+solve ../data/-1
+save ../data/saved_-1
 validate
-print_board
 exit
