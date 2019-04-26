@@ -74,6 +74,10 @@ void mock(int mockI, Game **gameP) {
             *gameP = createGame();
             old_generateGame(*gameP, 95);
 
+            input.command = COMMAND_SAVE;
+            sprintf(input.path, "%s", "../data/-1");
+            executeCommand(input, gameP);
+
             input.command = COMMAND_PRINT_BOARD;
             executeCommand(input, gameP);
 
@@ -191,7 +195,7 @@ int main() {
     SP_BUFF_SET();
     printPrompt(PTitle, 0);
 
-    /*mock(1, &game);*/
+    /*mock(-1, &game);*/
 
     while (g_mode != Exit) {
         if (askUserForNextTurn(&input)) {

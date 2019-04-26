@@ -1,0 +1,4 @@
+solve ../data/-3
+print_board
+validate
+exit
