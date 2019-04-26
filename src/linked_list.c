@@ -6,7 +6,7 @@
 /* Data Node Funcs */
 
 Node *CreateFirstNode() {
-    Node *new_node = (Node *) malloc(sizeof(Node));
+    Node *new_node = (Node *) smartMalloc(sizeof(Node));
     new_node->isFirst = true;
     new_node->next = NULL;
     new_node->prev = NULL;
@@ -23,7 +23,7 @@ Node *insertAfterNode(Node *curNode) {
         return NULL;
     }
 
-    new_node = (Node *) malloc(sizeof(Node));
+    new_node = (Node *) smartMalloc(sizeof(Node));
     new_node->currDataNode = CreateFirstDataNode();
     new_node->isFirst = false;
     new_node->next = curNode->next;
@@ -65,7 +65,7 @@ void clearListFromNode(Node *curNode) {
 /* Data Node Funcs */
 
 DataNode *CreateFirstDataNode() {
-    DataNode *new_node = (DataNode *) malloc(sizeof(DataNode));
+    DataNode *new_node = (DataNode *) smartMalloc(sizeof(DataNode));
     new_node->isFirst = true;
     new_node->next = NULL;
     new_node->prev = NULL;
@@ -81,7 +81,7 @@ DataNode *insertAfterDataNode(DataNode *curNode, Input redoInput, Input undoInpu
         return NULL;
     }
 
-    new_node = (DataNode *) malloc(sizeof(DataNode));
+    new_node = (DataNode *) smartMalloc(sizeof(DataNode));
     new_node->redoInput = redoInput;
     new_node->undoInput = undoInput;
     new_node->isFirst = false;

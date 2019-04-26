@@ -51,7 +51,7 @@ Bool isFullUserBoard(Game *game) {
     Coordinate *emptyCells;
     int emptyCellsCount;
 
-    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
 
     emptyCellsCount = getEmptyCells(game->user_matrix, emptyCells);
 
@@ -114,7 +114,7 @@ void coordinateNeighbours(Coordinate coordinate, Coordinate *neighbours) {
 int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues) {
     int i, possibleValuesCount = 0;
     Coordinate *neighbours;
-    neighbours = (Coordinate *) malloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
+    neighbours = (Coordinate *) smartMalloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
 
     /* init an array of all numbers available*/
     for (i = 0; i < g_gameDim.N; ++i) {
@@ -158,7 +158,7 @@ Bool isPossibleValue(Board board, Coordinate coordinate, int value) {
     int i;
     Bool returnValue = false;
 
-    possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
+    possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
 
     possibleValuesCount = getPossibleValues(board, coordinate, possibleValues);
     for (i = 0; i < possibleValuesCount; i++) {
@@ -195,7 +195,7 @@ Bool solveBoardRec(Board board, Bool isDeterministic, Coordinate *emptyCells, in
     Bool returnValue = false;
     Coordinate currentCoordinate = emptyCells[start];
 
-    possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
+    possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
 
     possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
 
@@ -245,7 +245,7 @@ int countPossibleSolutionsRec(Board board, Coordinate *emptyCells, int emptyCell
     int returnValue = 0;
     Coordinate currentCoordinate = emptyCells[start];
 
-    possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
+    possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
 
     possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
 
@@ -291,7 +291,7 @@ Bool solveBoard(Board userBoard, Board toSolveBoard, Bool isDeterministic) {
     int emptyCellsCount;
     Bool returnValue;
 
-    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
 
     /* make a copy of the current board to solve*/
     copyBoard(toSolveBoard, userBoard);
@@ -323,7 +323,7 @@ FinishCode countPossibleSolutions(Board board) {
     Board tempBoard;
     CountPossibleSolutionsScope *curScope;
 
-    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
     tempBoard = createBoard();
 
     /* make a copy of the current board to solve*/
@@ -333,7 +333,7 @@ FinishCode countPossibleSolutions(Board board) {
     emptyCellsCount = getEmptyCells(tempBoard, emptyCells);
 
 
-    curScope = (CountPossibleSolutionsScope *) malloc(sizeof(CountPossibleSolutionsScope));
+    curScope = (CountPossibleSolutionsScope *) smartMalloc(sizeof(CountPossibleSolutionsScope));
     curScope->parentScope = NULL;
     curScope->beforeChildPoped = true;
     curScope->isInitialized = false;
@@ -345,7 +345,7 @@ FinishCode countPossibleSolutions(Board board) {
         if (curScope->isInitialized == false) {
             /* initialize*/
             curScope->currentCoordinate = emptyCells[curScope->start];
-            curScope->possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
+            curScope->possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
             curScope->possibleValuesCount = getPossibleValues(tempBoard, curScope->currentCoordinate,
                                                               curScope->possibleValues);
             curScope->isInitialized = true;
@@ -373,7 +373,7 @@ FinishCode countPossibleSolutions(Board board) {
                     /*push*/
 
                     CountPossibleSolutionsScope *newScope =
-                            (CountPossibleSolutionsScope *) malloc(sizeof(CountPossibleSolutionsScope));
+                            (CountPossibleSolutionsScope *) smartMalloc(sizeof(CountPossibleSolutionsScope));
                     newScope->parentScope = curScope;
                     newScope->beforeChildPoped = true;
                     newScope->isInitialized = false;
@@ -460,7 +460,7 @@ void updateAfterClearErrorMatrix(Game *game, Input input) {
     int k;
     Input in;
     Coordinate *neighbours;
-    neighbours = (Coordinate *) malloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
+    neighbours = (Coordinate *) smartMalloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
     coordinateNeighbours(input.coordinate, neighbours);
 
     for (k = 0; k < g_gameDim.cellNeighboursCount; k++) {
@@ -483,7 +483,7 @@ void updateAfterSetErrorMatrix(Game *game, Input input) {
     int k;
     Bool flag = false;
     Coordinate *neighbours;
-    neighbours = (Coordinate *) malloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
+    neighbours = (Coordinate *) smartMalloc(g_gameDim.cellNeighboursCount * sizeof(Coordinate));
     coordinateNeighbours(input.coordinate, neighbours);
     for (k = 0; k < g_gameDim.cellNeighboursCount; k++) {
         if (game->user_matrix[neighbours[k].i][neighbours[k].j] == input.value) {
@@ -586,7 +586,7 @@ PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coorV2var, Coordina
 }
 
 PossibleVar *createPossibleVar(Coordinate coor, int value, Bool isBinary, Bool isOnlyOption) {
-    PossibleVar *newPosVar = (PossibleVar *) malloc(sizeof(PossibleVar));
+    PossibleVar *newPosVar = (PossibleVar *) smartMalloc(sizeof(PossibleVar));
     sprintf(newPosVar->name, "X_%d_%d_%d", coor.i + 1, coor.j + 1, value);
     newPosVar->varIndex = -1;
     newPosVar->type = isBinary ? GRB_BINARY : GRB_CONTINUOUS;
@@ -607,8 +607,12 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
     PossibleVarSentinel *coorV2var;
 
     coorV2var = (PossibleVarSentinel *) calloc(g_gameDim.cellsCount, sizeof(PossibleVarSentinel));
+    if(coorV2var == NULL){
+        printError(EMallocFailure);
+        exit(-1);
+    }
 
-    emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
     /*find empty cells*/
     emptyCellsCount = getEmptyCells(board, emptyCells);
 
@@ -620,7 +624,7 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
 
         /*create var for each possible values and cell*/
         currentCoordinate = emptyCells[i];
-        possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
+        possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
         possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
         sentinel = &coorV2var[calculateCoordinateFlatIndex(currentCoordinate)];
         sentinel->length = possibleValuesCount;
@@ -723,8 +727,8 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
 
     /*create equation for every value in every row, column and block*/
 
-    constInd = (int *) malloc(g_gameDim.N * sizeof(int));
-    constVals = (double *) malloc(g_gameDim.N * sizeof(double));
+    constInd = (int *) smartMalloc(g_gameDim.N * sizeof(int));
+    constVals = (double *) smartMalloc(g_gameDim.N * sizeof(double));
 
     for (i = 0; i < g_gameDim.N; i++) {
         constVals[i] = 1;
@@ -1002,7 +1006,7 @@ FinishCode guessFillBoard(Board board, double threshold) {
     int bestOptionsCount;
     double bestOptionVal;
 
-    valsOptions = (int *) malloc(g_gameDim.N * sizeof(int));
+    valsOptions = (int *) smartMalloc(g_gameDim.N * sizeof(int));
 
     coorV2var = createCoor2Var(board, false);
 

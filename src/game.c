@@ -15,7 +15,7 @@ Bool isValueInNeighbours(Game *game, Coordinate coordinate, int value) {
     Bool returnValue = true;
     int i, possibleValuesCount;
 
-    possibleValues = (int *) malloc(g_gameDim.N * sizeof(int));
+    possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
 
     possibleValuesCount = getPossibleValues(game->user_matrix, coordinate, possibleValues);
 

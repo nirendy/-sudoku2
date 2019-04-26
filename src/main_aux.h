@@ -59,7 +59,8 @@ typedef enum _error {
     EFileScanFailure,
     EFUnsolvableBoard,
     EGenerationFailed,
-    EInputTooLong
+    EInputTooLong,
+    EMallocFailure
 
 } Error;
 
@@ -189,6 +190,9 @@ Bool checkLegalInput(Input input, Game *game);
 int randLimit(int limit);
 
 Bool isCommandAllowedInMode(Mode mode , Command command);
+
+void *smartMalloc(size_t size);
+
 
 #endif
 
