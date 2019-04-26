@@ -220,6 +220,19 @@ int randLimit(int limit) {
     return rand() % limit;
 }
 
+int removeArrayIndex(int *arr, int arrLength, int removeI) {
+    /* return the removed value */
+
+    int i, removedValue = arr[removeI];
+
+    /*closing the gap of the removed index*/
+    for (i = removeI; i < arrLength - 1; ++i) {
+        arr[i] = arr[i + 1];
+    }
+
+    return removedValue;
+}
+
 /* Constructors and Destructors*/
 
 

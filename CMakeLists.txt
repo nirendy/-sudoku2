@@ -20,4 +20,6 @@ add_executable(sudoku-console
         src/linked_list.h
         src/gurobi_c2.c
         src/gurobi_c2.h
+        src/lp_solver.c
+        src/lp_solver.h
         )

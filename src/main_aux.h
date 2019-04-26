@@ -179,6 +179,8 @@ void *smartCalloc(size_t numOfElements, size_t sizeOfElements);
 
 int randLimit(int limit);
 
+int removeArrayIndex(int *arr, int arrLength, int removeI);
+
 /* Constructors and Destructors*/
 
 Board createBoard();

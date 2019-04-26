@@ -3,6 +3,7 @@
 #include "parser.h"
 #include "linked_list.h"
 #include "file_handler.h"
+#include "lp_solver.h"
 
 
 Bool isCoordinateFixed(Game *game, Coordinate coordinate) {
@@ -17,26 +18,12 @@ void printChange(int i, int j, int value) {
     printf("The value of the cell <%d,%d> set back to %d\n", i + 1, j + 1, value);
 }
 
-void performUndo(Game *game, DataNode *currDataNode, Bool toPrint) {
-    Input input;
-    currDataNode = getLastDataNode(currDataNode);
-    while (currDataNode->isFirst == false) {
-        input = currDataNode->undoInput;
-        if (toPrint) { printChange(input.coordinate.i, input.coordinate.j, input.value); }
-        setCoordinate(game, input);
-        currDataNode = currDataNode->prev;
-    }
-}
-
-void performRedo(Game *game, DataNode *currDataNode) {
-    Input input;
-    currDataNode = getFirstDataNode(currDataNode);
-    currDataNode = currDataNode->next;
-    while (currDataNode != NULL) {
-        input = currDataNode->redoInput;
-        printChange(input.coordinate.i, input.coordinate.j, input.value);
-        setCoordinate(game, input);
-        currDataNode = currDataNode->next;
+void setCoordinate(Game *game, Input input) {
+    game->user_matrix[input.coordinate.i][input.coordinate.j] = 0;
+    updateAfterClearErrorMatrix(game, input);
+    if (input.value != 0) {
+        updateAfterSetErrorMatrix(game, input);
+        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
     }
 }
 
@@ -201,89 +188,6 @@ void fillObviousValues(Board board) {
     free(possibleValues);
 }
 
-Bool performGuess(Game *game, Input input) {
-
-    Board solutionBoard = createBoard();
-    if (!guessBoard(game->user_matrix, solutionBoard, input.threshold)) {
-        destroyBoard(solutionBoard, g_gameDim);
-        return false;
-    }
-
-    clearListFromNode(g_curNode->next);
-    g_curNode->next = NULL;
-    updateHistoryList(game, solutionBoard);  /*destroys newBoard*/
-    return true;
-}
-
-Bool performGenerate(Game *game, Input input) {
-
-    /*variables deceleration*/
-    Bool success;
-    const int NUM_OF_ITERATIONS = 1000;
-    int k, numToFill, numToClear;
-
-    Board newBoard, solutionBoard;
-    Coordinate *cellsToFill, *cellsToClear;
-
-    /*variables deceleration*/
-    numToFill = input.gen1;
-    numToClear = g_gameDim.cellsCount - input.gen2;
-
-    /*step 1 - fill the board */
-
-    /*choose cells to fill*/
-    cellsToFill = (Coordinate *) smartMalloc(numToFill * sizeof(Coordinate));
-
-    /*try 1000 times to fill and solve*/
-    success = false;
-    newBoard = createBoard();
-    solutionBoard = createBoard();
-
-    for (k = 0; k < NUM_OF_ITERATIONS; k++) {
-        chooseCellsToFill(game->user_matrix, cellsToFill, numToFill);
-        copyBoard(newBoard, game->user_matrix);
-        if (!fillXRandomCells(newBoard, cellsToFill, numToFill)) { continue; }
-        if (!fillSolutionMatrix(newBoard, solutionBoard)) { continue; }
-
-        /*successful solution*/
-        copyBoard(newBoard, solutionBoard);
-        success = true;
-        break;
-    }
-    destroyBoard(solutionBoard, g_gameDim);
-    free(cellsToFill);
-
-
-    if (!success) {
-        printError(EGenerationFailed);
-        destroyBoard(newBoard, g_gameDim);
-        return success;
-    }
-
-    /*step 2 - clear cells from the board */
-    if (numToClear > 0) {
-        cellsToClear = (Coordinate *) smartMalloc(numToClear * sizeof(Coordinate));
-        chooseCellsToClear(newBoard, cellsToClear, numToClear);
-        clearRandomCells(newBoard, cellsToClear, numToClear);
-        free(cellsToClear);
-    }
-
-    /*step 3 - perform changes and update the redo/undo list */
-    clearListFromNode(g_curNode->next);
-    g_curNode->next = NULL;
-    updateHistoryList(game, newBoard); /*destroys newBoard*/
-    return true;
-
-}
-
-void performAutoFill(Game *game) {
-
-    Board newBoard = createBoard();
-    copyBoard(newBoard, game->user_matrix);
-    fillObviousValues(newBoard);
-    updateHistoryList(game, newBoard); /*destroys newBoard*/
-}
-
 Bool isGameErroneous(Game *game) {
     int i, j;
     for (i = 0; i < g_gameDim.N; ++i) {
@@ -296,179 +200,36 @@ Bool isGameErroneous(Game *game) {
     return false;
 }
 
-void executeCommand(Input input, Game **gameP) {
-
-    Game *game = *gameP;
-    Bool success = false;
-    Board solutionBoard;
-
-    /*this commands cannot fail in this stage so its safe to clear the redo list
-     * guess and generate command can fail so clearing the redo list is done after we get success*/
-
-    if (input.command == COMMAND_SET ||
-        input.command == COMMAND_AUTOFILL ) {
-        clearListFromNode(g_curNode->next);
-        g_curNode->next = NULL;
-    }
-
-    switch (input.command) {
-        case COMMAND_SOLVE: {
-            Game *newGame = createGameFromFile(input.path);
-            if (newGame != NULL) {
-                if (game != NULL) {          /*skip if first game*/
-                    destroyGame(game);
-                }
-                *gameP = newGame;
-                game = newGame;
-                setMode(Solve);
-                updateWholeErrorMatrix(game);
-                g_curNode = getFirstNode(g_curNode);
-                clearListFromNode(g_curNode->next);
-                g_curNode->next = NULL;
-                success = true;
-            }
-
-            break;
-        }
-        case COMMAND_EDIT: {
-            Game *newGame;
-            if (strlen(input.path) == 0) {
-                setGameDim(3, 3);
-                newGame = createGame();
-                clearGame(newGame);
-
-            } else {
-                newGame = createGameFromFile(input.path);
-            }
-
-            if (newGame != NULL) {
-                if (game != NULL) {         /*skip if first game*/
-                    destroyGame(game);
-                }
-                *gameP = newGame;
-                game = newGame;
-                setMode(Edit);
-                clearBoolBoard(game->fixed_matrix);
-                updateWholeErrorMatrix(game);
-                g_curNode = getFirstNode(g_curNode);
-                clearListFromNode(g_curNode->next);
-                g_curNode->next = NULL;
-                success = true;
-            }
-            break;
-        }
-        case COMMAND_MARK_ERRORS: {
-            if (input.value == 0) { g_markError = false; }
-            else if (input.value == 1) { g_markError = true; }
-            else { printf("Unreachable Code"); }
-
-            break;
-        }
-        case COMMAND_PRINT_BOARD: {
-            printBoard(game);
-            break;
-        }
-        case COMMAND_SET: {
-            Input redoInput, undoInput;
-            updateRedoUndoInputsAfterSingleSet(game, input, &redoInput, &undoInput);
-            insertInputsToList(&redoInput, &undoInput, 1);
-            setCoordinate(game, input);
-            if (g_mode == Solve && isFullUserBoard(game)) {
-                if (!isGameErroneous(game)) {
-                    printPrompt(PSuccess, 0);
-                    g_mode = Init;
-                } else {
-                    printPrompt(PWrongSolution, 0);
-                }
-            }
-            success = true; /*fail condition checked in isLegalMove*/
-            break;
-        }
-        case COMMAND_VALIDATE: {
-            validate(game);
-            break;
-        }
-        case COMMAND_GUESS: {
-            success = performGuess(game, input);
-            break;
-        }
-        case COMMAND_GENERATE: {
-            success = performGenerate(game, input);
-            break;
-        }
-        case COMMAND_UNDO: {
-            printPrompt(PPerformedChanges, 0);
-            performUndo(game, g_curNode->currDataNode, true);
-            g_curNode = g_curNode->prev;
-            success = true; /*fail condition checked in isLegalMove*/
-            break;
-        }
-        case COMMAND_REDO: {
-            printPrompt(PPerformedChanges, 0);
-            g_curNode = g_curNode->next;
-            performRedo(game, g_curNode->currDataNode);
-            success = true; /*fail condition checked in isLegalMove*/
-            break;
-        }
-        case COMMAND_SAVE: {
-            solutionBoard = createBoard();
-            if (g_mode == Edit && !fillSolutionMatrix(game->user_matrix, solutionBoard)) {
-                printError(EFUnsolvableBoard);
-            } else { saveGameToFile(input.path, game); }
-            destroyBoard(solutionBoard, g_gameDim);
-            break;
-        }
-        case COMMAND_HINT: {
-            hint(game, input);
-            break;
-        }
-        case COMMAND_GUESS_HINT: {
-            guessHint(game->user_matrix, input.coordinate);
-            break;
-        }
-        case COMMAND_NUM_SOLUTIONS: {
-            countPossibleSolutions(game->user_matrix);
-            break;
-        }
-        case COMMAND_AUTOFILL: {
-            performAutoFill(game);
-            success = true;    /*fail condition checked in isLegalMove*/
-            break;
-        }
-        case COMMAND_RESET: {
-            while (!g_curNode->isFirst) {
-                performUndo(game, g_curNode->currDataNode, false);
-                g_curNode = g_curNode->prev;
-            }
-            success = true; /*fail condition checked in isLegalMove*/
-            break;
-        }
-        case COMMAND_EXIT: { /*TODO: nir make sure that free all resorces*/
-            terminateProgram(game, FC_SUCCESS);
-            break;
-        }
-        case COMMAND_INVALID: {
-            printf("Unreachable Code Error\n");
-            terminateProgram(game, FC_UNEXPECTED_ERROR);
-        }
-    }
-
-    if (success == true &&
-        (input.command == COMMAND_SOLVE ||
-         input.command == COMMAND_EDIT ||
-         input.command == COMMAND_SET ||
-         input.command == COMMAND_AUTOFILL ||
-         input.command == COMMAND_UNDO ||
-         input.command == COMMAND_REDO ||
-         input.command == COMMAND_GENERATE ||
-         input.command == COMMAND_GUESS ||
-         input.command == COMMAND_RESET)) {
-        printBoard(game);
-    }
-
+Bool isSolvableBoard(Board board) {
+    Bool isValid;
+    Board solutionBoard = createBoard();
+    isValid = fillSolutionMatrix(board, solutionBoard);
+    destroyBoard(solutionBoard, g_gameDim);
+    return isValid;
 }
 
-Bool checkLegalInput(Input input, Game *game) {
+void clearGame(Game *game) {
+    clearBoard(game->user_matrix);
+    clearBoolBoard(game->fixed_matrix);
+    clearBoolBoard(game->error_matrix);
+}
+
+Bool askUserForNextTurn(Input *input) {
+
+    FinishCode finishCode;
+    printPrompt(PNextCommand, 0);
+    finishCode = parseCommand(input);
+    if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
+        terminateProgram(NULL, finishCode);
+        return false;
+    }
+
+    if (finishCode == FC_INVALID_RECOVERABLE) { return false; }
+
+    return true;
+}
+
+Bool checkLegalInput(Game *game, Input input) {
     /*generate_command vars*/
     Coordinate *tempCorArray;
     int numOfEmptyCells;
@@ -722,16 +483,205 @@ Bool checkLegalInput(Input input, Game *game) {
     return false;
 }
 
-void setCoordinate(Game *game, Input input) {
-    game->user_matrix[input.coordinate.i][input.coordinate.j] = 0;
-    updateAfterClearErrorMatrix(game, input);
-    if (input.value != 0) {
-        updateAfterSetErrorMatrix(game, input);
-        game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
+
+/* Perform Commands */
+
+Bool performSolve(Game **gameP, Input input) {
+    Game *game = *gameP; /* alias */
+
+    Game *newGame = createGameFromFile(input.path);
+    if (newGame != NULL) {
+        if (game != NULL) {          /*skip if first game*/
+            destroyGame(game);
+        }
+        *gameP = newGame;
+        game = newGame;
+        setMode(Solve);
+        updateWholeErrorMatrix(game);
+        g_curNode = getFirstNode(g_curNode);
+        clearListFromNode(g_curNode->next);
+        g_curNode->next = NULL;
+        return true;
+    }
+    return false;
+}
+
+Bool performEdit(Game **gameP, Input input) {
+    Game *game = *gameP; /* alias */
+
+    Game *newGame;
+    if (strlen(input.path) == 0) {
+        setGameDim(3, 3);
+        newGame = createGame();
+        clearGame(newGame);
+    } else {
+        newGame = createGameFromFile(input.path);
+    }
+
+    if (newGame != NULL) {
+        if (game != NULL) {         /*skip if first game*/
+            destroyGame(game);
+        }
+        *gameP = newGame;
+        game = newGame;
+        setMode(Edit);
+        clearBoolBoard(game->fixed_matrix);
+        updateWholeErrorMatrix(game);
+        g_curNode = getFirstNode(g_curNode);
+        clearListFromNode(g_curNode->next);
+        g_curNode->next = NULL;
+        return true;
+    }
+    return false;
+}
+
+void performMarkErrors(Input input) {
+    if (input.value == 0) { g_markError = false; }
+    else if (input.value == 1) { g_markError = true; }
+    else { printf("Unreachable Code"); }
+}
+
+void performSet(Game *game, Input input) {
+    Input redoInput, undoInput;
+    updateRedoUndoInputsAfterSingleSet(game, input, &redoInput, &undoInput);
+    insertInputsToList(&redoInput, &undoInput, 1);
+    setCoordinate(game, input);
+    if (g_mode == Solve && isFullUserBoard(game)) {
+        if (!isGameErroneous(game)) {
+            printPrompt(PSuccess, 0);
+            g_mode = Init;
+        } else {
+            printPrompt(PWrongSolution, 0);
+        }
     }
 }
 
-void hint(Game *game, Input input) {
+void performValidate(Game *game) {
+    if (isSolvableBoard(game->user_matrix)) {
+        printPrompt(PValidateSuccess, 0);
+    } else {
+        printPrompt(PValidateFailed, 0);
+    }
+}
+
+Bool performGuess(Game *game, Input input) {
+
+    Board solutionBoard = createBoard();
+    if (!guessBoard(game->user_matrix, solutionBoard, input.threshold)) {
+        destroyBoard(solutionBoard, g_gameDim);
+        return false;
+    }
+
+    clearListFromNode(g_curNode->next);
+    g_curNode->next = NULL;
+    updateHistoryList(game, solutionBoard);  /*destroys newBoard*/
+    return true;
+}
+
+Bool performGenerate(Game *game, Input input) {
+
+    /*variables deceleration*/
+    Bool success;
+    const int NUM_OF_ITERATIONS = 1000;
+    int k, numToFill, numToClear;
+
+    Board newBoard, solutionBoard;
+    Coordinate *cellsToFill, *cellsToClear;
+
+    /*variables deceleration*/
+    numToFill = input.gen1;
+    numToClear = g_gameDim.cellsCount - input.gen2;
+
+    /*step 1 - fill the board */
+
+    /*choose cells to fill*/
+    cellsToFill = (Coordinate *) smartMalloc(numToFill * sizeof(Coordinate));
+
+    /*try 1000 times to fill and solve*/
+    success = false;
+    newBoard = createBoard();
+    solutionBoard = createBoard();
+
+    for (k = 0; k < NUM_OF_ITERATIONS; k++) {
+        chooseCellsToFill(game->user_matrix, cellsToFill, numToFill);
+        copyBoard(newBoard, game->user_matrix);
+        if (!fillXRandomCells(newBoard, cellsToFill, numToFill)) { continue; }
+        if (!fillSolutionMatrix(newBoard, solutionBoard)) { continue; }
+
+        /*successful solution*/
+        copyBoard(newBoard, solutionBoard);
+        success = true;
+        break;
+    }
+    destroyBoard(solutionBoard, g_gameDim);
+    free(cellsToFill);
+
+
+    if (!success) {
+        printError(EGenerationFailed);
+        destroyBoard(newBoard, g_gameDim);
+        return success;
+    }
+
+    /*step 2 - clear cells from the board */
+    if (numToClear > 0) {
+        cellsToClear = (Coordinate *) smartMalloc(numToClear * sizeof(Coordinate));
+        chooseCellsToClear(newBoard, cellsToClear, numToClear);
+        clearRandomCells(newBoard, cellsToClear, numToClear);
+        free(cellsToClear);
+    }
+
+    /*step 3 - perform changes and update the redo/undo list */
+    clearListFromNode(g_curNode->next);
+    g_curNode->next = NULL;
+    updateHistoryList(game, newBoard); /*destroys newBoard*/
+    return true;
+
+}
+
+void performUndo(Game *game, DataNode *currDataNode, Bool toPrint) {
+    Input input;
+
+    if (toPrint) {
+        printPrompt(PPerformedChanges, 0);
+    }
+
+    currDataNode = getLastDataNode(currDataNode);
+    while (currDataNode->isFirst == false) {
+        input = currDataNode->undoInput;
+        if (toPrint) { printChange(input.coordinate.i, input.coordinate.j, input.value); }
+        setCoordinate(game, input);
+        currDataNode = currDataNode->prev;
+    }
+    g_curNode = g_curNode->prev;
+}
+
+void performRedo(Game *game, DataNode *currDataNode) {
+    Input input;
+
+    printPrompt(PPerformedChanges, 0);
+    g_curNode = g_curNode->next;
+
+    currDataNode = getFirstDataNode(currDataNode)->next;
+
+    while (currDataNode != NULL) {
+        input = currDataNode->redoInput;
+        printChange(input.coordinate.i, input.coordinate.j, input.value);
+        setCoordinate(game, input);
+        currDataNode = currDataNode->next;
+    }
+}
+
+void performSave(Game *game, Input input) {
+    Board solutionBoard = createBoard();
+
+    if (g_mode == Edit && !fillSolutionMatrix(game->user_matrix, solutionBoard)) {
+        printError(EFUnsolvableBoard);
+    } else { saveGameToFile(input.path, game); }
+    destroyBoard(solutionBoard, g_gameDim);
+}
+
+void performHint(Game *game, Input input) {
 
     Board solutionBoard;
     solutionBoard = createBoard();
@@ -746,35 +696,136 @@ void hint(Game *game, Input input) {
 
 }
 
-void validate(Game *game) {
-    Board solutionBoard;
-    solutionBoard = createBoard();
-    if (fillSolutionMatrix(game->user_matrix, solutionBoard)) {
-        printPrompt(PValidateSuccess, 0);
-    } else {
-        printPrompt(PValidateFailed, 0);
+void performGuessHint(Game *game, Input input) {
+    guessHint(game->user_matrix, input.coordinate);
+}
+
+void performNumSolutions(Game *game) {
+    countPossibleSolutions(game->user_matrix);
+}
+
+void performAutoFill(Game *game) {
+
+    Board newBoard = createBoard();
+    copyBoard(newBoard, game->user_matrix);
+    fillObviousValues(newBoard);
+    updateHistoryList(game, newBoard); /*destroys newBoard*/
+}
+
+void performReset(Game *game) {
+    while (!g_curNode->isFirst) {
+        performUndo(game, g_curNode->currDataNode, false);
+    }
+}
+
+
+void executeCommand(Game **gameP, Input input) {
+    Bool success = false; /* successfully changed board */
+
+
+    if (input.command == COMMAND_SET ||
+        input.command == COMMAND_AUTOFILL) {
+        /*
+     * This commands cannot fail in this stage so its safe to clear the redo list
+     * guess and generate command can fail so clearing the redo list is done after we get success
+     * */
+
+        clearListFromNode(g_curNode->next);
+        g_curNode->next = NULL; /* TODO: replace to functions*/
     }
 
-    destroyBoard(solutionBoard, g_gameDim);
-}
-
-void clearGame(Game *game) {
-    clearBoard(game->user_matrix);
-    clearBoolBoard(game->fixed_matrix);
-    clearBoolBoard(game->error_matrix);
-}
-
-Bool askUserForNextTurn(Input *input) {
-
-    FinishCode finishCode;
-    printPrompt(PNextCommand, 0);
-    finishCode = parseCommand(input);
-    if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
-        terminateProgram(NULL, finishCode);
-        return false;
+    switch (input.command) {
+        case COMMAND_SOLVE: {
+            success = performSolve(gameP, input);
+            break;
+        }
+        case COMMAND_EDIT: {
+            success = performEdit(gameP, input);
+            break;
+        }
+        case COMMAND_MARK_ERRORS: {
+            performMarkErrors(input);
+            break;
+        }
+        case COMMAND_PRINT_BOARD: {
+            printBoard(*gameP);
+            break;
+        }
+        case COMMAND_SET: {
+            performSet(*gameP, input);
+            success = true; /*fail condition checked in isLegalMove*/
+            break;
+        }
+        case COMMAND_VALIDATE: {
+            performValidate(*gameP);
+            break;
+        }
+        case COMMAND_GUESS: {
+            success = performGuess(*gameP, input);
+            break;
+        }
+        case COMMAND_GENERATE: {
+            success = performGenerate(*gameP, input);
+            break;
+        }
+        case COMMAND_UNDO: {
+            performUndo(*gameP, g_curNode->currDataNode, true);
+            success = true; /* fail condition checked in isLegalMove */
+            break;
+        }
+        case COMMAND_REDO: {
+            performRedo(*gameP, g_curNode->currDataNode);
+            success = true; /* fail condition checked in isLegalMove */
+            break;
+        }
+        case COMMAND_SAVE: {
+            performSave(*gameP, input);
+            break;
+        }
+        case COMMAND_HINT: {
+            performHint(*gameP, input);
+            break;
+        }
+        case COMMAND_GUESS_HINT: {
+            performGuessHint(*gameP, input);
+            break;
+        }
+        case COMMAND_NUM_SOLUTIONS: {
+            performNumSolutions(*gameP);
+            break;
+        }
+        case COMMAND_AUTOFILL: {
+            performAutoFill(*gameP);
+            success = true;    /*fail condition checked in isLegalMove*/
+            break;
+        }
+        case COMMAND_RESET: {
+            performReset(*gameP);
+            success = true; /*fail condition checked in isLegalMove*/
+            break;
+        }
+        case COMMAND_EXIT: { /*TODO: nir make sure that free all resorces*/
+            terminateProgram(*gameP, FC_SUCCESS);
+            break;
+        }
+        case COMMAND_INVALID: {
+            printf("Unreachable Code Error\n");
+            terminateProgram(*gameP, FC_UNEXPECTED_ERROR);
+        }
     }
 
-    if (finishCode == FC_INVALID_RECOVERABLE) { return false; }
+    if (success == true &&
+        (input.command == COMMAND_SOLVE ||
+         input.command == COMMAND_EDIT ||
+         input.command == COMMAND_SET ||
+         input.command == COMMAND_AUTOFILL ||
+         input.command == COMMAND_UNDO ||
+         input.command == COMMAND_REDO ||
+         input.command == COMMAND_GENERATE ||
+         input.command == COMMAND_GUESS ||
+         input.command == COMMAND_RESET)) {
+        printBoard(*gameP);
+    }
 
-    return true;
 }
+
