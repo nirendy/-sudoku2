@@ -178,14 +178,15 @@ void performUndo(Game *game, DataNode *currDataNode, Bool toPrint) {
     g_curNode = g_curNode->prev;
 }
 
-void performRedo(Game *game, DataNode *currDataNode) {
+void performRedo(Game *game) {
     Input input;
+    DataNode *currDataNode;
 
     printPrompt(PPerformedChanges, 0);
     g_curNode = g_curNode->next;
+    currDataNode = g_curNode->currDataNode;
 
     currDataNode = getFirstDataNode(currDataNode)->next;
-
     while (currDataNode != NULL) {
         input = currDataNode->redoInput;
         printChange(input.coordinate.i, input.coordinate.j, input.value);
@@ -369,7 +370,7 @@ Bool checkLegalInput(Game *game, Input input) {
 
             if (input.gen1 > numOfEmptyCells) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be smaller or equal than the number of empty cells: %d\n" , numOfEmptyCells);
+                printf("parameter must be smaller or equal than the number of empty cells: %d\n", numOfEmptyCells);
                 return false;
             }
 
@@ -564,7 +565,7 @@ void executeCommand(Game **gameP, Input input) {
             break;
         }
         case COMMAND_REDO: {
-            performRedo(*gameP, g_curNode->currDataNode);
+            performRedo(*gameP);
             success = true; /* fail condition checked in isLegalMove */
             break;
         }
