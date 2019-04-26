@@ -1,3 +1,4 @@
 solve ../data/-12
 num_solutions
 validate
+exit

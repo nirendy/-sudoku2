@@ -50,7 +50,7 @@ FinishCode saveGameToFile(char *filePath, Game *game) {
     }
     if (fclose(file) == EOF) {
         printError(EFileCloseFailure);
-        return FC_INVALID_TERMINATE;
+        exit(-1);
     }
     return FC_SUCCESS;
 }
@@ -70,7 +70,7 @@ FinishCode setDimensionsFromFile(char *filePath) {
     setGameDim(tempN, tempM);
     if (fclose(file) == EOF) {
         printError(EFileCloseFailure);
-        return FC_INVALID_TERMINATE;
+        exit(-1);
     }
 
     return FC_SUCCESS;
@@ -162,13 +162,14 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
     }
 
     if (!isFailed && (i != g_gameDim.N || j != g_gameDim.N)) {
-        printFileError("invalid text - not enough data"); /* TODO: prints it if the last char not followed by whitespace*/
+        printFileError(
+                "invalid text - not enough data"); /* TODO: prints it if the last char not followed by whitespace*/
         isFailed = true;
     }
 
     if (fclose(file) == EOF) {
         printError(EFileCloseFailure);
-        return FC_INVALID_TERMINATE;
+        exit(-1);
     }
 
 

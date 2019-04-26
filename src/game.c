@@ -248,8 +248,7 @@ Bool askUserForNextTurn(Input *input) {
     printPrompt(PNextCommand, 0);
     finishCode = parseCommand(input);
     if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
-        terminateProgram(NULL, finishCode);
-        return false;
+        exit(-1);
     }
 
     if (finishCode == FC_INVALID_RECOVERABLE) { return false; }
@@ -502,8 +501,7 @@ Bool checkLegalInput(Game *game, Input input) {
         }
         case COMMAND_INVALID: {
             printf("Unreachable Code Error\n");
-            terminateProgram(game, FC_UNEXPECTED_ERROR);
-            return false;
+            exit(-1);
         }
 
 
@@ -597,12 +595,12 @@ void executeCommand(Game **gameP, Input input) {
             break;
         }
         case COMMAND_EXIT: { /*TODO: nir make sure that free all resorces*/
-            terminateProgram(*gameP, FC_SUCCESS);
+            terminateProgram(*gameP);
             break;
         }
         case COMMAND_INVALID: {
             printf("Unreachable Code Error\n");
-            terminateProgram(*gameP, FC_UNEXPECTED_ERROR);
+            exit(-1);
         }
     }
 

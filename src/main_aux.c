@@ -121,6 +121,10 @@ void printError(Error err) {
             printf("Error: Memory allocation failed - terminating program\n");
             break;
         }
+        case EReachUnexpectedEOF : {
+            printf("Error: Reached unexpected EOF - terminating program\n");
+            break;
+        }
         default: {
             printf("Unreachable Code Error\n");
         }
@@ -323,16 +327,13 @@ void destroyGame(Game *game) {
     free(game);
 }
 
-void terminateProgram(Game *game, FinishCode finishCode) {
+void terminateProgram(Game *game) {
     if (game != NULL) {
         destroyGame(game);
     }
     clearListFromNode(getFirstNode(g_curNode));
-    printPrompt(PExit, COMMAND_INVALID);
+    printPrompt(PExit, 0);
 
-    if (finishCode == FC_UNEXPECTED_ERROR || finishCode == FC_INVALID_TERMINATE) {
-        exit(-1);
-    }
     exit(0);
 }
 

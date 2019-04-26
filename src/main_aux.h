@@ -64,16 +64,13 @@ typedef enum _error {
     EFUnsolvableBoard,
     EGenerationFailed,
     EInputTooLong,
-    EMallocFailure
-
+    EMallocFailure,
+    EReachUnexpectedEOF
 } Error;
 
 typedef enum _finish_code {
     FC_SUCCESS = 0,
-    FC_EOF,
     FC_INVALID_RECOVERABLE,
-    FC_INVALID_TERMINATE,
-    FC_UNEXPECTED_ERROR,
     FC_SUCCESS_NOT_SOLVABLE
 } FinishCode;
 
@@ -193,7 +190,7 @@ Game *createGameFromFile(char *filePath);
 
 void destroyGame(Game *game);
 
-void terminateProgram(Game *game, FinishCode finishCode);
+void terminateProgram(Game *game);
 
 /* Static Methods */
 

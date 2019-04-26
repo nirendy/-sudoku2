@@ -11,4 +11,5 @@ mkdir -p ../output/valgrind_out
 for file in $(ls ../tests); do
     echo "Running test: $file"
     valgrind --log-file="../output/valgrind_out/$file.val_out" sudoku-console < ../tests/"$file"
+    sed -i 's/^........//g' ../output/valgrind_out/"$file".val_out
 done

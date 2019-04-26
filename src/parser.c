@@ -341,7 +341,8 @@ FinishCode parseCommand(Input *returnedInput) {
     /* Do until a non empty line received */
     do {
         if (fgets(str, MAX_STRING_LEN, stdin) == NULL) {
-            return FC_EOF;
+            printError(EReachUnexpectedEOF);
+            exit(-1);
         }
         if (strlen(str) >= MAX_INPUT_STR_LEN) {
             printError(EInputTooLong);
@@ -414,7 +415,7 @@ FinishCode parseCommand(Input *returnedInput) {
 
             default:
                 printf("Unreachable Code Error");
-                return FC_UNEXPECTED_ERROR;
+                exit(-1);
         }
 
         index++;

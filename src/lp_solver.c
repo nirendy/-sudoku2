@@ -137,7 +137,7 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
         /* TODO: remove - should never get here because checked before */
         if (possibleValuesCount == 0) {
             printf("Unreachable Code Error");
-            exit(FC_UNEXPECTED_ERROR);
+            exit(-1);
         }
 
         if (possibleValuesCount > 0) {
@@ -297,7 +297,7 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
             }
             default: {
                 printf("Unreachable Code Error");
-                exit(FC_UNEXPECTED_ERROR);
+                exit(-1);
             }
         }
 
@@ -328,7 +328,7 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
                         }
                         default: {
                             printf("Unreachable Code Error");
-                            exit(FC_UNEXPECTED_ERROR);
+                            exit(-1);
                         }
                     }
 
@@ -444,7 +444,6 @@ FinishCode fillBoard(Board board) {
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
-
 
     /*get solutions*/
     for (i = 0; i < g_gameDim.N; i++) {
