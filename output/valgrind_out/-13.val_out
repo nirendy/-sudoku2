@@ -1,0 +1,21 @@
+==25871== Memcheck, a memory error detector
+==25871== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==25871== Using Valgrind-3.10.0.SVN and LibVEX; rerun with -h for copyright info
+==25871== Command: sudoku-console
+==25871== Parent PID: 25861
+==25871== 
+==25871== 
+==25871== HEAP SUMMARY:
+==25871==     in use at exit: 4,896 bytes in 57 blocks
+==25871==   total heap usage: 5,087 allocs, 5,030 frees, 1,428,388 bytes allocated
+==25871== 
+==25871== LEAK SUMMARY:
+==25871==    definitely lost: 816 bytes in 6 blocks
+==25871==    indirectly lost: 4,080 bytes in 51 blocks
+==25871==      possibly lost: 0 bytes in 0 blocks
+==25871==    still reachable: 0 bytes in 0 blocks
+==25871==         suppressed: 0 bytes in 0 blocks
+==25871== Rerun with --leak-check=full to see details of leaked memory
+==25871== 
+==25871== For counts of detected and suppressed errors, rerun with: -v
+==25871== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)

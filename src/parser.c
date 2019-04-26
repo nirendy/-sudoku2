@@ -75,6 +75,67 @@ char *getCommandStr(Command command) {
     return "Unreachable Code";
 }
 
+Bool isCommandAllowedInMode(Mode mode, Command command) {
+    switch (command) {
+        case COMMAND_SOLVE: {
+            return true;
+        }
+        case COMMAND_EDIT: {
+            return true;
+        }
+        case COMMAND_MARK_ERRORS: {
+            return (mode == Solve);
+        }
+        case COMMAND_PRINT_BOARD: {
+            return (mode == Solve || mode == Edit);
+        }
+        case COMMAND_SET: {
+            return (mode == Solve || mode == Edit);
+        }
+        case COMMAND_VALIDATE: {
+            return (mode == Solve || mode == Edit);
+        }
+        case COMMAND_GUESS: {
+            return (mode == Solve);
+        }
+        case COMMAND_GENERATE: {
+            return (mode == Edit);
+        }
+        case COMMAND_UNDO: {
+            return (mode == Solve || mode == Edit);
+        }
+        case COMMAND_REDO: {
+            return (mode == Solve || mode == Edit);
+        }
+        case COMMAND_SAVE: {
+            return (mode == Solve || mode == Edit);
+        }
+        case COMMAND_HINT: {
+            return (mode == Solve);
+        }
+        case COMMAND_GUESS_HINT: {
+            return (mode == Solve);
+        }
+        case COMMAND_NUM_SOLUTIONS: {
+            return (mode == Solve || mode == Edit);
+        }
+        case COMMAND_AUTOFILL: {
+            return (mode == Solve);
+        }
+        case COMMAND_RESET: {
+            return (mode == Solve || mode == Edit);
+        }
+        case COMMAND_EXIT: {
+            return true;
+        }
+        case COMMAND_INVALID:
+        default: {
+            printf("Unreachable Code Error");
+            return false;
+        }
+    }
+}
+
 void printModeError(Command command) {
     printf("Error: command <%s> is not valid in mode <%s>\n", getCommandStr(command), getModeStr());
     printf("The command available in modes:");
@@ -151,74 +212,74 @@ void printBoard(Game *game) {
 
 /* Categorize token to commands */
 int ClassifyCommand(char *token, Input *returnedInputP) {
-    int numOfCommandParams= -1;
+    int numOfCommandParams = -1;
 
     if (!strcmp(token, "solve")) {
-        numOfCommandParams= 1;
+        numOfCommandParams = 1;
         returnedInputP->command = COMMAND_SOLVE;
     }
     if (!strcmp(token, "edit")) {
-        numOfCommandParams= 1;
+        numOfCommandParams = 1;
         returnedInputP->command = COMMAND_EDIT;
     }
     if (!strcmp(token, "mark_errors")) {
-        numOfCommandParams= 1;
+        numOfCommandParams = 1;
         returnedInputP->command = COMMAND_MARK_ERRORS;
     }
     if (!strcmp(token, "print_board")) {
-        numOfCommandParams= 0;
+        numOfCommandParams = 0;
         returnedInputP->command = COMMAND_PRINT_BOARD;
     }
     if (!strcmp(token, "set")) {
-        numOfCommandParams= 3;
+        numOfCommandParams = 3;
         returnedInputP->command = COMMAND_SET;
     }
     if (!strcmp(token, "validate")) {
-        numOfCommandParams= 0;
+        numOfCommandParams = 0;
         returnedInputP->command = COMMAND_VALIDATE;
     }
     if (!strcmp(token, "guess")) {
-        numOfCommandParams= 1;
+        numOfCommandParams = 1;
         returnedInputP->command = COMMAND_GUESS;
     }
     if (!strcmp(token, "generate")) {
-        numOfCommandParams= 2;
+        numOfCommandParams = 2;
         returnedInputP->command = COMMAND_GENERATE;
     }
     if (!strcmp(token, "undo")) {
-        numOfCommandParams= 0;
+        numOfCommandParams = 0;
         returnedInputP->command = COMMAND_UNDO;
     }
     if (!strcmp(token, "redo")) {
-        numOfCommandParams= 0;
+        numOfCommandParams = 0;
         returnedInputP->command = COMMAND_REDO;
     }
     if (!strcmp(token, "save")) {
-        numOfCommandParams= 1;
+        numOfCommandParams = 1;
         returnedInputP->command = COMMAND_SAVE;
     }
     if (!strcmp(token, "hint")) {
-        numOfCommandParams= 2;
+        numOfCommandParams = 2;
         returnedInputP->command = COMMAND_HINT;
     }
     if (!strcmp(token, "guess_hint")) {
-        numOfCommandParams= 2;
+        numOfCommandParams = 2;
         returnedInputP->command = COMMAND_GUESS_HINT;
     }
     if (!strcmp(token, "num_solutions")) {
-        numOfCommandParams= 0;
+        numOfCommandParams = 0;
         returnedInputP->command = COMMAND_NUM_SOLUTIONS;
     }
     if (!strcmp(token, "autofill")) {
-        numOfCommandParams= 0;
+        numOfCommandParams = 0;
         returnedInputP->command = COMMAND_AUTOFILL;
     }
     if (!strcmp(token, "reset")) {
-        numOfCommandParams= 0;
+        numOfCommandParams = 0;
         returnedInputP->command = COMMAND_RESET;
     }
     if (!strcmp(token, "exit")) {
-        numOfCommandParams= 0;
+        numOfCommandParams = 0;
         returnedInputP->command = COMMAND_EXIT;
     }
 
@@ -289,9 +350,9 @@ FinishCode parseCommand(Input *returnedInput) {
         token = strtok(str, " \t\r\n");
     } while (token == NULL);
 
-    numOfCommandParams= ClassifyCommand(token, returnedInput);
+    numOfCommandParams = ClassifyCommand(token, returnedInput);
 
-    if (numOfCommandParams== -1) {
+    if (numOfCommandParams == -1) {
         printError(EInvalidCommand);
         return FC_INVALID_RECOVERABLE;
     }
@@ -361,7 +422,7 @@ FinishCode parseCommand(Input *returnedInput) {
     }
 
     index--;
-    if (index != numOfCommandParams&& strcmp(command, "edit") != 0) {
+    if (index != numOfCommandParams && strcmp(command, "edit") != 0) {
         printError(ETooFewParams);
         printParamError(returnedInput->command, numOfCommandParams);
         return FC_INVALID_RECOVERABLE;
@@ -370,11 +431,3 @@ FinishCode parseCommand(Input *returnedInput) {
 
     return FC_SUCCESS;
 }
-
-void printUserBoard(Board board) {
-    Game game;
-    game.user_matrix = board;
-    game.fixed_matrix = (BoolBoard) board;
-    game.error_matrix = (BoolBoard) board;
-    printBoard(&game);
-}  /*TODO: delete*/

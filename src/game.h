@@ -5,16 +5,10 @@
 
 /*Game module - responsible for managing all the logic of the game*/
 
-Bool isCoordinateFixed(Game *game, Coordinate coordinate);
+Bool askUserForNextTurn(Input *input);
 
-Bool isCoordinateEmpty(Game *game, Coordinate coordinate);
+void executeCommand(Game **gameP, Input input);
 
-void setCoordinate(Game *game, Input input);
-
-void hint(Game *game, Input input);
-
-void validate(Game *game);
-
-void clearGame(Game *game);
+Bool checkLegalInput(Game *game, Input input);
 
 #endif
