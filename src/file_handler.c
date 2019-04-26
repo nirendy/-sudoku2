@@ -138,6 +138,7 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
             /*third step - find if the last char is EOF or dot or whitespace*/
 
             if (c == EOF) {
+                i++;
                 j++;
                 break;
             }
