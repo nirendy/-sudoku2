@@ -370,7 +370,7 @@ Bool checkLegalInput(Game *game, Input input) {
 
             if (input.gen1 > numOfEmptyCells) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be smaller or equal than the number of empty cells\n"); /* TODO: show range */
+                printf("parameter must be smaller or equal than the number of empty cells: %d\n" , numOfEmptyCells);
                 return false;
             }
 
