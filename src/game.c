@@ -32,20 +32,13 @@ Bool isValueInNeighbours(Game *game, Coordinate coordinate, int value) {
     return returnValue;
 }
 
-Bool setCoordinate(Game *game, Input input) {
-    if (isCoordinateFixed(game, input.coordinate)) {
-        printError(ECellIsFixed);
-        return 0;
-    }
-
+void setCoordinate(Game *game, Input input) {
     game->user_matrix[input.coordinate.i][input.coordinate.j] = 0;
     updateAfterClearErrorMatrix(game, input);
     if (input.value != 0) {
         updateAfterSetErrorMatrix(game, input);
         game->user_matrix[input.coordinate.i][input.coordinate.j] = input.value;
     }
-
-    return 1;
 
 }
 

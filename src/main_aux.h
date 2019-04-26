@@ -10,6 +10,10 @@
 #define MAX_PATH_LEN 1024
 #define MAX_INPUT_STR_LEN 256
 
+
+/*Main auxiliary module - responsible for providing and aiding
+ * the other modules with the required data */
+
 /* Typedefs */
 
 typedef struct _gameDim {
@@ -26,7 +30,9 @@ typedef enum _bool {
 } Bool;
 
 typedef int **Board;
+
 typedef double **ProbBoard;
+
 typedef Bool **BoolBoard;
 
 typedef enum _mode {
@@ -98,7 +104,6 @@ typedef struct _game {
     GameDim dim;
 } Game;
 
-
 typedef enum _command {
     COMMAND_SOLVE,
     COMMAND_EDIT,
@@ -120,12 +125,10 @@ typedef enum _command {
     COMMAND_INVALID
 } Command;
 
-
 typedef struct _coordinate {
     int i;
     int j;
 } Coordinate;
-
 
 typedef struct _input {
     Command command;
@@ -137,7 +140,6 @@ typedef struct _input {
     char path[MAX_PATH_LEN];
 } Input;
 
-
 typedef struct _DataNode {
     Bool isFirst;
     Input redoInput;
@@ -146,8 +148,6 @@ typedef struct _DataNode {
     struct _DataNode* prev;
 } DataNode;
 
-
-/* A linked list node */
 typedef struct _Node {
     Bool isFirst;
     DataNode* currDataNode;
@@ -155,13 +155,11 @@ typedef struct _Node {
     struct _Node* prev;
 } Node;
 
-
 /* Global variables */
 Mode g_mode;
 GameDim g_gameDim;
 Bool g_markError;
 Node *g_curNode;
-
 
 void setGameDim(int n, int m);
 

@@ -3,11 +3,13 @@
 
 #include "main_aux.h"
 
+/*Game module - responsible for managing all the logic of the game*/
+
 void hint(Game *game, Input input);
 
 void validate(Game *game);
 
-Bool setCoordinate(Game *game, Input input);
+void setCoordinate(Game *game, Input input);
 
 Bool isCoordinateFixed(Game *game, Coordinate coordinate);
 

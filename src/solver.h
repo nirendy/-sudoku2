@@ -4,12 +4,13 @@
 #include "game.h"
 #include "main_aux.h"
 
+/*Solver module - responsible for board solving using the backtracking algorithm*/
 
 int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues);
 
-void old_generateGame(Game *game, int fixedAmount);
+void old_generateGame(Game *game, int fixedAmount); /*TODO: Delete*/
 
-Bool solveBoard(const Board userBoard, Board toSolveBoard, Bool isDeterministic);
+Bool solveBoard(Board userBoard, Board toSolveBoard, Bool isDeterministic);
 
 FinishCode countPossibleSolutions(Board board);
 
