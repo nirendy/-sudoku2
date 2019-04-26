@@ -7,6 +7,37 @@
 #include "file_handler.h"
 #include "linked_list.h"
 
+void *smartMalloc(size_t size) {
+    void *p;
+    if (size == 0) {
+        return NULL;
+    }
+
+    p = malloc(size);
+    if (p == NULL) {
+        printError(EMallocFailure);
+        exit(-1);
+    }
+
+    return p;
+}
+
+void *smartCalloc(size_t numOfElements, size_t sizeOfElements) {
+
+    void *p;
+    if (numOfElements * sizeOfElements == 0) {
+        return NULL;
+    }
+
+    p = calloc(numOfElements, sizeOfElements);
+    if (p == NULL) {
+        printError(EMallocFailure);
+        exit(-1);
+    }
+
+    return p;
+}
+
 
 void printError(Error err) {
 
@@ -102,6 +133,10 @@ void printError(Error err) {
             printf("Error: too many characters where entered in a single line\n");
             break;
         }
+        case EMallocFailure : {
+            printf("Error: Memory allocation failed - terminating program\n");
+            break;
+        }
         default: {
             printf("Unreachable Code Error\n");
         }
@@ -188,11 +223,11 @@ void setGameDim(int n, int m) {
 }
 
 Board createBoard() {
-    Board board = (int **) malloc(g_gameDim.N * sizeof(int *));
+    Board board = (int **) smartMalloc(g_gameDim.N * sizeof(int *));
     int i;
 
     for (i = 0; i < g_gameDim.N; ++i) {
-        board[i] = (int *) malloc(g_gameDim.N * sizeof(int));
+        board[i] = (int *) smartMalloc(g_gameDim.N * sizeof(int));
     }
 
     return board;
@@ -210,11 +245,11 @@ void destroyBoard(Board board, GameDim dim) {
 }
 
 BoolBoard createBoolBoard() {
-    BoolBoard board = (Bool **) malloc(g_gameDim.N * sizeof(Bool *));
+    BoolBoard board = (Bool **) smartMalloc(g_gameDim.N * sizeof(Bool *));
     int i;
 
     for (i = 0; i < g_gameDim.N; ++i) {
-        board[i] = (Bool *) malloc(g_gameDim.N * sizeof(Bool));
+        board[i] = (Bool *) smartMalloc(g_gameDim.N * sizeof(Bool));
     }
 
     return board;
@@ -244,7 +279,7 @@ Bool isGameErroneous(Game *game) {
 }
 
 Game *createGame() {
-    Game *game = malloc(sizeof(Game));
+    Game *game = smartMalloc(sizeof(Game));
     game->dim = g_gameDim;
     game->solved_matrix = createBoard();
     game->user_matrix = createBoard();
@@ -434,7 +469,7 @@ void insertInputsToList(Input *redoInputs, Input *undoInputs, int numOfInputs) {
 
 void chooseRandCords(Coordinate *source, int sourceSize, Coordinate *target, int targetSize) {
     int i, r, limit;
-    int *randIndexes = (int *) malloc(sourceSize * sizeof(int));
+    int *randIndexes = (int *) smartMalloc(sourceSize * sizeof(int));
 
     for (i = 0; i < sourceSize; i++) { randIndexes[i] = i; }
     limit = sourceSize;
@@ -499,8 +534,8 @@ void updateHistoryList(Game *game, Board final) {
         destroyBoard(final, g_gameDim);
         return;
     }
-    redoInputs = (Input *) malloc(numOfSets * sizeof(Input));
-    undoInputs = (Input *) malloc(numOfSets * sizeof(Input));
+    redoInputs = (Input *) smartMalloc(numOfSets * sizeof(Input));
+    undoInputs = (Input *) smartMalloc(numOfSets * sizeof(Input));
 
     diffToRedoUndoLists(original, final, redoInputs, undoInputs);
     insertInputsToList(redoInputs, undoInputs, numOfSets);
@@ -514,7 +549,7 @@ void updateHistoryList(Game *game, Board final) {
 Bool fillXRandomCells(Board board, Coordinate *cellsToFill, int numToFill) {
 
     int k, numOfPossibleValues;
-    int *possibleValues = (int *) malloc(g_gameDim.N * sizeof(int *));
+    int *possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int *));
 
     for (k = 0; k < numToFill; k++) {
         numOfPossibleValues = getPossibleValues(board, cellsToFill[k], possibleValues);
@@ -535,7 +570,7 @@ void clearRandomCells(Board board, Coordinate *cellsToClear, int numToClear) {
 
 int chooseCellsToFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
 
-    Coordinate *emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    Coordinate *emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
     int numOfEmpty = getEmptyCells(board, emptyCells);
     chooseRandCords(emptyCells, numOfEmpty, cellsToFill, sizeToFill);
     free(emptyCells);
@@ -544,7 +579,7 @@ int chooseCellsToFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
 
 void chooseCellsToClear(Board board, Coordinate *cellsToClear, int numToClear) {
 
-    Coordinate *filledCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    Coordinate *filledCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
     getFilledCells(board, filledCells); /* TODO: before submitting, use the returned value*/
     chooseRandCords(filledCells, g_gameDim.cellsCount, cellsToClear, numToClear);
 
@@ -553,8 +588,8 @@ void chooseCellsToClear(Board board, Coordinate *cellsToClear, int numToClear) {
 
 void fillObviousValues(Board board) {
 
-    Coordinate *emptyCells = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
-    int *possibleValues = (int *) malloc(g_gameDim.cellsCount * sizeof(int));
+    Coordinate *emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    int *possibleValues = (int *) smartMalloc(g_gameDim.cellsCount * sizeof(int));
 
     int numOfEmpty = getEmptyCells(board, emptyCells);
     int numOfPossibleValues;
@@ -601,7 +636,7 @@ Bool performGenerate(Game *game, Input input) {
     /*step 1 - fill the board */
 
     /*choose cells to fill*/
-    cellsToFill = (Coordinate *) malloc(numToFill * sizeof(Coordinate));
+    cellsToFill = (Coordinate *) smartMalloc(numToFill * sizeof(Coordinate));
 
     /*try 1000 times to fill and solve*/
     success = false;
@@ -631,7 +666,7 @@ Bool performGenerate(Game *game, Input input) {
 
     /*step 2 - clear cells from the board */
     if (numToClear > 0) {
-        cellsToClear = (Coordinate *) malloc(numToClear * sizeof(Coordinate));
+        cellsToClear = (Coordinate *) smartMalloc(numToClear * sizeof(Coordinate));
         chooseCellsToClear(newBoard, cellsToClear, numToClear);
         clearRandomCells(newBoard, cellsToClear, numToClear);
         free(cellsToClear);
@@ -685,14 +720,14 @@ Bool checkLegalInput(Input input, Game *game) {
             /*First Parameter Check*/
             if (!(input.coordinate.i >= 0 && input.coordinate.i <= g_gameDim.N - 1)) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be an integer number between -1 and %d\n", g_gameDim.N);
+                printf("parameter must be an integer number between 1 and %d\n", g_gameDim.N);
                 return false;
             }
 
             /*Second Parameter Check*/
             if (!(input.coordinate.j >= 0 && input.coordinate.j <= g_gameDim.N - 1)) {
                 printError(EInvalidSecondParam);
-                printf("parameter must be an integer number between -1 and %d\n", g_gameDim.N);
+                printf("parameter must be an integer number between 1 and %d\n", g_gameDim.N);
                 return false;
             }
 
@@ -759,7 +794,7 @@ Bool checkLegalInput(Input input, Game *game) {
             /*   is parameter legal in current board state check    */
 
 
-            tempCorArray = (Coordinate *) malloc(g_gameDim.cellsCount * sizeof(Coordinate));
+            tempCorArray = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
             numOfEmptyCells = getEmptyCells(game->user_matrix, tempCorArray);
             free(tempCorArray);
 

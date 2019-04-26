@@ -11,30 +11,65 @@
 
 void mock(int mockI, Game **gameP) {
     Input input;
-    Input setInput;
-    Input generateInput;
 
     switch (mockI) {
         case 1: {
-            input.command = COMMAND_EDIT;
-            sprintf(input.path, "%s", "../data/1");
+            g_mode = Solve;
+            setGameDim(1, 1);
+            *gameP = createGame();
 
-            input.command = COMMAND_PRINT_BOARD;
+            input.command = COMMAND_GENERATE;
+            input.gen1 = 0;
+            input.gen2 = 0;
             executeCommand(input, gameP);
 
-            setInput.command = COMMAND_SET;
-            setInput.coordinate.i = 0;
-            setInput.coordinate.j = 0;
-            setInput.value = 0;
-            executeCommand(setInput, gameP);
+            saveGameToFile("../data/11", *gameP);
 
-            input.command = COMMAND_PRINT_BOARD;
+            setGameDim(2, 2);
+            *gameP = createGame();
             executeCommand(input, gameP);
+            saveGameToFile("../data/22", *gameP);
 
-            generateInput.command = COMMAND_GENERATE;
-            generateInput.gen1 = 3;
-            generateInput.gen2 = 0;
-            executeCommand(generateInput , gameP);
+            setGameDim(3, 3);
+            *gameP = createGame();
+            executeCommand(input, gameP);
+            saveGameToFile("../data/33", *gameP);
+
+            setGameDim(4, 4);
+            *gameP = createGame();
+            executeCommand(input, gameP);
+            saveGameToFile("../data/44", *gameP);
+
+            setGameDim(5, 5);
+            *gameP = createGame();
+            executeCommand(input, gameP);
+            saveGameToFile("../data/55", *gameP);
+
+            setGameDim(2, 3);
+            *gameP = createGame();
+            executeCommand(input, gameP);
+            saveGameToFile("../data/23", *gameP);
+
+            setGameDim(4, 3);
+            *gameP = createGame();
+            executeCommand(input, gameP);
+            saveGameToFile("../data/43", *gameP);
+
+            setGameDim(1, 4);
+            *gameP = createGame();
+            executeCommand(input, gameP);
+            saveGameToFile("../data/14", *gameP);
+
+            setGameDim(2, 5);
+            *gameP = createGame();
+            executeCommand(input, gameP);
+            saveGameToFile("../data/25", *gameP);
+
+            setGameDim(3, 1);
+            *gameP = createGame();
+            executeCommand(input, gameP);
+            saveGameToFile("../data/31", *gameP);
+
 
             break;
         }
@@ -43,10 +78,10 @@ void mock(int mockI, Game **gameP) {
             setGameDim(5, 2);
             *gameP = createGame();
 
-            generateInput.command = COMMAND_GENERATE;
-            generateInput.gen1 = 0;
-            generateInput.gen2 = 95;
-            executeCommand(generateInput , gameP);
+            input.command = COMMAND_GENERATE;
+            input.gen1 = 0;
+            input.gen2 = 95;
+            executeCommand(input, gameP);
 
             input.command = COMMAND_SAVE;
             sprintf(input.path, "%s", "../data/saved_-1");
@@ -149,15 +184,15 @@ void mock(int mockI, Game **gameP) {
             input.path[0] = '\0';
             executeCommand(input, gameP);
 
-            generateInput.command = COMMAND_GENERATE;
-            generateInput.gen1 = 0;
-            generateInput.gen2 = 30;
-            executeCommand(generateInput , gameP);
+            input.command = COMMAND_GENERATE;
+            input.gen1 = 0;
+            input.gen2 = 30;
+            executeCommand(input, gameP);
 
-            generateInput.command = COMMAND_GENERATE;
-            generateInput.gen1 = 20;
-            generateInput.gen2 = 30;
-            executeCommand(generateInput , gameP);
+            input.command = COMMAND_GENERATE;
+            input.gen1 = 20;
+            input.gen2 = 30;
+            executeCommand(input, gameP);
 
             break;
         }
