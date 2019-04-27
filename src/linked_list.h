@@ -5,7 +5,17 @@
 #include <stdlib.h>
 #include "main_aux.h"
 
-/* Linked list module - responsible for handling the linked-list data structure that holds all the moves history */
+/* Linked list module - responsible for handling the linked-list data structure that holds all the moves history
+ *
+ * CreateFirstNode            - Create first node
+ * insertAfterNode            - Insert After Node
+ * getFirstNode               - Get First Node
+ * clearListFromNode          - Clear List From Node
+ * insertAfterDataNode        - Insert After Data Node
+ * getFirstDataNode           - Get First Data Node
+ * getLastDataNode            - Get Last Data Node
+ * clearWholeDataList         - Clear Whole Data List
+ * */
 
 /* Data Node Funcs */
 

@@ -8,7 +8,10 @@
 
 /*Game module - responsible for managing the game flow and the commands' execution*/
 
-/* Perform Commands */
+/* Perform Commands
+ *
+ * functions with Bool as return value return whether or not the operation was successful
+ * */
 
 Bool performSolve(Game **gameP, Input input) {
     Game *game = *gameP; /* alias */
@@ -257,15 +260,22 @@ void performReset(Game *game) {
 }
 
 /* Game flow */
-
+/**
+ *
+ * @param input
+ * @return prints the request for command, and return whether or not the command parse was successful
+ */
 Bool askUserForNextTurn(Input *input) {
     printPrompt(PNextCommand, 0);
     return parseCommand(input);
 }
-
+/**
+ *  checking the legality of the input before moving on to the next stage of the command execution
+ * @param game
+ * @param input
+ * @return whether the input is legal
+ */
 Bool checkLegalInput(Game *game, Input input) {
-
-    /*checking the legality of the input before moving on to the next stage of the command execution*/
 
     /*generate_command vars*/
     Coordinate *tempCorArray;

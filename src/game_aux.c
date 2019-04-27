@@ -93,6 +93,12 @@ int diffToRedoUndoLists(Board original, Board final, Input *redoList, Input *und
     return listIndex;
 }
 
+/**
+ *
+ * @param original (board)
+ * @param final (board)
+ * @return Number of diffs between boards
+ */
 int numOfDiffs(Board original, Board final) {
     int i, j, diffs = 0;
     for (i = 0; i < g_gameDim.N; ++i) {
@@ -170,19 +176,36 @@ int chooseCellsToFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
     return numOfEmpty;
 }
 
+/**
+ *
+ * @param board
+ * @param cellsToFill list of cells to fill X cells from
+ * @param numToFill (X)
+ * @return false if couldn't fill all X cells legally legally
+ */
 Bool fillXRandomCells(Board board, Coordinate *cellsToFill, int numToFill) {
-
     int k, numOfPossibleValues;
     int *possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int *));
 
     for (k = 0; k < numToFill; k++) {
         numOfPossibleValues = getPossibleValues(board, cellsToFill[k], possibleValues);
-        if (numOfPossibleValues == 0) { return false; }
+        if (numOfPossibleValues == 0) {
+            free(possibleValues);
+            return false;
+        }
         board[cellsToFill[k].i][cellsToFill[k].j] = possibleValues[randLimit(numOfPossibleValues)];
     }
+
+    free(possibleValues);
     return true;
 }
 
+/**
+ * fill the cellsToClear array with coordinates to clear
+ * @param board
+ * @param cellsToClear
+ * @param numToClear
+ */
 void chooseCellsToClear(Board board, Coordinate *cellsToClear, int numToClear) {
 
     /* the board is fully solved, therefore: #ofFilledCells = cellCount*/
@@ -193,6 +216,12 @@ void chooseCellsToClear(Board board, Coordinate *cellsToClear, int numToClear) {
     free(filledCells);
 }
 
+/**
+ *
+ * @param board
+ * @param cellsToClear
+ * @param numToClear
+ */
 void clearRandomCells(Board board, Coordinate *cellsToClear, int numToClear) {
 
     int k;
@@ -203,6 +232,11 @@ void clearRandomCells(Board board, Coordinate *cellsToClear, int numToClear) {
 }
 
 /* Autofill related */
+/**
+ * fills cells with only one possible value
+ * @param game
+ * @param board
+ */
 void fillObviousValues(Game *game , Board board) {
 
     Coordinate *emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));

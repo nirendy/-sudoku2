@@ -5,7 +5,6 @@
 /* Linked list module - responsible for handling the linked-list data structure that holds all the moves history */
 
 /* Data Node Funcs */
-
 DataNode *CreateFirstDataNode() {
     DataNode *new_node = (DataNode *) smartMalloc(sizeof(DataNode));
     new_node->isFirst = true;
@@ -71,7 +70,6 @@ void clearWholeDataList(DataNode *curNode) {
 }
 
 /* Data Node Funcs */
-
 Node *CreateFirstNode() {
     Node *new_node = (Node *) smartMalloc(sizeof(Node));
     new_node->isFirst = true;
@@ -116,6 +114,10 @@ Node *getFirstNode(Node *curNode) {
 
 }
 
+/**
+ * clear the list starting from the node given
+ * @param curNode
+ */
 void clearListFromNode(Node *curNode) {
     Node *nextNode;
     while (curNode != NULL) {

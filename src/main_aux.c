@@ -196,6 +196,12 @@ void printPrompt(Prompt prompt, int num1) {
 
 /* General Utilities*/
 
+/**
+ * Allen's brilliant idea to switch all mallocs with a function that checks whether or not the malloc failed
+ * if it did, it exit with a proper error message else, it returns the pointer as the original malloc would do
+ * @param size
+ * @return pointer to the created resource
+ */
 void *smartMalloc(size_t size) {
     void *p;
     if (size == 0) {
@@ -210,7 +216,13 @@ void *smartMalloc(size_t size) {
 
     return p;
 }
-
+/**
+ * Nir brilliant idea of copying Allen's brilliant idea to Calloc as well.
+ * See smartMalloc
+ * @param numOfElements
+ * @param sizeOfElements
+ * @return pointer to the created resource
+ */
 void *smartCalloc(size_t numOfElements, size_t sizeOfElements) {
 
     void *p;
@@ -245,7 +257,6 @@ int removeArrayIndex(int *arr, int arrLength, int removeI) {
 }
 
 /* Constructors and Destructors*/
-
 
 Board createBoard() {
     Board board = (int **) smartMalloc(g_gameDim.N * sizeof(int *));
@@ -331,6 +342,10 @@ void destroyGame(Game *game) {
     free(game);
 }
 
+/**
+ * frees all resources gracefully, prints a message and exits
+ * @param game
+ */
 void terminateProgram(Game *game) {
     if (game != NULL) {
         destroyGame(game);
@@ -341,14 +356,14 @@ void terminateProgram(Game *game) {
     exit(0);
 }
 
-/* Static Methods */
-
 Coordinate createCoordinate(int i, int j) {
     Coordinate result;
     result.i = i;
     result.j = j;
     return result;
 }
+
+/* Static Methods */
 
 void copyBoard(Board targetBoard, Board copyFromBoard) {
     int i, j;
@@ -368,28 +383,10 @@ void setBoardValue(Board board, Coordinate coordinate, int value) {
     board[coordinate.i][coordinate.j] = value;
 }
 
-Bool getBoolBoardValue(BoolBoard board, Coordinate coordinate) {
-    return board[coordinate.i][coordinate.j];
-}
-
-void setBoolBoardValue(BoolBoard board, Coordinate coordinate, Bool value) {
-    board[coordinate.i][coordinate.j] = value;
-}
-
 Bool isCoordinateFixed(Game *game, Coordinate coordinate) {
     return game->fixed_matrix[coordinate.i][coordinate.j] == true;
 }
 
 Bool isCoordinateEmpty(Game *game, Coordinate coordinate) {
     return game->user_matrix[coordinate.i][coordinate.j] == 0;
-}
-
-/*TODO: delete*/
-
-void printUserBoard(Board board) {
-    Game game;
-    game.user_matrix = board;
-    game.fixed_matrix = (BoolBoard) board;
-    game.error_matrix = (BoolBoard) board;
-    printBoard(&game);
 }

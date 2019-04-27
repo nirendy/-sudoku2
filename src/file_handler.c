@@ -4,23 +4,24 @@
 
 /* Local functions */
 
-int isWhiteSpace(char tav) {
+Bool isWhiteSpace(char tav) {
     return (tav == ' ' || tav == '\t' || tav == '\r' || tav == '\n');
 }
 
+/* convert num char to int */
 int getDigit(char tav) {
     return tav - '0';
 }
 
-int isDigit(char tav) {
+Bool isDigit(char tav) {
     return (tav - '0' >= 0 && tav - '0' <= 9);
 }
 
-int isLegalNum(int num) {
+Bool isLegalNum(int num) {
     return (num >= 0 && num <= g_gameDim.N);
 }
 
-int isDot(char tav) {
+Bool isDot(char tav) {
     return tav == '.';
 }
 
@@ -31,6 +32,11 @@ void printFileError(char *string) {
 
 /* Public functions - used for saving and loading games from files */
 
+/**
+ * Writes the game filePath in the specifed format
+ * @param filePath
+ * @param game
+ */
 void saveGameToFile(char *filePath, Game *game) {
     FILE *file;
     int i, j;
@@ -61,6 +67,11 @@ void saveGameToFile(char *filePath, Game *game) {
     printPrompt(PFileSavedSuccess, 0);
 }
 
+/**
+ * set the global g_gameDim by the file given
+ * @param filePath
+ * @return whether or not the file was read successfully
+ */
 Bool setDimensionsFromFile(char *filePath) {
     FILE *file;
     int tempN, tempM;
@@ -82,6 +93,12 @@ Bool setDimensionsFromFile(char *filePath) {
     return true;
 }
 
+/**
+ * load the game from the path
+ * @param filePath
+ * @param game
+ * @return whether or not the game was successfully loaded
+ */
 Bool generateGameFromFile(char *filePath, Game *game) {
     FILE *file;
     int tempN, tempM;

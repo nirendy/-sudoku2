@@ -4,6 +4,10 @@
 
 /*Local error prints related functions*/
 
+/**
+ *
+ * @return mode as string
+ */
 char *getModeStr() {
     switch (g_mode) {
         case Edit:
@@ -18,6 +22,11 @@ char *getModeStr() {
     return "Unreachable Code";
 }
 
+/**
+ *
+ * @param command
+ * @return command as string
+ */
 char *getCommandStr(Command command) {
     switch (command) {
         case COMMAND_SOLVE:
@@ -156,6 +165,9 @@ void printParamError(Command command, int numOfVars) {
 
 /*Local board print related functions*/
 
+/*
+ * Get type of char to print
+ * 0: space, 1: fixed , 2: erroneous*/
 int getType(Game *game, int i, int j) {
     if (game->fixed_matrix[i][j] == 1) { return 1; }
     if (game->error_matrix[i][j] == 1 && (g_markError == 1 || g_mode == Edit)) { return 2; }
@@ -172,6 +184,7 @@ void printSepRow(int len) {
 
 /*Local command parser related functions*/
 
+/* converting int string to int*/
 int getNum(char *str) {
     int i, n = (int) strlen(str);
     int digit, res = 0;
@@ -184,6 +197,7 @@ int getNum(char *str) {
     return res;
 }
 
+/* Converting float string to float */
 float getFloat(char *str) {
     int i, n = (int) strlen(str), numOfDots = 0;
     float val = (float) atof(str);
@@ -216,7 +230,15 @@ void initInput(Input *returnedInput) {
     returnedInput->path[0] = '\0';
 }
 
+/**
+ * classifies the token into a suitable command by modify input parameter
+ * @param token command string
+ * @param returnedInputP input parameter to modify
+ * @return Num of command params
+ */
 int ClassifyCommand(char *token, Input *returnedInputP) {
+
+
     int numOfCommandParams = -1;
 
     if (!strcmp(token, "solve")) {
@@ -292,6 +314,7 @@ int ClassifyCommand(char *token, Input *returnedInputP) {
 }
 
 /*   public functions   */
+/* print the board as specified in the project assignment*/
 void printBoard(Game *game) {
     const char SPACE = ' ', PIPE = '|', ASTERISK = '*', DOT = '.', NEWLINE = '\n';
     const int sepRowLength = 4 * g_gameDim.N + g_gameDim.m + 1;
@@ -339,6 +362,11 @@ void printBoard(Game *game) {
 
 }
 
+/**
+ * parse user input line and modify the given input accordinly
+ * @param returnedInput the input to modify
+ * @return whether the parse was successful
+ */
 Bool parseCommand(Input *returnedInput) {
 
     char str[MAX_STRING_LEN];

@@ -49,7 +49,6 @@ typedef struct _PossibleVarSentinel {
 } PossibleVarSentinel;
 
 /* Environment Constructor / Destructor */
-
 Bool initGurobiEnv() {
     int error;
 
@@ -86,14 +85,22 @@ void destroyGurobiEnv() {
 /* Sudoku solver logic */
 
 /* Utilities */
+/**
+ * convert a matrix index( tuple of 2 indexes) to a index of a flat array
+ * @param coor
+ * @return index of a flat array
+ */
 int calculateCoordinateFlatIndex(Coordinate coor) {
-    /* convert a matrix index( tuple of 2 indexes) to a index of a flat array*/
     return (g_gameDim.N * coor.i) + coor.j;
 }
 
+/**
+ * create the coordinate represents the J cell in the I block
+ * @param i
+ * @param j
+ * @return the coordinate
+ */
 Coordinate coordinateOfTheJCellInTheIBlock(int i, int j) {
-    /* create the coordinate represents the J cell in the I block*/
-
     int n = g_gameDim.n;
     int m = g_gameDim.m;
     /* TODO: test check this*/
@@ -104,6 +111,14 @@ Coordinate coordinateOfTheJCellInTheIBlock(int i, int j) {
 }
 
 /* Supporting data structures Constructor / Destructor */
+
+/**
+ * Constructor of a Node of coor2var
+ * @param coor
+ * @param value
+ * @param isBinary changes the the configuration to CONTINUES or BINARY, and coeff to objective (random or 1) accordingly
+ * @return
+ */
 PossibleVar *createPossibleVar(Coordinate coor, int value, Bool isBinary) {
     PossibleVar *newPosVar = (PossibleVar *) smartMalloc(sizeof(PossibleVar));
     sprintf(newPosVar->name, "X_%d_%d_%d", coor.i + 1, coor.j + 1, value);
@@ -119,6 +134,12 @@ PossibleVar *createPossibleVar(Coordinate coor, int value, Bool isBinary) {
     return newPosVar;
 }
 
+/**
+ * consturctor to coor2var
+ * @param board
+ * @param isBinary
+ * @return
+ */
 PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
     PossibleVarSentinel *coor2Var;
     Coordinate *emptyCells;
@@ -216,7 +237,10 @@ PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coor2Var, Coordinat
     return NULL;
 }
 
-/* GRB libray usage (using the above data structure)*/
+/* GRB libray usage (using the above data structure)
+ *
+ * these function return a Boolean specifies if the command successfully completed
+ * */
 
 Bool addVarsToModel(PossibleVarSentinel *coor2Var) {
     int error;
@@ -634,6 +658,11 @@ Bool fillSolutionMatrix(Board board, Board solutionBoard) {
     return isSuccess;
 }
 
+/**
+ * print the coordinate probabilities that resulted from the LP that are higher then 0
+ * @param board
+ * @param coordinate
+ */
 void guessHint(Board board, Coordinate coordinate) {
     Bool isSuccess;
     Board tempBoard = createBoard();

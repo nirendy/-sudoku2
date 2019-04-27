@@ -6,8 +6,10 @@
 /* LP-Solver module - responsible for LP nad ILP board solutions
  *
  * fillSolutionMatrix           - Fill solution matrix
- * guessHint                    - Guess hint
+ * guessHint                    - Guess hint by printing the options with their probabilities
  * guessBoard                   - Guess board
+ *
+ * function return a Boolean specifies if the command successfully completed
  * */
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard);

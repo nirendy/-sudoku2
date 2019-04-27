@@ -220,9 +220,9 @@ void destroyGame(Game *game);
 
 void terminateProgram(Game *game);
 
-/* Static Methods */
-
 Coordinate createCoordinate(int i, int j);
+
+/* Static Methods */
 
 void copyBoard(Board targetBoard, Board copyFromBoard);
 
@@ -230,17 +230,10 @@ int getBoardValue(Board board, Coordinate coordinate);
 
 void setBoardValue(Board board, Coordinate coordinate, int value);
 
-Bool getBoolBoardValue(BoolBoard board, Coordinate coordinate);
-
-void setBoolBoardValue(BoolBoard board, Coordinate coordinate, Bool value);
-
 Bool isCoordinateFixed(Game *game, Coordinate coordinate);
 
 Bool isCoordinateEmpty(Game *game, Coordinate coordinate);
 
-/* TODO: remove*/
-
-void printUserBoard(Board board);
 
 #endif
 
