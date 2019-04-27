@@ -226,7 +226,10 @@ void performGuessHint(Game *game, Input input) {
 }
 
 void performNumSolutions(Game *game) {
-    countPossibleSolutions(game->user_matrix);
+    printPrompt(
+            PNumSolutionsOutput,
+            getNumOfPossibleSolutions(game->user_matrix)
+    );
 }
 
 void performAutoFill(Game *game) {

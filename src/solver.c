@@ -148,7 +148,6 @@ Bool isPossibleValue(Board board, Coordinate coordinate, int value) {
     Bool returnValue = false;
 
     possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
-
     possibleValuesCount = getPossibleValues(board, coordinate, possibleValues);
 
     /* checks if one of the possible values is the value*/
@@ -166,19 +165,23 @@ Bool isPossibleValue(Board board, Coordinate coordinate, int value) {
 /* Board Functions*/
 
 Bool isFullUserBoard(Game *game) {
+    /* implemented by checks hat no empty cells exists
+     * *** does not mean the board is correct ***
+     * */
+
     Coordinate *emptyCells;
     int emptyCellsCount;
 
     emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
-
     emptyCellsCount = getEmptyCells(game->user_matrix, emptyCells);
-
     free(emptyCells);
+
     /* if 0 empty cells */
     return emptyCellsCount == 0;
 }
 
 void clearBoard(Board board) {
+    /* Zeroing all board cells */
     int i, j;
     for (i = 0; i < g_gameDim.N; ++i) {
         for (j = 0; j < g_gameDim.N; ++j) {
@@ -188,6 +191,7 @@ void clearBoard(Board board) {
 }
 
 void clearBoolBoard(BoolBoard board) {
+    /* put false in all board cells */
     int i, j;
     for (i = 0; i < g_gameDim.N; ++i) {
         for (j = 0; j < g_gameDim.N; ++j) {
@@ -197,6 +201,8 @@ void clearBoolBoard(BoolBoard board) {
 }
 
 Bool isBoardErroneous(Board board) {
+    /* implemented by checking neighbours values of each cell */
+
     Bool returnValue = false;
     Coordinate *nonEmptyCells;
     Coordinate *coordinateNeighbours;
@@ -211,6 +217,7 @@ Bool isBoardErroneous(Board board) {
     for (i = 0; i < nonEmptyCount; i++) {
         calculateCoordinateNeighbours(nonEmptyCells[i], coordinateNeighbours);
 
+        /* checks that it's value does not exist on any of the neighbour cells */
         for (j = 0; j < g_gameDim.cellNeighboursCount; j++) {
             if (getBoardValue(board, nonEmptyCells[i]) == getBoardValue(board, coordinateNeighbours[j])) {
                 returnValue = true;
@@ -228,9 +235,9 @@ Bool isBoardErroneous(Board board) {
     return returnValue;
 }
 
-
 /* Error Matrix Functions*/
 
+/* TODO: Allen - document? */
 void updateAfterClearErrorMatrix(Game *game, Input input) {
     int k;
     Input in;
@@ -310,7 +317,7 @@ typedef struct _StackFrame {
     struct _StackFrame *parentScope;
 } StackFrame;
 
-FinishCode countPossibleSolutions(Board board) {
+int getNumOfPossibleSolutions(Board board) {
     /* This function will exhaust all possible solutions to the board, using backtracking
      * that stimulates recursion with stack of frames */
 
@@ -318,7 +325,7 @@ FinishCode countPossibleSolutions(Board board) {
     int emptyCellsCount;
     int returnValue = 0;
     Board tempBoard;
-    StackFrame *StackTop; /* frame stack */
+    StackFrame *StackTop; /* stack of frames */
 
 
     /* make a copy of the current board to solve on*/
@@ -339,18 +346,17 @@ FinishCode countPossibleSolutions(Board board) {
     StackTop->isInitialized = false;
     StackTop->start = 0;
 
-    /* Begin Recursion part - separated to 4 parts that has to happen in the following order,
+    /* Begin Recursion part - separated to 4 stages that has to happen in the following order,
      * init frame (1) (happens when the frame is pushed to the stack),
      * before push child frame (2),
      * handling child result (3)
      * destroying frame (4) (happens before popping the frame)
      *
-     * parts 2,3 happens repeatably until all the options exhausted
+     * stages 2,3 happens repeatably until all the options exhausted
      */
     do {
-
         if (StackTop->isInitialized == false) {
-            /* initialize (1)*/
+            /* stage (1) - initialize */
             StackTop->currentCoordinate = emptyCells[StackTop->start];
             StackTop->possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
             StackTop->possibleValuesCount = getPossibleValues(
@@ -362,63 +368,64 @@ FinishCode countPossibleSolutions(Board board) {
         /* as long there are more possible values that we didn't check*/
         while (StackTop->possibleValuesCount > 0) {
             if (StackTop->beforeChildPoped == true) {
-                /* part (2)*/
+                /* stage (2)*/
 
                 /* remove the lowest option*/
-                StackTop->nextValue = removeArrayIndex(StackTop->possibleValues, StackTop->possibleValuesCount,
-                                                       0);
+                StackTop->nextValue = removeArrayIndex(StackTop->possibleValues, StackTop->possibleValuesCount, 0);
 
                 /*change the value to the next value*/
-                tempBoard[StackTop->currentCoordinate.i][StackTop->currentCoordinate.j] = StackTop->nextValue;
+                setBoardValue(tempBoard, StackTop->currentCoordinate, StackTop->nextValue);
 
-                /* if this is the last cell
-                 * */
+                /* if this is the last cell of the board*/
                 if (StackTop->start == emptyCellsCount - 1) {
-                    /*pop*/
-                    returnValue += 1;
-                    tempBoard[StackTop->currentCoordinate.i][StackTop->currentCoordinate.j] = 0;
 
-                    /*if got to here, the value must be the last than no need to go over to next child*/
+                    /* found a possible solution */
+                    returnValue += 1;
+
+                    /* backtrack from the last value*/
+                    setBoardValue(tempBoard, StackTop->currentCoordinate, 0);
+
+                    /* if got to here, the value must be the only possible value, then no need to go over to next child */
                     break;
                 } else {
                     /*push*/
 
-                    StackFrame *newScope =
-                            (StackFrame *) smartMalloc(sizeof(StackFrame));
+                    /* init child frame */
+                    StackFrame *newScope = (StackFrame *) smartMalloc(sizeof(StackFrame));
                     newScope->parentScope = StackTop;
                     newScope->beforeChildPoped = true;
                     newScope->isInitialized = false;
                     newScope->start = StackTop->start + 1;
 
+                    /* when the parent frame will be in the top again, it will go to stage 3 */
                     StackTop->beforeChildPoped = false;
                     StackTop = newScope;
 
-                    /* so the new scope will be initialized*/
+                    /* because the child frame is not initialized yet */
                     break;
                 }
             } else {
-                /* part (3) */
+                /* stage (3) */
 
-                /* clears the exhausted value option */
-                tempBoard[StackTop->currentCoordinate.i][StackTop->currentCoordinate.j] = 0;
+                /* clears the exhausted value option (backtrack) */
+                setBoardValue(tempBoard, StackTop->currentCoordinate, 0);
 
-                /*decrease the available options amount left*/
+                /* decrease the available options amount left */
                 StackTop->possibleValuesCount--;
 
-                /* marking ready for next child to be pushed*/
+                /* marking ready for next child to be pushed */
                 StackTop->beforeChildPoped = true;
 
-                /* for clarity - exa
-                 * so the scope won't get destroyed, if there is more options
-                 */
+                /* for clarity - to exhaust the next possible value if exist*/
                 continue;
             }
         }
 
-
+        /* child frames are not initialized, thus will not get to stage (4), and go to stage (1) instead */
         if (StackTop->isInitialized == true) {
-            /* part 4 */
+            /* stage (4)*/
             StackFrame *parentScope = StackTop->parentScope;
+
             free(StackTop->possibleValues);
             free(StackTop);
 
@@ -426,13 +433,12 @@ FinishCode countPossibleSolutions(Board board) {
             StackTop = parentScope;
         }
 
-    } while (StackTop != NULL);
+    } while (StackTop != NULL); /* while the stack isn't empty */
 
     /* End */
 
     free(emptyCells);
     destroyBoard(tempBoard, g_gameDim);
 
-    printPrompt(PNumSolutionsOutput, returnValue);
     return returnValue;
 }

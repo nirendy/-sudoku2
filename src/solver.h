@@ -43,7 +43,7 @@ void updateWholeErrorMatrix(Game *game);
 
 /* Stack Node */
 
-FinishCode countPossibleSolutions(Board board);
+int getNumOfPossibleSolutions(Board board);
 
 
 

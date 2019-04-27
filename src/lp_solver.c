@@ -588,6 +588,7 @@ Bool fillSolutionMatrix(Board board, Board solutionBoard) {
     copyBoard(solutionBoard, board);
     finishCode = fillBoard(solutionBoard);
     destroyGurobiEnv();
+    /* TODO: assert the board is full and correct*/
     return finishCode == FC_SUCCESS;
 }
 
