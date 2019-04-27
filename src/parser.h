@@ -18,7 +18,7 @@
 
 void printBoard(Game *game);
 
-FinishCode parseCommand(Input *input);
+Bool parseCommand(Input *input);
 
 #endif
 

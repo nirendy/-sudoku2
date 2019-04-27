@@ -107,7 +107,7 @@ void printError(Error err) {
             printf("Error: too many characters where entered in a single line\n");
             break;
         }
-        case EGuessHintFailed:{
+        case EGuessHintFailed: {
             printf("Could not guess hint\n");
             break;
         }
@@ -303,26 +303,23 @@ Game *createGame() {
 }
 
 Game *createGameFromFile(char *filePath) {
+    Game *newGame;
     GameDim oldDimensions = g_gameDim;
-    FinishCode finishCode = setDimensionsFromFile(filePath);
 
-    if (finishCode == FC_INVALID_RECOVERABLE) {
+    if (setDimensionsFromFile(filePath) == false) {
         setGameDim(oldDimensions.n, oldDimensions.m);
         return NULL;
-    } else if (finishCode == FC_SUCCESS) {
-        Game *newGame = createGame();
-        finishCode = generateGameFromFile(filePath, newGame);
-
-        if (finishCode == FC_INVALID_RECOVERABLE) {
-            destroyGame(newGame);
-            setGameDim(oldDimensions.n, oldDimensions.m);
-            return NULL;
-        } else if (finishCode == FC_SUCCESS) {
-            return newGame;
-        }
     }
 
-    exit(finishCode);
+    newGame = createGame();
+
+    if (generateGameFromFile(filePath, newGame) == false) {
+        destroyGame(newGame);
+        setGameDim(oldDimensions.n, oldDimensions.m);
+        return NULL;
+    }
+
+    return newGame;
 }
 
 void destroyGame(Game *game) {

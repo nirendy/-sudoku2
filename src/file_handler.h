@@ -13,10 +13,10 @@
  *
  * */
 
-FinishCode saveGameToFile(char *filePath, Game *game);
+void saveGameToFile(char *filePath, Game *game);
 
-FinishCode setDimensionsFromFile(char *filePath);
+Bool setDimensionsFromFile(char *filePath);
 
-FinishCode generateGameFromFile(char *filePath, Game *game);
+Bool generateGameFromFile(char *filePath, Game *game);
 
 #endif

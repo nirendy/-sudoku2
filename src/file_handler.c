@@ -31,14 +31,14 @@ void printFileError(char *string) {
 
 /* Public functions - used for saving and loading games from files */
 
-FinishCode saveGameToFile(char *filePath, Game *game) {
+void saveGameToFile(char *filePath, Game *game) {
     FILE *file;
     int i, j;
 
     file = fopen(filePath, "w");
     if (file == NULL) {
         printError(EFileSaveFailure);
-        return FC_INVALID_RECOVERABLE;
+        return;
     }
     fprintf(file, "%d %d\n", g_gameDim.m, g_gameDim.n);
     for (i = 0; i < g_gameDim.N; i++) {
@@ -59,20 +59,19 @@ FinishCode saveGameToFile(char *filePath, Game *game) {
     }
 
     printPrompt(PFileSavedSuccess, 0);
-    return FC_SUCCESS;
 }
 
-FinishCode setDimensionsFromFile(char *filePath) {
+Bool setDimensionsFromFile(char *filePath) {
     FILE *file;
     int tempN, tempM;
     file = fopen(filePath, "r");
     if (file == NULL) {
         printError(EFileOpenFailure);
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
     if (fscanf(file, "%d %d", &tempM, &tempN) != 2) {
         printError(EFileScanFailure);
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
     setGameDim(tempN, tempM);
     if (fclose(file) == EOF) {
@@ -80,10 +79,10 @@ FinishCode setDimensionsFromFile(char *filePath) {
         exit(-1);
     }
 
-    return FC_SUCCESS;
+    return true;
 }
 
-FinishCode generateGameFromFile(char *filePath, Game *game) {
+Bool generateGameFromFile(char *filePath, Game *game) {
     FILE *file;
     int tempN, tempM;
     int i = 0, j = 0, c = 1, num = 0;
@@ -93,12 +92,12 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
     file = fopen(filePath, "r");
     if (file == NULL) {
         printError(EFileOpenFailure);
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
     if (fscanf(file, "%d %d", &tempM, &tempN) != 2) {
         printError(EFileScanFailure);
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
 
@@ -179,5 +178,5 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
     }
 
 
-    return (isFailed) ? FC_INVALID_RECOVERABLE : FC_SUCCESS;
+    return !isFailed;
 }

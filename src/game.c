@@ -208,7 +208,9 @@ void performSave(Game *game, Input input) {
 
     if (g_mode == Edit && !fillSolutionMatrix(game->user_matrix, solutionBoard)) {
         printError(EFUnsolvableBoard);
-    } else { saveGameToFile(input.path, game); }
+    } else {
+        saveGameToFile(input.path, game);
+    }
     destroyBoard(solutionBoard, g_gameDim);
 }
 
@@ -242,7 +244,7 @@ void performAutoFill(Game *game) {
 
     Board newBoard = createBoard();
     copyBoard(newBoard, game->user_matrix);
-    fillObviousValues(game , newBoard);
+    fillObviousValues(game, newBoard);
     clearListFromNode(g_curNode->next);
     setGlobalNodeNextToNull();
     updateHistoryList(game, newBoard); /*destroys newBoard*/
@@ -257,17 +259,8 @@ void performReset(Game *game) {
 /* Game flow */
 
 Bool askUserForNextTurn(Input *input) {
-
-    FinishCode finishCode;
     printPrompt(PNextCommand, 0);
-    finishCode = parseCommand(input);
-    if (!(finishCode == FC_SUCCESS || finishCode == FC_INVALID_RECOVERABLE)) {
-        exit(-1);
-    }
-
-    if (finishCode == FC_INVALID_RECOVERABLE) { return false; }
-
-    return true;
+    return parseCommand(input);
 }
 
 Bool checkLegalInput(Game *game, Input input) {

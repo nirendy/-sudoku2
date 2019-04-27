@@ -94,12 +94,6 @@ typedef enum _error {
     EUnreachableCode
 } Error;
 
-typedef enum _finish_code {
-    FC_SUCCESS = 0,
-    FC_INVALID_RECOVERABLE,
-    FC_SUCCESS_NOT_SOLVABLE
-} FinishCode;
-
 typedef enum _prompt {
     PTitle,
     PExit,

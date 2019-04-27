@@ -339,7 +339,7 @@ void printBoard(Game *game) {
 
 }
 
-FinishCode parseCommand(Input *returnedInput) {
+Bool parseCommand(Input *returnedInput) {
 
     char str[MAX_STRING_LEN];
     char *token, command[MAX_COMMAND_LEN + 1];
@@ -355,7 +355,7 @@ FinishCode parseCommand(Input *returnedInput) {
         }
         if (strlen(str) >= MAX_INPUT_STR_LEN) {
             printError(EInputTooLong);
-            return FC_INVALID_RECOVERABLE;
+            return false;
         }
         token = strtok(str, " \t\r\n");
     } while (token == NULL);
@@ -364,14 +364,14 @@ FinishCode parseCommand(Input *returnedInput) {
 
     if (numOfCommandParams == -1) {
         printError(EInvalidCommand);
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
     strcpy(command, token);
 
     if (!isCommandAllowedInMode(g_mode, returnedInput->command)) {
         printModeError(returnedInput->command);
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
     token = strtok(NULL, " \t\r\n");
     index = 1;
@@ -382,7 +382,7 @@ FinishCode parseCommand(Input *returnedInput) {
         if (index > numOfCommandParams) { /*too many parameters*/
             printError(ETooManyParams);
             printParamError(returnedInput->command, numOfCommandParams);
-            return FC_INVALID_RECOVERABLE;
+            return false;
         }
         switch (index) {
             case 1:
@@ -433,9 +433,9 @@ FinishCode parseCommand(Input *returnedInput) {
     if (index != numOfCommandParams && strcmp(command, "edit") != 0) {
         printError(ETooFewParams);
         printParamError(returnedInput->command, numOfCommandParams);
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
 
-    return FC_SUCCESS;
+    return true;
 }
