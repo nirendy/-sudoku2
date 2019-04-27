@@ -599,7 +599,7 @@ void executeCommand(Game **gameP, Input input) {
             success = true; /*fail condition checked in isLegalMove*/
             break;
         }
-        case COMMAND_EXIT: { /*TODO: nir make sure that free all resorces*/
+        case COMMAND_EXIT: {
             terminateProgram(*gameP);
             break;
         }

@@ -8,8 +8,6 @@
 #define MAX_VAR_NAME_LEN 30
 #define MAX_CONST_NAME_LEN 100
 
-/* TODO: change from log directory */
-
 #define GUR_LOG_FILE "./gur.log"
 #define GUR_LOG_FILE2 "./gur.lp"
 #define GUR_NAME "sudoku"
@@ -424,7 +422,6 @@ Bool optimizeModel() {
     error = GRBwrite(model, GUR_LOG_FILE2);
     if (error) {
         printf("ERROR %d GRBwrite(): %s\n", error, GRBgeterrormsg(env));
-        /* TODO: remove print?*/
     }
 
     /* get objective value*/
