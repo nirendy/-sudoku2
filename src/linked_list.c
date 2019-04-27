@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "linked_list.h"
 
+/* Linked list module - responsible for handling the linked-list data structure that holds all the moves history */
+
 /* Data Node Funcs */
 
 DataNode *CreateFirstDataNode() {

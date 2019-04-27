@@ -6,6 +6,8 @@
 #include "lp_solver.h"
 #include "game_aux.h"
 
+/*Game module - responsible for managing the game flow and the commands' execution*/
+
 /* Perform Commands */
 
 Bool performSolve(Game **gameP, Input input) {

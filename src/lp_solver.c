@@ -14,6 +14,9 @@
 #define GUR_LOG_FILE2 "../log/gur.lp"
 #define GUR_NAME "sud"
 
+
+/* LP-Solver module - responsible for LP nad ILP board solutions */
+
 /* Gurobi variables */
 
 GRBenv *env = NULL;

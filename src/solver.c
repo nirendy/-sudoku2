@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include "solver.h"
 
-/* TODO: module explanation */
-/* TODO: classify */
-
+/* Solver module - responsible for all the board solving logic -
+ * contains the exhaustive backtracking logic and all the board-solving aiding functions */
 
 /* Cell Functions*/
 
