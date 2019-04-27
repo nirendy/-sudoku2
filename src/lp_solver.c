@@ -10,9 +10,9 @@
 
 /* TODO: change from log directory */
 
-#define GUR_LOG_FILE "../log/gur"
-#define GUR_LOG_FILE2 "../log/gur.lp"
-#define GUR_NAME "sud"
+#define GUR_LOG_FILE "./gur.log"
+#define GUR_LOG_FILE2 "./gur.lp"
+#define GUR_NAME "sudoku"
 
 
 /* LP-Solver module - responsible for LP nad ILP board solutions */
