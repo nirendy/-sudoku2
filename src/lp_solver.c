@@ -96,6 +96,7 @@ Coordinate coordinateOfTheJCellInTheIBlock(int i, int j) {
 
     int n = g_gameDim.n;
     int m = g_gameDim.m;
+    /* TODO: test check this*/
     return createCoordinate(
             m * ((i * n) / (n * m)) + (j / n),
             ((i * n) % (n * m)) + (j % n)
@@ -293,7 +294,7 @@ Bool addConstrainsToModel(PossibleVarSentinel *coor2Var) {
                 }
             }
 
-            if (relvantVarsCount > 1) {
+            if (relvantVarsCount > 0) {
                 sprintf(constName, "values of cell (%d,%d)", i + 1, j + 1);
 
                 /* add constraint to model*/
@@ -416,6 +417,7 @@ Bool optimizeModel() {
         return false;
     }
 
+    /* TODO: remove*/
     /* Write model to 'mip1.lp' - this is not necessary but very helpful */
     error = GRBwrite(model, GUR_LOG_FILE2);
     if (error) {

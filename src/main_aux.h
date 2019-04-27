@@ -169,6 +169,14 @@ typedef struct _Node {
 } Node;
 
 /* Global variables */
+/*
+ * We chose to use 4 global variables
+ * These variables are globally used and a lot of edge/small methods
+ *   use them, and we wanted to avoid artificially passing them as arguments,
+ *   what would have make the API much more complicated and less readable.
+ * Furthermore, these variables are singletons of the program , and as mentioned are needed to be in a global scope.
+ *
+ * */
 Mode g_mode;
 GameDim g_gameDim;
 Bool g_markError;
