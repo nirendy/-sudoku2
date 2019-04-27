@@ -267,7 +267,8 @@ int main() {
 
     /*mock(-10, &game);*/
 
-    while (g_mode != Exit) {
+    /* Game flow */
+    while (g_mode != Exit) {                    /* == while(true) */
         if (askUserForNextTurn(&input)) {
             if (checkLegalInput(game, input)) {
                 executeCommand(&game, input);
