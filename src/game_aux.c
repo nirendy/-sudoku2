@@ -179,8 +179,9 @@ Bool fillXRandomCells(Board board, Coordinate *cellsToFill, int numToFill) {
 
 void chooseCellsToClear(Board board, Coordinate *cellsToClear, int numToClear) {
 
+    /* the board is fully solved, therefore: #ofFilledCells = cellCount*/
     Coordinate *filledCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
-    getFilledCells(board, filledCells); /* TODO: before submitting, use the returned value*/
+    getFilledCells(board, filledCells);
     chooseRandCords(filledCells, g_gameDim.cellsCount, cellsToClear, numToClear);
 
     free(filledCells);

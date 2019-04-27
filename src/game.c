@@ -24,7 +24,7 @@ Bool performSolve(Game **gameP, Input input) {
         updateWholeErrorMatrix(game);
         g_curNode = getFirstNode(g_curNode);
         clearListFromNode(g_curNode->next);
-        g_curNode->next = NULL;
+        setGlobalNodeNextToNull();
         return true;
     }
     return false;
@@ -53,7 +53,7 @@ Bool performEdit(Game **gameP, Input input) {
         updateWholeErrorMatrix(game);
         g_curNode = getFirstNode(g_curNode);
         clearListFromNode(g_curNode->next);
-        g_curNode->next = NULL;
+        setGlobalNodeNextToNull();
         return true;
     }
     return false;
@@ -66,7 +66,10 @@ void performMarkErrors(Input input) {
 }
 
 void performSet(Game *game, Input input) {
+
     Input redoInput, undoInput;
+    clearListFromNode(g_curNode->next);
+    setGlobalNodeNextToNull();
     updateRedoUndoInputsAfterSingleSet(game, input, &redoInput, &undoInput);
     insertInputsToList(&redoInput, &undoInput, 1);
     setCoordinate(game, input);
@@ -97,7 +100,7 @@ Bool performGuess(Game *game, Input input) {
     }
 
     clearListFromNode(g_curNode->next);
-    g_curNode->next = NULL;
+    setGlobalNodeNextToNull();
     updateHistoryList(game, solutionBoard);  /*destroys newBoard*/
     return true;
 }
@@ -147,6 +150,9 @@ Bool performGenerate(Game *game, Input input) {
         return success;
     }
 
+    /*At this stage newBoard is fully and legally solved,
+     * and we assume that when moving on to the next steps */
+
     /*step 2 - clear cells from the board */
     if (numToClear > 0) {
         cellsToClear = (Coordinate *) smartMalloc(numToClear * sizeof(Coordinate));
@@ -157,7 +163,7 @@ Bool performGenerate(Game *game, Input input) {
 
     /*step 3 - perform changes and update the redo/undo list */
     clearListFromNode(g_curNode->next);
-    g_curNode->next = NULL;
+    setGlobalNodeNextToNull();
     updateHistoryList(game, newBoard); /*destroys newBoard*/
     return true;
 
@@ -237,6 +243,8 @@ void performAutoFill(Game *game) {
     Board newBoard = createBoard();
     copyBoard(newBoard, game->user_matrix);
     fillObviousValues(newBoard);
+    clearListFromNode(g_curNode->next);
+    setGlobalNodeNextToNull();
     updateHistoryList(game, newBoard); /*destroys newBoard*/
 }
 
@@ -263,6 +271,9 @@ Bool askUserForNextTurn(Input *input) {
 }
 
 Bool checkLegalInput(Game *game, Input input) {
+
+    /*checking the legality of the input before moving on to the next stage of the command execution*/
+
     /*generate_command vars*/
     Coordinate *tempCorArray;
     int numOfEmptyCells;
@@ -517,18 +528,6 @@ Bool checkLegalInput(Game *game, Input input) {
 
 void executeCommand(Game **gameP, Input input) {
     Bool success = false; /* successfully changed board */
-
-
-    if (input.command == COMMAND_SET ||
-        input.command == COMMAND_AUTOFILL) {
-        /*
-     * This commands cannot fail in this stage so its safe to clear the redo list
-     * guess and generate command can fail so clearing the redo list is done after we get success
-     * */
-
-        clearListFromNode(g_curNode->next);
-        g_curNode->next = NULL; /* TODO: replace to functions*/
-    }
 
     switch (input.command) {
         case COMMAND_SOLVE: {

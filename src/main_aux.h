@@ -40,10 +40,8 @@ typedef enum _mode {
 } Mode;
 
 typedef enum _error {
-    EInvalidNumberOfCells,
     ECellIsFixed,
     ECellIsNotEmpty,
-    EValueIsInvalid,
     EInvalidCommand,
     ETooFewParams,
     ETooManyParams,
@@ -75,8 +73,6 @@ typedef enum _finish_code {
 
 typedef enum _prompt {
     PTitle,
-
-    PEnterFixedAmount,
     PExit,
     PSuccess,
     PHint,
@@ -85,8 +81,7 @@ typedef enum _prompt {
     PNextCommand,
     PNumSolutionsOutput,
     PPerformedChanges,
-    PWrongSolution,
-    PNoObviousCells
+    PWrongSolution
 
 } Prompt;
 
@@ -157,9 +152,11 @@ Node *g_curNode;
 
 /* globals setters*/
 
-void setGameDim(int n, int m); /* TODO: decide what module*/
+void setGameDim(int n, int m);
 
 void setMode(Mode newMode);
+
+void setGlobalNodeNextToNull();
 
 /* Prints */
 
@@ -197,8 +194,6 @@ Coordinate createCoordinate(int i, int j);
 
 void copyBoard(Board targetBoard, Board copyFromBoard);
 
-void printUserBoard(Board board); /* TODO: remove*/
-
 int getBoardValue(Board board, Coordinate coordinate);
 
 void setBoardValue(Board board, Coordinate coordinate, int value);
@@ -211,6 +206,9 @@ Bool isCoordinateFixed(Game *game, Coordinate coordinate);
 
 Bool isCoordinateEmpty(Game *game, Coordinate coordinate);
 
+/* TODO: remove*/
+
+void printUserBoard(Board board);
 
 #endif
 
