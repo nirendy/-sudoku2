@@ -112,29 +112,33 @@ PossibleVar *createPossibleVar(Coordinate coor, int value, Bool isBinary) {
     newPosVar->type = isBinary ? GRB_BINARY : GRB_CONTINUOUS;
     newPosVar->coeff = isBinary ? 1.0 : randLimit(g_gameDim.N);
     newPosVar->prob = -1;
+
     newPosVar->next = NULL;
 
     return newPosVar;
 }
 
 PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
-    int i;
+    PossibleVarSentinel *coor2Var;
+    Coordinate *emptyCells;
     int emptyCellsCount;
     int *possibleValues;
-    Coordinate *emptyCells;
-    PossibleVarSentinel *coor2Var;
+    int i;
 
     /* TODO: test if 2 cells both has only one conflicting option*/
+
     /* Check the board isn't erroneous and all cells has at least one available option*/
     if (hasEmptyCellWithNoPossibleValues(board) == true || isBoardErroneous(board) == true) {
         return NULL;
     }
 
+    /* malloc a sentinel for every cell in the matrix */
     coor2Var = (PossibleVarSentinel *) smartCalloc(g_gameDim.cellsCount, sizeof(PossibleVarSentinel));
 
-    emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
     /*find empty cells*/
+    emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
     emptyCellsCount = getEmptyCells(board, emptyCells);
+    possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
 
 
     for (i = 0; i < emptyCellsCount; i++) {
@@ -144,30 +148,29 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
 
         /*create var for each possible values and cell*/
         currentCoordinate = emptyCells[i];
-        possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
         possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
         sentinel = &coor2Var[calculateCoordinateFlatIndex(currentCoordinate)];
         sentinel->length = possibleValuesCount;
 
-        /* TODO: remove - should never get here because checked before */
-        if (possibleValuesCount == 0) {
+        if (possibleValuesCount > 0) {
+            int j;
+            PossibleVar *lastNode;
+
+            sentinel->first = createPossibleVar(currentCoordinate, possibleValues[0], isBinary);
+            lastNode = sentinel->first;
+
+            for (j = 1; j < possibleValuesCount; j++) {
+                lastNode->next = createPossibleVar(currentCoordinate, possibleValues[j], isBinary);
+                lastNode = lastNode->next;
+            }
+        } else {
+            /* TODO: remove - should never get here because checked before */
             printf("Unreachable Code Error");
             exit(-1);
         }
-
-        if (possibleValuesCount > 0) {
-            PossibleVar *last;
-            last = sentinel->first = createPossibleVar(currentCoordinate, possibleValues[0], isBinary);
-
-            while (--possibleValuesCount > 0) {
-                last = last->next = createPossibleVar(
-                        currentCoordinate, possibleValues[sentinel->length - possibleValuesCount], isBinary
-                );
-            }
-        }
-        free(possibleValues);
     }
 
+    free(possibleValues);
     free(emptyCells);
 
     return coor2Var;
@@ -193,9 +196,9 @@ void destroyCoor2Var(PossibleVarSentinel *coor2Var) {
         }
     }
 
+    /* free sentinels array*/
     free(coor2Var);
 }
-
 
 /* GRB libray usage (using the above data structure)*/
 
