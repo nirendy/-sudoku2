@@ -122,7 +122,7 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
     int emptyCellsCount;
     int *possibleValues;
     Coordinate *emptyCells;
-    PossibleVarSentinel *coorV2var;
+    PossibleVarSentinel *coor2Var;
 
     /* TODO: test if 2 cells both has only one conflicting option*/
     /* Check the board isn't erroneous and all cells has at least one available option*/
@@ -130,7 +130,7 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
         return NULL;
     }
 
-    coorV2var = (PossibleVarSentinel *) smartCalloc(g_gameDim.cellsCount, sizeof(PossibleVarSentinel));
+    coor2Var = (PossibleVarSentinel *) smartCalloc(g_gameDim.cellsCount, sizeof(PossibleVarSentinel));
 
     emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
     /*find empty cells*/
@@ -146,7 +146,7 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
         currentCoordinate = emptyCells[i];
         possibleValues = (int *) smartMalloc(g_gameDim.N * sizeof(int));
         possibleValuesCount = getPossibleValues(board, currentCoordinate, possibleValues);
-        sentinel = &coorV2var[calculateCoordinateFlatIndex(currentCoordinate)];
+        sentinel = &coor2Var[calculateCoordinateFlatIndex(currentCoordinate)];
         sentinel->length = possibleValuesCount;
 
         /* TODO: remove - should never get here because checked before */
@@ -170,20 +170,20 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
 
     free(emptyCells);
 
-    return coorV2var;
+    return coor2Var;
 }
 
-void destroyCoorV2Var(PossibleVarSentinel *coorV2var) {
+void destroyCoor2Var(PossibleVarSentinel *coor2Var) {
     int i;
     PossibleVar *cur, *temp;
 
-    if (coorV2var == NULL) {
+    if (coor2Var == NULL) {
         return;
     }
 
     /* free possible values nodes*/
     for (i = 0; i < g_gameDim.cellsCount; i++) {
-        cur = coorV2var[i].first;
+        cur = coor2Var[i].first;
 
         /* free all nodes from the beginning to the end, stops when NULL node received*/
         while (cur != NULL) {
@@ -193,15 +193,15 @@ void destroyCoorV2Var(PossibleVarSentinel *coorV2var) {
         }
     }
 
-    free(coorV2var);
+    free(coor2Var);
 }
 
 
 /* GRB libray usage (using the above data structure)*/
 
-PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coorV2var, Coordinate coor, int value) {
+PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coor2Var, Coordinate coor, int value) {
     PossibleVar *posVar;
-    posVar = coorV2var[calculateCoordinateFlatIndex(coor)].first;
+    posVar = coor2Var[calculateCoordinateFlatIndex(coor)].first;
     while (posVar != NULL) {
         if (posVar->value == value) {
             return posVar;
@@ -211,7 +211,7 @@ PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coorV2var, Coordina
     return NULL;
 }
 
-FinishCode addVarsToModel(PossibleVarSentinel *coorV2var) {
+FinishCode addVarsToModel(PossibleVarSentinel *coor2Var) {
     int error;
     int i;
     int numOfVarsCreated = 0;
@@ -220,8 +220,8 @@ FinishCode addVarsToModel(PossibleVarSentinel *coorV2var) {
 
     for (i = 0; i < g_gameDim.cellsCount; i++) {
         /*create var for each possible values and cell*/
-        if (coorV2var[i].length > 0) {
-            curPosVar = coorV2var[i].first;
+        if (coor2Var[i].length > 0) {
+            curPosVar = coor2Var[i].first;
             while (curPosVar != NULL) {
                 curPosVar->varIndex = numOfVarsCreated;
 
@@ -256,7 +256,7 @@ FinishCode addVarsToModel(PossibleVarSentinel *coorV2var) {
     return FC_SUCCESS;
 }
 
-FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
+FinishCode addConstrainsToModel(PossibleVarSentinel *coor2Var) {
     int i, j, k;
     int error;
     int *constInd;
@@ -281,7 +281,7 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
 
             for (k = 1; k <= g_gameDim.N; k++) {
                 PossibleVar *posVar;
-                posVar = getPossibleVarFromCoor2Var(coorV2var, createCoordinate(i, j), k);
+                posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
 
                 if (posVar != NULL && posVar->varIndex >= 0) {
                     constInd[relvantVarsCount] = posVar->varIndex;
@@ -341,17 +341,17 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
                     switch (www) {
                         case 0: {
                             /* rows */
-                            posVar = getPossibleVarFromCoor2Var(coorV2var, createCoordinate(i, j), k);
+                            posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
                             break;
                         }
                         case 1: {
                             /* columns */
-                            posVar = getPossibleVarFromCoor2Var(coorV2var, createCoordinate(j, i), k);
+                            posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(j, i), k);
                             break;
                         }
                         case 2: {
                             /* blocks */
-                            posVar = getPossibleVarFromCoor2Var(coorV2var, coordinateOfTheJCellInTheIBlock(i, j), k);
+                            posVar = getPossibleVarFromCoor2Var(coor2Var, coordinateOfTheJCellInTheIBlock(i, j), k);
                             break;
                         }
                         default: {
@@ -440,15 +440,15 @@ FinishCode optimizeModel() {
     }
 }
 
-FinishCode fillModel(PossibleVarSentinel *coorV2var) {
+FinishCode fillModel(PossibleVarSentinel *coor2Var) {
     FinishCode finishCode;
 
-    finishCode = addVarsToModel(coorV2var);
+    finishCode = addVarsToModel(coor2Var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
 
-    finishCode = addConstrainsToModel(coorV2var);
+    finishCode = addConstrainsToModel(coor2Var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
@@ -460,15 +460,15 @@ FinishCode fillModel(PossibleVarSentinel *coorV2var) {
 FinishCode fillBoard(Board board) {
     int error;
     FinishCode finishCode;
-    PossibleVarSentinel *coorV2var; /* for the possibleVars[] */
+    PossibleVarSentinel *coor2Var; /* for the possibleVars[] */
     int i, j, k;
 
-    coorV2var = createCoor2Var(board, true);
-    if (coorV2var == NULL) {
+    coor2Var = createCoor2Var(board, true);
+    if (coor2Var == NULL) {
         return FC_INVALID_RECOVERABLE;
     }
 
-    finishCode = fillModel(coorV2var);
+    finishCode = fillModel(coor2Var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
@@ -477,7 +477,7 @@ FinishCode fillBoard(Board board) {
     for (i = 0; i < g_gameDim.N; i++) {
         for (j = 0; j < g_gameDim.N; j++) {
             for (k = 1; k <= g_gameDim.N; k++) {
-                PossibleVar *posVar = getPossibleVarFromCoor2Var(coorV2var, createCoordinate(i, j), k);
+                PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
                 if (posVar != NULL) {
                     if (posVar->varIndex >= 0) {
                         error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
@@ -498,7 +498,7 @@ FinishCode fillBoard(Board board) {
         }
     }
 
-    destroyCoorV2Var(coorV2var);
+    destroyCoor2Var(coor2Var);
 
     return FC_SUCCESS;
 }
@@ -506,21 +506,21 @@ FinishCode fillBoard(Board board) {
 FinishCode guessFillBoardAndGuessHint(Board board, Coordinate coor) {
     int error;
     FinishCode finishCode;
-    PossibleVarSentinel *coorV2var; /* for the possibleVars[] */
+    PossibleVarSentinel *coor2Var; /* for the possibleVars[] */
     int k;
 
-    coorV2var = createCoor2Var(board, false);
-    if (coorV2var == NULL) {
+    coor2Var = createCoor2Var(board, false);
+    if (coor2Var == NULL) {
         return FC_INVALID_RECOVERABLE;
     }
 
-    finishCode = fillModel(coorV2var);
+    finishCode = fillModel(coor2Var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
 
     for (k = 1; k <= g_gameDim.N; k++) {
-        PossibleVar *posVar = getPossibleVarFromCoor2Var(coorV2var, coor, k);
+        PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, coor, k);
         if (posVar != NULL) {
             if (posVar->varIndex >= 0) {
                 error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
@@ -537,7 +537,7 @@ FinishCode guessFillBoardAndGuessHint(Board board, Coordinate coor) {
         }
     }
 
-    destroyCoorV2Var(coorV2var);
+    destroyCoor2Var(coor2Var);
 
     return FC_SUCCESS;
 }
@@ -545,18 +545,18 @@ FinishCode guessFillBoardAndGuessHint(Board board, Coordinate coor) {
 FinishCode guessFillBoard(Board board, double threshold) {
     int error;
     FinishCode finishCode;
-    PossibleVarSentinel *coorV2var; /* for the possibleVars[] */
+    PossibleVarSentinel *coor2Var; /* for the possibleVars[] */
     int i, j, k;
     int *valsOptions;
     int bestOptionsCount;
     double bestOptionVal;
 
-    coorV2var = createCoor2Var(board, false);
-    if (coorV2var == NULL) {
+    coor2Var = createCoor2Var(board, false);
+    if (coor2Var == NULL) {
         return FC_INVALID_RECOVERABLE;
     }
 
-    finishCode = fillModel(coorV2var);
+    finishCode = fillModel(coor2Var);
     if (finishCode != FC_SUCCESS) {
         return finishCode;
     }
@@ -569,7 +569,7 @@ FinishCode guessFillBoard(Board board, double threshold) {
             bestOptionVal = 0;
 
             for (k = 1; k <= g_gameDim.N; k++) {
-                PossibleVar *posVar = getPossibleVarFromCoor2Var(coorV2var, createCoordinate(i, j), k);
+                PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
                 if (posVar != NULL) {
                     if (posVar->varIndex >= 0) {
                         error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
@@ -599,7 +599,7 @@ FinishCode guessFillBoard(Board board, double threshold) {
 
 
     free(valsOptions);
-    destroyCoorV2Var(coorV2var);
+    destroyCoor2Var(coor2Var);
 
     return FC_SUCCESS;
 }
