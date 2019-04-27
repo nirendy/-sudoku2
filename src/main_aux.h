@@ -62,7 +62,8 @@ typedef enum _error {
     EGenerationFailed,
     EInputTooLong,
     EMallocFailure,
-    EReachUnexpectedEOF
+    EReachUnexpectedEOF,
+    EUnreachableCode
 } Error;
 
 typedef enum _finish_code {

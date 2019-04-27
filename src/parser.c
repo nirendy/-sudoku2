@@ -13,7 +13,7 @@ char *getModeStr() {
         case Init:
             return "Init";
         case Exit:
-            return "Unreachable Code";
+            printError(EUnreachableCode);
     }
     return "Unreachable Code";
 }
@@ -72,10 +72,10 @@ char *getCommandStr(Command command) {
             return "exit";
 
         case COMMAND_INVALID:
-            return "Unreachable Code";
+            printError(EUnreachableCode);
 
     }
-
+    printError(EUnreachableCode);
     return "Unreachable Code";
 }
 
@@ -134,7 +134,7 @@ Bool isCommandAllowedInMode(Mode mode, Command command) {
         }
         case COMMAND_INVALID:
         default: {
-            printf("Unreachable Code Error");
+            printError(EUnreachableCode);
             return false;
         }
     }
@@ -324,7 +324,7 @@ void printBoard(Game *game) {
                         printf("%c", ASTERISK);
                         break;
                     default:
-                        printf("Unreachable Code Error");
+                        printError(EUnreachableCode);
                 }
 
             }
@@ -421,10 +421,8 @@ FinishCode parseCommand(Input *returnedInput) {
             case 3:
                 if (!strcmp(command, "set")) { returnedInput->value = getNum(token); }
                 break;
-
             default:
-                printf("Unreachable Code Error");
-                exit(-1);
+                printError(EUnreachableCode);
         }
 
         index++;

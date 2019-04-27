@@ -21,7 +21,7 @@ void setMode(Mode newMode) {
     g_mode = newMode;
 }
 
-void setGlobalNodeNextToNull(){
+void setGlobalNodeNextToNull() {
     g_curNode->next = NULL;
 }
 
@@ -123,8 +123,12 @@ void printError(Error err) {
             printf("Error: Insertion in the middle of the list - unreachable code\n");
             break;
         }
+        case EUnreachableCode: {
+            printf("Unreachable Code Error - terminating...\n");
+            exit(-1);
+        }
         default: {
-            printf("Unreachable Code Error\n");
+            printError(EUnreachableCode);
         }
     }
 }

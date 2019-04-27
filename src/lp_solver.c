@@ -164,9 +164,7 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
                 lastNode = lastNode->next;
             }
         } else {
-            /* TODO: remove - should never get here because checked before */
-            printf("Unreachable Code Error");
-            exit(-1);
+            printError(EUnreachableCode);
         }
     }
 
@@ -336,8 +334,7 @@ Bool addConstrainsToModel(PossibleVarSentinel *coor2Var) {
                 break;
             }
             default: {
-                printf("Unreachable Code Error");
-                exit(-1);
+                printError(EUnreachableCode);
             }
         }
 
@@ -366,7 +363,7 @@ Bool addConstrainsToModel(PossibleVarSentinel *coor2Var) {
                             break;
                         }
                         default: {
-                            printf("Unreachable Code Error");
+                            printError(EUnreachableCode);
                             exit(-1);
                         }
                     }

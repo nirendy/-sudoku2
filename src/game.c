@@ -62,7 +62,7 @@ Bool performEdit(Game **gameP, Input input) {
 void performMarkErrors(Input input) {
     if (input.value == 0) { g_markError = false; }
     else if (input.value == 1) { g_markError = true; }
-    else { printf("Unreachable Code"); }
+    else { printError(EUnreachableCode); }
 }
 
 void performSet(Game *game, Input input) {
@@ -517,8 +517,7 @@ Bool checkLegalInput(Game *game, Input input) {
             return true;
         }
         case COMMAND_INVALID: {
-            printf("Unreachable Code Error\n");
-            exit(-1);
+            printError(EUnreachableCode);
         }
 
 
@@ -604,8 +603,7 @@ void executeCommand(Game **gameP, Input input) {
             break;
         }
         case COMMAND_INVALID: {
-            printf("Unreachable Code Error\n");
-            exit(-1);
+            printError(EUnreachableCode);
         }
     }
 
