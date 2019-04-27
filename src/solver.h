@@ -5,7 +5,20 @@
 #include "main_aux.h"
 
 /* Solver module - responsible for all the board solving logic -
- * contains the exhaustive backtracking logic and all the board-solving aiding functions */
+ * contains the exhaustive backtracking logic and all the board-solving aiding functions
+ *
+ * getEmptyCells                        - Get empty cells.
+ * getFilledCells                       - Get filled cells.
+ * hasEmptyCellWithNoPossibleValues     - Has empty cell with no possible values.
+ * getPossibleValues                    - Get possible values.
+ * isPossibleValue                      - Is value possible.
+ * isBoardFull                          - Is board full.
+ * clearBoard                           - Clearing board.
+ * clearBoolBoard                       - Clearing bool board.
+ * isBoardErroneous                     - Is board erroneous.
+ * isBoardComplete                      - Is board complete.
+ *
+ * */
 
 /* Cell Functions*/
 

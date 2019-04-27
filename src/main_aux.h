@@ -11,7 +11,33 @@
 #define MAX_INPUT_STR_LEN 256
 
 
-/*Main auxiliary module - responsible for general static functions */
+/* Main auxiliary module - responsible for general static functions
+ *
+ * setGameDim                     - Set game dimensions
+ * setMode                        - Set game mode
+ * setGlobalNodeNextToNull        - Set global node 'next' member to null
+ * printError                     - Print error
+ * printPrompt                    - Print prompt
+ * smartMalloc                    - Smart malloc
+ * smartCalloc                    - Smart calloc
+ * randLimit                      - Get random integer between 0 to limit-1
+ * removeArrayIndex               - Remove item from array
+ * createBoard                    - Create board
+ * destroyBoard                   - Destroy board
+ * createGame                     - Create game
+ * createGameFromFile             - Create game from file
+ * destroyGame                    - Destroy game
+ * terminateProgram               - Terminate program
+ * createCoordinate               - Create coordinate
+ * copyBoard                      - Copy board
+ * getBoardValue                  - Get board value
+ * setBoardValue                  - Set board value
+ * getBoolBoardValue              - Get boolean board value
+ * setBoolBoardValue              - Set boolean board value
+ * isCoordinateFixed              - Is coordinate fixed
+ * isCoordinateEmpty              - Is coordinate empty
+ *
+ * */
 
 /* Typedefs */
 
@@ -61,6 +87,7 @@ typedef enum _error {
     EFUnsolvableBoard,
     EGenerationFailed,
     EInputTooLong,
+    EGuessHintFailed,
     EMallocFailure,
     EReachUnexpectedEOF,
     EUnreachableCode

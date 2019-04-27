@@ -3,7 +3,12 @@
 
 #include "main_aux.h"
 
-/* LP-Solver module - responsible for LP nad ILP board solutions */
+/* LP-Solver module - responsible for LP nad ILP board solutions
+ *
+ * fillSolutionMatrix           - Fill solution matrix
+ * guessHint                    - Guess hint
+ * guessBoard                   - Guess board
+ * */
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard);
 

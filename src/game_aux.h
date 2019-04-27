@@ -8,7 +8,23 @@
 #include "stdio.h"
 
 
-/*Game Auxiliary module - responsible for aiding the game module with specific game-related functions*/
+/*Game Auxiliary module - responsible for aiding the game module with specific game-related functions
+ *
+ * isGameErroneous                          - Is game erroneous
+ * clearGame                                - Clear game
+ * setCoordinate                            - Set coordinate
+ * printChange                              - Print change
+ * updateRedoUndoInputsAfterSingleSet       - Update redo undo inputs after single set
+ * insertInputsToList                       - Insert inputs to list
+ * updateHistoryList                        - Update history list
+ * isSolvableBoard                          - Is solvable board
+ * chooseCellsToFill                        - Choose cells to fill
+ * fillXRandomCells                         - Fill x random cells
+ * chooseCellsToClear                       - Choose cells to clear
+ * clearRandomCells                         - Clear random cells
+ * fillObviousValues                        - Fill obvious values
+ *
+ * */
 
 /* Legal Checks related */
 Bool isGameErroneous(Game *game);

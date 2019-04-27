@@ -21,6 +21,7 @@
  * That is why supporting only one model solving in a time (assuming only one GRBmodel) is allowed.
  * */
 
+
 /* Gurobi module variables */
 
 GRBenv *env = NULL;
@@ -628,9 +629,6 @@ Bool fillSolutionMatrix(Board board, Board solutionBoard) {
                 isBoardComplete(solutionBoard) == true;
 
     destroyGurobiEnv();
-    if (isSuccess == false) {
-        printf("Could not fill board\n"); /*TODO: better print*/
-    }
     return isSuccess;
 }
 
@@ -650,7 +648,7 @@ void guessHint(Board board, Coordinate coordinate) {
     destroyGurobiEnv();
 
     if (isSuccess == false) {
-        printf("Could not guess hint\n"); /*TODO: better print*/
+        printError(EGuessHintFailed);
     }
 }
 
@@ -664,9 +662,6 @@ Bool guessBoard(Board board, Board solutionBoard, double threshold) {
                 isBoardErroneous(solutionBoard) == false;
 
     destroyGurobiEnv();
-    if (isSuccess == false) {
-        printf("Could not guess fill board\n"); /*TODO: better print*/
-    }
     return isSuccess;
 }
 

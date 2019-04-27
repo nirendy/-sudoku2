@@ -103,6 +103,10 @@ void printError(Error err) {
             printf("Error: too many characters where entered in a single line\n");
             break;
         }
+        case EGuessHintFailed:{
+            printf("Could not guess hint\n");
+            break;
+        }
         case EMallocFailure : {
             printf("Error: Memory allocation failed - terminating program\n");
             break;
