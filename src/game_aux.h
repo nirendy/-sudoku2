@@ -44,7 +44,7 @@ void chooseCellsToClear(Board board, Coordinate *cellsToClear, int numToClear);
 void clearRandomCells(Board board, Coordinate *cellsToClear, int numToClear);
 
 /* Autofill related */
-void fillObviousValues(Board board);
+void fillObviousValues(Game *game , Board board);
 
 
 #endif

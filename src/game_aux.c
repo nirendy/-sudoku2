@@ -203,21 +203,19 @@ void clearRandomCells(Board board, Coordinate *cellsToClear, int numToClear) {
 }
 
 /* Autofill related */
-void fillObviousValues(Board board) {
+void fillObviousValues(Game *game , Board board) {
 
     Coordinate *emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
     int *possibleValues = (int *) smartMalloc(g_gameDim.cellsCount * sizeof(int));
 
     int numOfEmpty = getEmptyCells(board, emptyCells);
     int numOfPossibleValues;
-    int numOfCellsToFill = 0;
 
     int k;
     for (k = 0; k < numOfEmpty; k++) {
-        numOfPossibleValues = getPossibleValues(board, emptyCells[k], possibleValues);
+        numOfPossibleValues = getPossibleValues(game->user_matrix, emptyCells[k], possibleValues);
         if (numOfPossibleValues == 1) {
             board[emptyCells[k].i][emptyCells[k].j] = possibleValues[0];
-            numOfCellsToFill++;
         }
     }
 

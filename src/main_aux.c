@@ -36,7 +36,7 @@ void printError(Error err) {
             break;
         }
         case ECellIsNotEmpty: {
-            printf("Error: cell is not empty\n");
+            printf("Error: the cell already contains a value\n");
             break;
         }
         case EInvalidCommand: {
@@ -77,6 +77,10 @@ void printError(Error err) {
         }
         case EErroneousBoard: {
             printf("Error: Board is erroneous\n");
+            break;
+        }
+        case EFileSaveFailure: {
+            printf("Error: File save failed\n");
             break;
         }
         case EFileOpenFailure: {
@@ -170,6 +174,10 @@ void printPrompt(Prompt prompt, int num1) {
         }
         case PWrongSolution: {
             printf("The solution to the board is wrong:\n");
+            break;
+        }
+        case PFileSavedSuccess: {
+            printf("The file was saved successfully\n");
             break;
         }
         default: {

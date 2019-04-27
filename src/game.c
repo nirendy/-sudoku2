@@ -242,7 +242,7 @@ void performAutoFill(Game *game) {
 
     Board newBoard = createBoard();
     copyBoard(newBoard, game->user_matrix);
-    fillObviousValues(newBoard);
+    fillObviousValues(game , newBoard);
     clearListFromNode(g_curNode->next);
     setGlobalNodeNextToNull();
     updateHistoryList(game, newBoard); /*destroys newBoard*/
@@ -289,7 +289,7 @@ Bool checkLegalInput(Game *game, Input input) {
             /*     parameter range check    */
             if (!(input.value == 0 || input.value == 1)) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be a binary number - 0 or -1\n");
+                printf("parameter must be a binary number: 0 or 1\n");
                 return false;
             }
 
@@ -428,14 +428,14 @@ Bool checkLegalInput(Game *game, Input input) {
             /*First Parameter Check*/
             if (!(input.coordinate.i >= 0 && input.coordinate.i <= g_gameDim.N - 1)) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be an integer number between 0 and %d\n", g_gameDim.N - 1);
+                printf("parameter must be an integer number between 1 and %d\n", g_gameDim.N);
                 return false;
             }
 
             /*Second Parameter Check*/
             if (!(input.coordinate.j >= 0 && input.coordinate.j <= g_gameDim.N - 1)) {
                 printError(EInvalidSecondParam);
-                printf("parameter must be an integer number between 0 and %d\n", g_gameDim.N - 1);
+                printf("parameter must be an integer number between 1 and %d\n", g_gameDim.N);
                 return false;
             }
 
@@ -463,14 +463,14 @@ Bool checkLegalInput(Game *game, Input input) {
             /*First Parameter Check*/
             if (!(input.coordinate.i >= 0 && input.coordinate.i <= g_gameDim.N - 1)) {
                 printError(EInvalidFirstParam);
-                printf("parameter must be an integer number between 0 and %d\n", g_gameDim.N - 1);
+                printf("parameter must be an integer number between 1 and %d\n", g_gameDim.N);
                 return false;
             }
 
             /*Second Parameter Check*/
             if (!(input.coordinate.j >= 0 && input.coordinate.j <= g_gameDim.N - 1)) {
                 printError(EInvalidSecondParam);
-                printf("parameter must be an integer number between 0 and %d\n", g_gameDim.N - 1);
+                printf("parameter must be an integer number between 1 and %d\n", g_gameDim.N);
                 return false;
             }
 

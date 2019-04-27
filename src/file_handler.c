@@ -37,7 +37,7 @@ FinishCode saveGameToFile(char *filePath, Game *game) {
 
     file = fopen(filePath, "w");
     if (file == NULL) {
-        printError(EFileOpenFailure);
+        printError(EFileSaveFailure);
         return FC_INVALID_RECOVERABLE;
     }
     fprintf(file, "%d %d\n", g_gameDim.m, g_gameDim.n);
@@ -57,6 +57,8 @@ FinishCode saveGameToFile(char *filePath, Game *game) {
         printError(EFileCloseFailure);
         exit(-1);
     }
+
+    printPrompt(PFileSavedSuccess, 0);
     return FC_SUCCESS;
 }
 
@@ -154,7 +156,7 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
                 break;
             }
 
-            if (isDot(tav)) {
+            if (isDot(tav) && num != 0) {
                 game->fixed_matrix[i][j] = 1;
             }
 
@@ -167,7 +169,7 @@ FinishCode generateGameFromFile(char *filePath, Game *game) {
     }
 
     if (!isFailed && (i != g_gameDim.N || j != g_gameDim.N)) {
-        printFileError( "invalid text - not enough data");
+        printFileError("invalid text - not enough data");
         isFailed = true;
     }
 

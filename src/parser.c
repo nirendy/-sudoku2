@@ -294,12 +294,12 @@ int ClassifyCommand(char *token, Input *returnedInputP) {
 /*   public functions   */
 void printBoard(Game *game) {
     const char SPACE = ' ', PIPE = '|', ASTERISK = '*', DOT = '.', NEWLINE = '\n';
-    int len = 4 * g_gameDim.N + g_gameDim.m + 1;
+    const int sepRowLength = 4 * g_gameDim.N + g_gameDim.m + 1;
     int i = 0, j = 0, k = 0;
     int indexI = 0;
     int type;
 
-    printSepRow(len);
+    printSepRow(sepRowLength);
     for (i = 0; i < g_gameDim.n; i++) {
 
         for (j = 0; j < g_gameDim.m; j++) {
@@ -333,7 +333,7 @@ void printBoard(Game *game) {
             printf("%c", NEWLINE);
 
         }
-        printSepRow(len);
+        printSepRow(sepRowLength);
     }
 
 

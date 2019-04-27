@@ -55,6 +55,7 @@ typedef enum _error {
     ENullDataNode,
     EInsertionInMiddle,
     EErroneousBoard,
+    EFileSaveFailure,
     EFileOpenFailure,
     EFileCloseFailure,
     EFileScanFailure,
@@ -81,7 +82,8 @@ typedef enum _prompt {
     PNextCommand,
     PNumSolutionsOutput,
     PPerformedChanges,
-    PWrongSolution
+    PWrongSolution,
+    PFileSavedSuccess
 
 } Prompt;
 
