@@ -17,21 +17,30 @@
 
 /* LP-Solver module - responsible for LP nad ILP board solutions */
 
-/* Gurobi variables */
+/*
+ * Implementation details: there are module global variables of the GRenv and GRBmodel
+ * The module is not interactive, ie. it will not return any kind of data structure to have further interact with it
+ * That is why supporting only one model solving in a time (assuming only one GRBmodel) is allowed.
+ * */
+
+/* Gurobi module variables */
 
 GRBenv *env = NULL;
 GRBmodel *model = NULL;
 
 /* Typedefs */
 
+/* A structure represent a possible Xijk variable as presented in the Project instructions */
 typedef struct _PossibleVar {
-    char name[MAX_VAR_NAME_LEN];
-    int varIndex;
-    char type;
-    double coeff;
-    double prob;
-    Coordinate coordinate;
-    int value;
+    /* DATA */
+    char name[MAX_VAR_NAME_LEN]; /* the display name of the var*/
+    int value; /* the possible value out of 1-N that this Node represent */
+    int varIndex; /* the var index of the gurobi data structure */
+    char type; /* whether it is Binary or Continues */
+    double coeff; /* Coefficient of in Objective function */
+    double prob; /* gurobi resulting probability of the value */
+
+    /* Linked list implementation*/
     struct _PossibleVar *next;
 } PossibleVar;
 
@@ -74,32 +83,35 @@ void destroyGurobiEnv() {
     GRBfreeenv(env);
 }
 
+/* Sudoku solver logic */
 
+/* Utilities */
 int calculateCoordinateFlatIndex(Coordinate coor) {
+    /* convert a matrix index( tuple of 2 indexes) to a index of a flat array*/
     return (g_gameDim.N * coor.i) + coor.j;
 }
 
-PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coorV2var, Coordinate coor, int value) {
-    PossibleVar *posVar;
-    posVar = coorV2var[calculateCoordinateFlatIndex(coor)].first;
-    while (posVar != NULL) {
-        if (posVar->value == value) {
-            return posVar;
-        }
-        posVar = posVar->next;
-    }
-    return NULL;
+Coordinate coordinateOfTheJCellInTheIBlock(int i, int j) {
+    /* create the coordinate represents the J cell in the I block*/
+
+    int n = g_gameDim.n;
+    int m = g_gameDim.m;
+    return createCoordinate(
+            m * ((i * n) / (n * m)) + (j / n),
+            ((i * n) % (n * m)) + (j % n)
+    );
 }
 
+/* Supporting data structures Constructor / Destructor */
 PossibleVar *createPossibleVar(Coordinate coor, int value, Bool isBinary) {
     PossibleVar *newPosVar = (PossibleVar *) smartMalloc(sizeof(PossibleVar));
     sprintf(newPosVar->name, "X_%d_%d_%d", coor.i + 1, coor.j + 1, value);
+    newPosVar->value = value;
+
     newPosVar->varIndex = -1;
     newPosVar->type = isBinary ? GRB_BINARY : GRB_CONTINUOUS;
     newPosVar->coeff = isBinary ? 1.0 : randLimit(g_gameDim.N);
     newPosVar->prob = -1;
-    newPosVar->coordinate = coor;
-    newPosVar->value = value;
     newPosVar->next = NULL;
 
     return newPosVar;
@@ -165,8 +177,15 @@ void destroyCoorV2Var(PossibleVarSentinel *coorV2var) {
     int i;
     PossibleVar *cur, *temp;
 
-    for (i = 0; i < g_gameDim.cellsCount; ++i) {
+    if (coorV2var == NULL) {
+        return;
+    }
+
+    /* free possible values nodes*/
+    for (i = 0; i < g_gameDim.cellsCount; i++) {
         cur = coorV2var[i].first;
+
+        /* free all nodes from the beginning to the end, stops when NULL node received*/
         while (cur != NULL) {
             temp = cur;
             cur = cur->next;
@@ -175,6 +194,21 @@ void destroyCoorV2Var(PossibleVarSentinel *coorV2var) {
     }
 
     free(coorV2var);
+}
+
+
+/* GRB libray usage (using the above data structure)*/
+
+PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coorV2var, Coordinate coor, int value) {
+    PossibleVar *posVar;
+    posVar = coorV2var[calculateCoordinateFlatIndex(coor)].first;
+    while (posVar != NULL) {
+        if (posVar->value == value) {
+            return posVar;
+        }
+        posVar = posVar->next;
+    }
+    return NULL;
 }
 
 FinishCode addVarsToModel(PossibleVarSentinel *coorV2var) {
@@ -220,15 +254,6 @@ FinishCode addVarsToModel(PossibleVarSentinel *coorV2var) {
     }
 
     return FC_SUCCESS;
-}
-
-Coordinate coordinateOfTheJCellInTheIBlock(int i, int j) {
-    int n = g_gameDim.n;
-    int m = g_gameDim.m;
-    return createCoordinate(
-            m * ((i * n) / (n * m)) + (j / n),
-            ((i * n) % (n * m)) + (j % n)
-    );
 }
 
 FinishCode addConstrainsToModel(PossibleVarSentinel *coorV2var) {
