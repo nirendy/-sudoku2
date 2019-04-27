@@ -23,13 +23,16 @@ Bool isPossibleValue(Board board, Coordinate coordinate, int value);
 
 /* Board Functions*/
 
-Bool isFullUserBoard(Game *game);
+Bool isBoardFull(Board board);
 
 void clearBoard(Board board);
 
 void clearBoolBoard(BoolBoard board);
 
 Bool isBoardErroneous(Board board);
+
+Bool isBoardComplete(Board board);
+
 
 /* Error Matrix Functions*/
 
@@ -44,61 +47,6 @@ void updateWholeErrorMatrix(Game *game);
 /* Stack Node */
 
 int getNumOfPossibleSolutions(Board board);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #endif

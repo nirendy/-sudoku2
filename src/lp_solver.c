@@ -610,14 +610,27 @@ FinishCode guessFillBoard(Board board, double threshold) {
 /* Public Functions */
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard) {
-
     FinishCode finishCode;
-    initGurobiEnv();
+
     copyBoard(solutionBoard, board);
-    finishCode = fillBoard(solutionBoard);
+
+
+    finishCode = initGurobiEnv();
+    if (finishCode == FC_SUCCESS) {
+        finishCode = fillBoard(solutionBoard);
+    }
+
+    if (finishCode != FC_SUCCESS) {
+        printf("Could not fill board\n"); /*TODO: better print*/
+    }
+
     destroyGurobiEnv();
-    /* TODO: assert the board is full and correct*/
-    return finishCode == FC_SUCCESS;
+
+    if (finishCode == FC_SUCCESS && isBoardComplete(solutionBoard) == true) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void guessHint(Board board, Coordinate coordinate) {
@@ -652,6 +665,11 @@ Bool guessBoard(Board board, Board solutionBoard, double threshold) {
     }
 
     destroyGurobiEnv();
-    return finishCode == FC_SUCCESS;
+
+    if (finishCode == FC_SUCCESS && isBoardErroneous(solutionBoard) == false) {
+        return true;
+    } else {
+        return false;
+    }
 }
 

@@ -73,7 +73,7 @@ void performSet(Game *game, Input input) {
     updateRedoUndoInputsAfterSingleSet(game, input, &redoInput, &undoInput);
     insertInputsToList(&redoInput, &undoInput, 1);
     setCoordinate(game, input);
-    if (g_mode == Solve && isFullUserBoard(game)) {
+    if (g_mode == Solve && isBoardFull(game->user_matrix)) {
         if (!isGameErroneous(game)) {
             printPrompt(PSuccess, 0);
             g_mode = Init;

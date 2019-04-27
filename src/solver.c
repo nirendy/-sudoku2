@@ -164,7 +164,7 @@ Bool isPossibleValue(Board board, Coordinate coordinate, int value) {
 
 /* Board Functions*/
 
-Bool isFullUserBoard(Game *game) {
+Bool isBoardFull(Board board) {
     /* implemented by checks hat no empty cells exists
      * *** does not mean the board is correct ***
      * */
@@ -173,7 +173,7 @@ Bool isFullUserBoard(Game *game) {
     int emptyCellsCount;
 
     emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
-    emptyCellsCount = getEmptyCells(game->user_matrix, emptyCells);
+    emptyCellsCount = getEmptyCells(board, emptyCells);
     free(emptyCells);
 
     /* if 0 empty cells */
@@ -202,6 +202,7 @@ void clearBoolBoard(BoolBoard board) {
 
 Bool isBoardErroneous(Board board) {
     /* implemented by checking neighbours values of each cell */
+    /* notice that if it's in a part of the flow of the program, there is more efficient way to validate this */
 
     Bool returnValue = false;
     Coordinate *nonEmptyCells;
@@ -233,6 +234,11 @@ Bool isBoardErroneous(Board board) {
     free(coordinateNeighbours);
 
     return returnValue;
+}
+
+Bool isBoardComplete(Board board) {
+    /* checks if the board is full and valid */
+    return (isBoardFull(board) == true) && (isBoardErroneous(board) == false);
 }
 
 /* Error Matrix Functions*/
