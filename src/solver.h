@@ -4,36 +4,102 @@
 #include "game.h"
 #include "main_aux.h"
 
-/*
- * Solver module - responsible for board solving using the backtracking algorithm
- *
- * */
+/* Solver module - responsible for all the board solving logic -
+ * contains the exhaustive backtracking logic and all the board-solving aiding functions */
 
-int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues);
-
-FinishCode countPossibleSolutions(Board board);
-
-Bool isFullUserBoard(Game *game);
-
-void updateAfterSetErrorMatrix(Game *game, Input input);
-
-void updateAfterClearErrorMatrix(Game *game, Input input);
+/* Cell Functions*/
 
 int getEmptyCells(Board board, Coordinate *emptyCells);
 
 int getFilledCells(Board board, Coordinate *emptyCells);
 
-void updateWholeErrorMatrix(Game *game);
+Bool hasEmptyCellWithNoPossibleValues(Board board);
 
-void clearBoolBoard(BoolBoard board);
+/* Values Functions*/
+
+int getPossibleValues(Board board, Coordinate coordinate, int *possibleValues);
+
+Bool isPossibleValue(Board board, Coordinate coordinate, int value);
+
+/* Board Functions*/
+
+Bool isFullUserBoard(Game *game);
 
 void clearBoard(Board board);
 
-Bool hasEmptyCellWithNoPossibleValues(Board board);
+void clearBoolBoard(BoolBoard board);
 
 Bool isBoardErroneous(Board board);
 
-Bool isPossibleValue(Board board, Coordinate coordinate, int value);
+/* Error Matrix Functions*/
+
+void updateAfterClearErrorMatrix(Game *game, Input input);
+
+void updateAfterSetErrorMatrix(Game *game, Input input);
+
+void updateWholeErrorMatrix(Game *game);
+
+/* Count solutions */
+
+/* Stack Node */
+
+FinishCode countPossibleSolutions(Board board);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif
 

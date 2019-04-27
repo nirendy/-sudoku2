@@ -3,6 +3,8 @@
 
 #include "main_aux.h"
 
+/* LP-Solver module - responsible for LP nad ILP board solutions */
+
 Bool fillSolutionMatrix(Board board, Board solutionBoard);
 
 void guessHint(Board board, Coordinate coordinate);

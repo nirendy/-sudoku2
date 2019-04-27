@@ -3,7 +3,7 @@
 
 #include "main_aux.h"
 
-/*Game module - responsible for managing all the logic of the game*/
+/*Game module - responsible for managing the game flow and the commands' execution*/
 
 Bool askUserForNextTurn(Input *input);
 

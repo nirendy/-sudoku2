@@ -1,5 +1,9 @@
 #include "parser.h"
 
+/*Parser module - responsible for parsing user's command to the program as well as printing the board*/
+
+/*Local error prints related functions*/
+
 char *getModeStr() {
     switch (g_mode) {
         case Edit:
@@ -149,6 +153,9 @@ void printParamError(Command command, int numOfVars) {
     printf("The command <%s> demands exactly %d parameters\n", getCommandStr(command), numOfVars);
 }
 
+
+/*Local board print related functions*/
+
 int getType(Game *game, int i, int j) {
     if (game->fixed_matrix[i][j] == 1) { return 1; }
     if (game->error_matrix[i][j] == 1 && (g_markError == 1 || g_mode == Edit)) { return 2; }
@@ -163,54 +170,52 @@ void printSepRow(int len) {
     printf("\n");
 }
 
-void printBoard(Game *game) {
-    const char SPACE = ' ', PIPE = '|', ASTERISK = '*', DOT = '.', NEWLINE = '\n';
-    int len = 4 * g_gameDim.N + g_gameDim.m + 1;
-    int i = 0, j = 0, k = 0;
-    int indexI = 0;
-    int type;
+/*Local command parser related functions*/
 
-    printSepRow(len);
-    for (i = 0; i < g_gameDim.n; i++) {
-
-        for (j = 0; j < g_gameDim.m; j++) {
-
-            for (k = 0; k < g_gameDim.N; k++) {
-
-                if (k % g_gameDim.n == 0) {
-                    printf("%c", PIPE);
-                }
-
-                printf("%c", SPACE);
-                game->user_matrix[indexI][k] != 0 ? printf("%2d", game->user_matrix[indexI][k]) : printf("  ");
-                type = getType(game, indexI, k);
-                switch (type) {
-                    case 0:
-                        printf("%c", SPACE);
-                        break;
-                    case 1:
-                        printf("%c", DOT);
-                        break;
-                    case 2:
-                        printf("%c", ASTERISK);
-                        break;
-                    default:
-                        printf("Unreachable Code Error");
-                }
-
-            }
-            indexI++;
-            printf("%c", PIPE);
-            printf("%c", NEWLINE);
-
-        }
-        printSepRow(len);
+int getNum(char *str) {
+    int i, n = (int) strlen(str);
+    int digit, res = 0;
+    for (i = 0; i < n; i++) {
+        digit = str[i] - '0';
+        if (!(digit >= 0 && digit <= 9)) { return INVALID_VALUE; }
+        res = res * 10 + digit;
     }
 
-
+    return res;
 }
 
-/* Categorize token to commands */
+float getFloat(char *str) {
+    int i, n = (int) strlen(str), numOfDots = 0;
+    float val = (float) atof(str);
+    if (val == 0.0) {
+        for (i = 0; i < n; i++) {
+            if (str[i] != '0' && str[i] != '.') {
+                return INVALID_THRESHOLD;
+            }
+            if (str[i] == '.') {
+                numOfDots++;
+            }
+        }
+        if (numOfDots > 1) { return INVALID_THRESHOLD; }
+    }
+    return val;
+}
+
+void fillPath(Input *returnedInput, char *path) {
+    strcpy(returnedInput->path, path);
+}
+
+void initInput(Input *returnedInput) {
+    returnedInput->command = COMMAND_INVALID;
+    returnedInput->coordinate.i = INVALID_VALUE;
+    returnedInput->coordinate.j = INVALID_VALUE;
+    returnedInput->value = INVALID_VALUE;
+    returnedInput->gen1 = INVALID_VALUE;
+    returnedInput->gen2 = INVALID_VALUE;
+    returnedInput->threshold = INVALID_THRESHOLD;
+    returnedInput->path[0] = '\0';
+}
+
 int ClassifyCommand(char *token, Input *returnedInputP) {
     int numOfCommandParams = -1;
 
@@ -286,48 +291,52 @@ int ClassifyCommand(char *token, Input *returnedInputP) {
     return numOfCommandParams;
 }
 
-void initInput(Input *returnedInput) {
-    returnedInput->command = COMMAND_INVALID;
-    returnedInput->coordinate.i = INVALID_VALUE;
-    returnedInput->coordinate.j = INVALID_VALUE;
-    returnedInput->value = INVALID_VALUE;
-    returnedInput->gen1 = INVALID_VALUE;
-    returnedInput->gen2 = INVALID_VALUE;
-    returnedInput->threshold = INVALID_THRESHOLD;
-    returnedInput->path[0] = '\0';
-}
+/*   public functions   */
+void printBoard(Game *game) {
+    const char SPACE = ' ', PIPE = '|', ASTERISK = '*', DOT = '.', NEWLINE = '\n';
+    int len = 4 * g_gameDim.N + g_gameDim.m + 1;
+    int i = 0, j = 0, k = 0;
+    int indexI = 0;
+    int type;
 
-void fillPath(Input *returnedInput, char *path) {
-    strcpy(returnedInput->path, path);
-}
+    printSepRow(len);
+    for (i = 0; i < g_gameDim.n; i++) {
 
-int getNum(char *str) {
-    int i, n = (int) strlen(str);
-    int digit, res = 0;
-    for (i = 0; i < n; i++) {
-        digit = str[i] - '0';
-        if (!(digit >= 0 && digit <= 9)) { return INVALID_VALUE; }
-        res = res * 10 + digit;
-    }
+        for (j = 0; j < g_gameDim.m; j++) {
 
-    return res;
-}
+            for (k = 0; k < g_gameDim.N; k++) {
 
-float getFloat(char *str) {
-    int i, n = (int) strlen(str), numOfDots = 0;
-    float val = (float) atof(str);
-    if (val == 0.0) {
-        for (i = 0; i < n; i++) {
-            if (str[i] != '0' && str[i] != '.') {
-                return INVALID_THRESHOLD;
+                if (k % g_gameDim.n == 0) {
+                    printf("%c", PIPE);
+                }
+
+                printf("%c", SPACE);
+                game->user_matrix[indexI][k] != 0 ? printf("%2d", game->user_matrix[indexI][k]) : printf("  ");
+                type = getType(game, indexI, k);
+                switch (type) {
+                    case 0:
+                        printf("%c", SPACE);
+                        break;
+                    case 1:
+                        printf("%c", DOT);
+                        break;
+                    case 2:
+                        printf("%c", ASTERISK);
+                        break;
+                    default:
+                        printf("Unreachable Code Error");
+                }
+
             }
-            if (str[i] == '.') {
-                numOfDots++;
-            }
+            indexI++;
+            printf("%c", PIPE);
+            printf("%c", NEWLINE);
+
         }
-        if (numOfDots > 1) { return INVALID_THRESHOLD; }
+        printSepRow(len);
     }
-    return val;
+
+
 }
 
 FinishCode parseCommand(Input *returnedInput) {

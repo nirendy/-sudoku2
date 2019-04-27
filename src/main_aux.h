@@ -11,8 +11,7 @@
 #define MAX_INPUT_STR_LEN 256
 
 
-/*Main auxiliary module - responsible for providing and aiding
- * the other modules with the required data */
+/*Main auxiliary module - responsible for general static functions */
 
 /* Typedefs */
 

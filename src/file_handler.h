@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "main_aux.h"
 
-/*File handling module - responsible for dealing with reading|writing data from files  */
+/*File handling module - responsible for dealing with saving|loading files  */
 
 FinishCode saveGameToFile(char *filePath, Game *game);
 

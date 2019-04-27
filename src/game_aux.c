@@ -1,13 +1,32 @@
 #include "game_aux.h"
 
-/* TODO: module explanation */
-/* TODO: copy classify from h*/
 
+/*Game Auxiliary module - responsible for aiding the game module with specific game-related functions*/
 
-void printChange(int i, int j, int value) {
-    printf("The value of the cell <%d,%d> set back to %d\n", i + 1, j + 1, value);
+/* Legal Checks related */
+Bool isGameErroneous(Game *game) {
+    int i, j;
+    for (i = 0; i < g_gameDim.N; ++i) {
+        for (j = 0; j < g_gameDim.N; ++j) {
+            if (game->error_matrix[i][j] == 1) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
+
+/* Perform Commands Related*/
+
+/* Edit related*/
+void clearGame(Game *game) {
+    clearBoard(game->user_matrix);
+    clearBoolBoard(game->fixed_matrix);
+    clearBoolBoard(game->error_matrix);
+}
+
+/* Set related*/
 void setCoordinate(Game *game, Input input) {
     game->user_matrix[input.coordinate.i][input.coordinate.j] = 0;
     updateAfterClearErrorMatrix(game, input);
@@ -17,26 +36,14 @@ void setCoordinate(Game *game, Input input) {
     }
 }
 
-void updateRedoUndoInputsAfterSingleSet(Game *game, Input in, Input *redo, Input *undo) {
-
-    redo->coordinate = in.coordinate;
-    undo->coordinate = in.coordinate;
-
-    redo->value = in.value;
-    undo->value = game->user_matrix[in.coordinate.i][in.coordinate.j]; /*only good for a single set*/
-
+/* Undo, Redo related */
+void printChange(int i, int j, int value) {
+    printf("The value of the cell <%d,%d> set back to %d\n", i + 1, j + 1, value);
 }
 
-void insertInputsToList(Input *redoInputs, Input *undoInputs, int numOfInputs) {
-    int k;
+/*   Link list History related   */
 
-    g_curNode = insertAfterNode(g_curNode);
-    for (k = 0; k < numOfInputs; k++) {
-        g_curNode->currDataNode = insertAfterDataNode(g_curNode->currDataNode, redoInputs[k], undoInputs[k]);
-    }
-
-}
-
+/*      local functions       */
 void chooseRandCords(Coordinate *source, int sourceSize, Coordinate *target, int targetSize) {
     int i, r, limit;
     int *randIndexes = (int *) smartMalloc(sourceSize * sizeof(int));
@@ -51,6 +58,13 @@ void chooseRandCords(Coordinate *source, int sourceSize, Coordinate *target, int
     }
 
     free(randIndexes);
+}
+
+void performSetsFromRedoList(Game *game, Input *sets, int len) {
+    int k;
+    for (k = 0; k < len; k++) {
+        setCoordinate(game, sets[k]);
+    }
 }
 
 int diffToRedoUndoLists(Board original, Board final, Input *redoList, Input *undoList) {
@@ -85,11 +99,26 @@ int numOfDiffs(Board original, Board final) {
     return diffs;
 }
 
-void performSetsFromRedoList(Game *game, Input *sets, int len) {
+/*      public functions       */
+
+void updateRedoUndoInputsAfterSingleSet(Game *game, Input in, Input *redo, Input *undo) {
+
+    redo->coordinate = in.coordinate;
+    undo->coordinate = in.coordinate;
+
+    redo->value = in.value;
+    undo->value = game->user_matrix[in.coordinate.i][in.coordinate.j]; /*only good for a single set*/
+
+}
+
+void insertInputsToList(Input *redoInputs, Input *undoInputs, int numOfInputs) {
     int k;
-    for (k = 0; k < len; k++) {
-        setCoordinate(game, sets[k]);
+
+    g_curNode = insertAfterNode(g_curNode);
+    for (k = 0; k < numOfInputs; k++) {
+        g_curNode->currDataNode = insertAfterDataNode(g_curNode->currDataNode, redoInputs[k], undoInputs[k]);
     }
+
 }
 
 void updateHistoryList(Game *game, Board final) {
@@ -116,6 +145,25 @@ void updateHistoryList(Game *game, Board final) {
     free(undoInputs);
 }
 
+/* Validate related */
+Bool isSolvableBoard(Board board) {
+    Bool isValid;
+    Board solutionBoard = createBoard();
+    isValid = fillSolutionMatrix(board, solutionBoard);
+    destroyBoard(solutionBoard, g_gameDim);
+    return isValid;
+}
+
+/* Generate related */
+int chooseCellsToFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
+
+    Coordinate *emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
+    int numOfEmpty = getEmptyCells(board, emptyCells);
+    chooseRandCords(emptyCells, numOfEmpty, cellsToFill, sizeToFill);
+    free(emptyCells);
+    return numOfEmpty;
+}
+
 Bool fillXRandomCells(Board board, Coordinate *cellsToFill, int numToFill) {
 
     int k, numOfPossibleValues;
@@ -129,24 +177,6 @@ Bool fillXRandomCells(Board board, Coordinate *cellsToFill, int numToFill) {
     return true;
 }
 
-void clearRandomCells(Board board, Coordinate *cellsToClear, int numToClear) {
-
-    int k;
-    for (k = 0; k < numToClear; k++) {
-        board[cellsToClear[k].i][cellsToClear[k].j] = 0;
-    }
-
-}
-
-int chooseCellsToFill(Board board, Coordinate *cellsToFill, int sizeToFill) {
-
-    Coordinate *emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
-    int numOfEmpty = getEmptyCells(board, emptyCells);
-    chooseRandCords(emptyCells, numOfEmpty, cellsToFill, sizeToFill);
-    free(emptyCells);
-    return numOfEmpty;
-}
-
 void chooseCellsToClear(Board board, Coordinate *cellsToClear, int numToClear) {
 
     Coordinate *filledCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
@@ -156,6 +186,16 @@ void chooseCellsToClear(Board board, Coordinate *cellsToClear, int numToClear) {
     free(filledCells);
 }
 
+void clearRandomCells(Board board, Coordinate *cellsToClear, int numToClear) {
+
+    int k;
+    for (k = 0; k < numToClear; k++) {
+        board[cellsToClear[k].i][cellsToClear[k].j] = 0;
+    }
+
+}
+
+/* Autofill related */
 void fillObviousValues(Board board) {
 
     Coordinate *emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
@@ -178,28 +218,61 @@ void fillObviousValues(Board board) {
     free(possibleValues);
 }
 
-Bool isGameErroneous(Game *game) {
-    int i, j;
-    for (i = 0; i < g_gameDim.N; ++i) {
-        for (j = 0; j < g_gameDim.N; ++j) {
-            if (game->error_matrix[i][j] == 1) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
 
-Bool isSolvableBoard(Board board) {
-    Bool isValid;
-    Board solutionBoard = createBoard();
-    isValid = fillSolutionMatrix(board, solutionBoard);
-    destroyBoard(solutionBoard, g_gameDim);
-    return isValid;
-}
 
-void clearGame(Game *game) {
-    clearBoard(game->user_matrix);
-    clearBoolBoard(game->fixed_matrix);
-    clearBoolBoard(game->error_matrix);
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

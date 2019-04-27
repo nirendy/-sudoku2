@@ -7,6 +7,9 @@
 #include "linked_list.h"
 #include "stdio.h"
 
+
+/*Game Auxiliary module - responsible for aiding the game module with specific game-related functions*/
+
 /* Legal Checks related */
 Bool isGameErroneous(Game *game);
 
@@ -19,9 +22,9 @@ void clearGame(Game *game);
 void setCoordinate(Game *game, Input input);
 
 /* Undo, Redo related */
-void printChange(int i, int j, int value);/* Undo, Redo related */
+void printChange(int i, int j, int value);
 
-/* Link list History related */
+/*      Link list History related       */
 void updateRedoUndoInputsAfterSingleSet(Game *game, Input in, Input *redo, Input *undo);
 
 void insertInputsToList(Input *redoInputs, Input *undoInputs, int numOfInputs);

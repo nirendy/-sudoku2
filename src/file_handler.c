@@ -1,5 +1,8 @@
 #include "file_handler.h"
 
+/*File handling module - responsible for dealing with saving|loading files  */
+
+/* Local functions */
 
 int isWhiteSpace(char tav) {
     return (tav == ' ' || tav == '\t' || tav == '\r' || tav == '\n');
@@ -25,6 +28,8 @@ void printFileError(char *string) {
     printError(EInvalidFile);
     printf("reason: %s\n", string);
 }
+
+/* Public functions - used for saving and loading games from files */
 
 FinishCode saveGameToFile(char *filePath, Game *game) {
     FILE *file;

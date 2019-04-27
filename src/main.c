@@ -252,6 +252,8 @@ void mock(int mockI, Game **gameP) {
     }
 }
 
+/* Main Module */
+
 int main() {
     Input input;
     Game *game;
