@@ -51,14 +51,17 @@ typedef struct _PossibleVarSentinel {
 
 /* Environment Constructor / Destructor */
 
-FinishCode initGurobiEnv() {
+Bool initGurobiEnv() {
     int error;
+
+    /* so if it fails it can be always destroyed without pointing old address*/
+    env = NULL;
+    model = NULL;
 
     error = GRBloadenv(&env, GUR_LOG_FILE);
     if (error) {
         printf("ERROR %d GRBloadenv(): %s\n", error, GRBgeterrormsg(env));
-        /*TODO: is recoverable?*/
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
     error = GRBsetintparam(env, GRB_INT_PAR_LOGTOCONSOLE, 0);
@@ -70,12 +73,10 @@ FinishCode initGurobiEnv() {
     error = GRBnewmodel(env, &model, GUR_NAME, 0, NULL, NULL, NULL, NULL, NULL);
     if (error) {
         printf("ERROR %d GRBnewmodel(): %s\n", error, GRBgeterrormsg(env));
-        /*TODO: is recoverable?*/
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
-
-    return FC_SUCCESS;
+    return true;
 }
 
 void destroyGurobiEnv() {
@@ -129,6 +130,7 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
 
     /* Check the board isn't erroneous and all cells has at least one available option*/
     if (hasEmptyCellWithNoPossibleValues(board) == true || isBoardErroneous(board) == true) {
+        /* TODO: should print something?*/
         return NULL;
     }
 
@@ -200,11 +202,13 @@ void destroyCoor2Var(PossibleVarSentinel *coor2Var) {
     free(coor2Var);
 }
 
-/* GRB libray usage (using the above data structure)*/
+/* Data structure static methods */
 
 PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coor2Var, Coordinate coor, int value) {
     PossibleVar *posVar;
     posVar = coor2Var[calculateCoordinateFlatIndex(coor)].first;
+
+    /* search the value in all possible options of the coordinate */
     while (posVar != NULL) {
         if (posVar->value == value) {
             return posVar;
@@ -214,25 +218,28 @@ PossibleVar *getPossibleVarFromCoor2Var(PossibleVarSentinel *coor2Var, Coordinat
     return NULL;
 }
 
-FinishCode addVarsToModel(PossibleVarSentinel *coor2Var) {
+/* GRB libray usage (using the above data structure)*/
+
+Bool addVarsToModel(PossibleVarSentinel *coor2Var) {
     int error;
     int i;
     int numOfVarsCreated = 0;
     PossibleVar *curPosVar;
-
 
     for (i = 0; i < g_gameDim.cellsCount; i++) {
         /*create var for each possible values and cell*/
         if (coor2Var[i].length > 0) {
             curPosVar = coor2Var[i].first;
             while (curPosVar != NULL) {
+
+                /* associate gurubi refrence to the Ndde*/
                 curPosVar->varIndex = numOfVarsCreated;
 
                 /* add variables to model */
                 error = GRBaddvar(model, 0, NULL, NULL, curPosVar->coeff, 0.0, 1.0, curPosVar->type, curPosVar->name);
                 if (error) {
                     printf("ERROR %d GRBaddvars(): %s\n", error, GRBgeterrormsg(env));
-                    return FC_INVALID_RECOVERABLE;
+                    return false;
                 }
 
                 numOfVarsCreated++;
@@ -249,24 +256,22 @@ FinishCode addVarsToModel(PossibleVarSentinel *coor2Var) {
     }
 
     /* update the model - to integrate new variables */
-
     error = GRBupdatemodel(model);
     if (error) {
         printf("ERROR %d GRBupdatemodel(): %s\n", error, GRBgeterrormsg(env));
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
-    return FC_SUCCESS;
+    return true;
 }
 
-FinishCode addConstrainsToModel(PossibleVarSentinel *coor2Var) {
+Bool addConstrainsToModel(PossibleVarSentinel *coor2Var) {
     int i, j, k;
     int error;
     int *constInd;
     double *constVals;
-    int www;
-
-    /*create equation for every value in every row, column and block*/
+    int neighbourType; /* 0: row, 1: column, 2: block*/
+    Bool noErrors = true;
 
     constInd = (int *) smartMalloc(g_gameDim.N * sizeof(int));
     constVals = (double *) smartMalloc(g_gameDim.N * sizeof(double));
@@ -276,7 +281,6 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coor2Var) {
     }
 
     /* cells constraint*/
-
     for (i = 0; i < g_gameDim.N; i++) {
         for (j = 0; j < g_gameDim.N; j++) {
             int relvantVarsCount = 0;
@@ -299,31 +303,38 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coor2Var) {
                 error = GRBaddconstr(model, relvantVarsCount, constInd, constVals, GRB_EQUAL, 1.0, constName);
                 if (error) {
                     printf("ERROR %d GRBaddconstr(%s): %s\n", error, constName, GRBgeterrormsg(env));
-                    /*return FC_INVALID_RECOVERABLE;*/ /*TODO: add this?*/
-                } else {
-                    /*printf("GRBaddconstr(%s)\n", constName);*/  /*TODO: delete*/
+                    noErrors = false;
+                    break;
                 }
             }
         }
+        if (noErrors == false) {
+            break;
+        }
     }
 
-    /* TODO: find better name*/
-    for (www = 0; www <= 2; www++) {
-        char wwwName[10];
-        switch (www) {
+    /*create equation for every value in every row, column and block*/
+    for (neighbourType = 0; neighbourType <= 2; neighbourType++) {
+        char neighbourTypeName[10];
+
+        if (noErrors == false) {
+            break;
+        }
+
+        switch (neighbourType) {
             case 0: {
                 /* rows */
-                sprintf(wwwName, "%s", "row");
+                sprintf(neighbourTypeName, "%s", "row");
                 break;
             }
             case 1: {
                 /* columns */
-                sprintf(wwwName, "%s", "column");
+                sprintf(neighbourTypeName, "%s", "column");
                 break;
             }
             case 2: {
                 /* blocks */
-                sprintf(wwwName, "%s", "block");
+                sprintf(neighbourTypeName, "%s", "block");
                 break;
             }
             default: {
@@ -334,14 +345,13 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coor2Var) {
 
         for (k = 1; k <= g_gameDim.N; k++) {
             for (i = 0; i < g_gameDim.N; i++) {
-                Bool hadObviousCell = false;
                 int relvantVarsCount = 0;
                 char constName[MAX_CONST_NAME_LEN];
 
                 for (j = 0; j < g_gameDim.N; j++) {
                     PossibleVar *posVar;
 
-                    switch (www) {
+                    switch (neighbourType) {
                         case 0: {
                             /* rows */
                             posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
@@ -364,10 +374,6 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coor2Var) {
                     }
 
                     if (posVar != NULL) {
-                        if (posVar->prob == 1) {
-                            hadObviousCell = true;
-                            break;
-                        }
                         if (posVar->varIndex >= 0) {
                             constInd[relvantVarsCount] = posVar->varIndex;
                             relvantVarsCount++;
@@ -375,37 +381,35 @@ FinishCode addConstrainsToModel(PossibleVarSentinel *coor2Var) {
                     }
 
                 }
-                if (hadObviousCell == true) {
-                    continue;
-                }
 
-                if (relvantVarsCount > 1) {
-                    sprintf(constName, "%s #%d with value of %d", wwwName, i + 1, k);
+                if (relvantVarsCount > 0) {
+                    sprintf(constName, "%s #%d with value of %d", neighbourTypeName, i + 1, k);
 
                     /* add constraint to model*/
                     error = GRBaddconstr(model, relvantVarsCount, constInd, constVals, GRB_EQUAL, 1.0, constName);
                     if (error) {
                         printf("ERROR %d GRBaddconstr(%s): %s\n", error, constName, GRBgeterrormsg(env));
-                        for (j = 0; j < relvantVarsCount; j++) { printf("%d,", constInd[j]); }
-                        printf("\n");
-                        /*return FC_INVALID_RECOVERABLE;*/ /*TODO: add this?*/
-                    } else {
-                        /*printf("GRBaddconstr(%s):\n", constName);*/ /*TODO: delete*/
+                        noErrors = false;
+                        break;
                     }
-
                 }
-
             }
+            if (noErrors == false) {
+                break;
+            }
+        }
+        if (noErrors == false) {
+            break;
         }
     }
 
     free(constInd);
     free(constVals);
 
-    return FC_SUCCESS;
+    return noErrors;
 }
 
-FinishCode optimizeModel() {
+Bool optimizeModel() {
     int error;
     int optimstatus;
 
@@ -413,263 +417,262 @@ FinishCode optimizeModel() {
     error = GRBoptimize(model);
     if (error) {
         printf("ERROR %d GRBoptimize(): %s\n", error, GRBgeterrormsg(env));
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
     /* Write model to 'mip1.lp' - this is not necessary but very helpful */
     error = GRBwrite(model, GUR_LOG_FILE2);
     if (error) {
         printf("ERROR %d GRBwrite(): %s\n", error, GRBgeterrormsg(env));
-        return FC_INVALID_RECOVERABLE;
+        /* TODO: remove print?*/
     }
 
+    /* get objective value*/
     error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &optimstatus);
     if (error) {
         printf("ERROR %d GRBgetintattr(): %s\n", error, GRBgeterrormsg(env));
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
     if (optimstatus == GRB_OPTIMAL) { /* solution found */
-        /*printf("Solution found\n"); */ /*TODO: should print something?*/
-        return FC_SUCCESS;
+        return true;
     } else if (optimstatus == GRB_INF_OR_UNBD ||
                optimstatus == GRB_INFEASIBLE ||
                optimstatus == GRB_UNBOUNDED) { /* no solution found */
         /*printf("Model is infeasible or unbounded\n");*/ /*TODO: should print something?*/
-        return FC_SUCCESS_NOT_SOLVABLE;
+        return false;
     } else { /* error or calculation stopped */
         printf("Optimization was stopped early, status: %d\n", optimstatus);
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 }
 
-FinishCode fillModel(PossibleVarSentinel *coor2Var) {
-    FinishCode finishCode;
+Bool fillModel(PossibleVarSentinel *coor2Var) {
 
-    finishCode = addVarsToModel(coor2Var);
-    if (finishCode != FC_SUCCESS) {
-        return finishCode;
+    if (addVarsToModel(coor2Var) == false) {
+        return false;
     }
 
-    finishCode = addConstrainsToModel(coor2Var);
-    if (finishCode != FC_SUCCESS) {
-        return finishCode;
+    if (addConstrainsToModel(coor2Var) == false) {
+        return false;
     }
-
 
     return (optimizeModel());
 }
 
-FinishCode fillBoard(Board board) {
+Bool fillBoard(Board board) {
     int error;
-    FinishCode finishCode;
     PossibleVarSentinel *coor2Var; /* for the possibleVars[] */
     int i, j, k;
+    Bool noErrors;
 
     coor2Var = createCoor2Var(board, true);
     if (coor2Var == NULL) {
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
-    finishCode = fillModel(coor2Var);
-    if (finishCode != FC_SUCCESS) {
-        return finishCode;
-    }
+    noErrors = fillModel(coor2Var);
 
-    /*get solutions*/
-    for (i = 0; i < g_gameDim.N; i++) {
-        for (j = 0; j < g_gameDim.N; j++) {
-            for (k = 1; k <= g_gameDim.N; k++) {
-                PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
-                if (posVar != NULL) {
-                    if (posVar->varIndex >= 0) {
-                        error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
+    if (noErrors == true) {
+        /*get solutions*/
+        for (i = 0; i < g_gameDim.N; i++) {
+            for (j = 0; j < g_gameDim.N; j++) {
+                for (k = 1; k <= g_gameDim.N; k++) {
+                    PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
+                    if (posVar != NULL) {
+                        if (posVar->varIndex >= 0) {
+                            error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
 
-                        if (error) {
-                            printf("ERROR %d GRBgetdblattrelement(%s): %s\n", error, posVar->name, GRBgeterrormsg(env));
-                            /*return FC_INVALID_RECOVERABLE;*/ /*TODO: add this?*/
-                        } else {
-                            /*printf("GRBgetdblattrelement(%s)\n", posVar->name);*/  /*TODO: delete*/
+                            if (error) {
+                                printf("ERROR %d GRBgetdblattrelement(%s): %s\n", error, posVar->name,
+                                       GRBgeterrormsg(env));
+                                noErrors = false;
+                                break;
+                            }
+                        }
+
+                        if (posVar->prob == 1) {
+                            board[i][j] = k;
                         }
                     }
-
-                    if (posVar->prob == 1) {
-                        board[i][j] = k;
-                    }
                 }
+                if (noErrors == false) {
+                    break;
+                }
+            }
+            if (noErrors == false) {
+                break;
             }
         }
     }
 
     destroyCoor2Var(coor2Var);
 
-    return FC_SUCCESS;
+    return noErrors;
 }
 
-FinishCode guessFillBoardAndGuessHint(Board board, Coordinate coor) {
+Bool guessFillBoardAndGuessHint(Board board, Coordinate coor) {
     int error;
-    FinishCode finishCode;
     PossibleVarSentinel *coor2Var; /* for the possibleVars[] */
     int k;
+    Bool noErrors;
 
     coor2Var = createCoor2Var(board, false);
     if (coor2Var == NULL) {
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
-    finishCode = fillModel(coor2Var);
-    if (finishCode != FC_SUCCESS) {
-        return finishCode;
-    }
+    noErrors = fillModel(coor2Var);
 
-    for (k = 1; k <= g_gameDim.N; k++) {
-        PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, coor, k);
-        if (posVar != NULL) {
-            if (posVar->varIndex >= 0) {
-                error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
-
-                if (error) {
-                    printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
-                    return FC_INVALID_RECOVERABLE;
+    if (noErrors == true) {
+        for (k = 1; k <= g_gameDim.N; k++) {
+            PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, coor, k);
+            if (posVar != NULL) {
+                if (posVar->varIndex >= 0) {
+                    error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
+                    if (error) {
+                        printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
+                        noErrors = false;
+                        break;
+                    }
                 }
-            }
 
-            if (posVar->prob > 0) {
-                printf("%d -> %f\n", k, posVar->prob);
+                if (posVar->prob > 0) {
+                    printf("%d -> %f\n", k, posVar->prob);
+                }
             }
         }
     }
-
     destroyCoor2Var(coor2Var);
 
-    return FC_SUCCESS;
+    return noErrors;
 }
 
-FinishCode guessFillBoard(Board board, double threshold) {
+Bool guessFillBoard(Board board, double threshold) {
     int error;
-    FinishCode finishCode;
     PossibleVarSentinel *coor2Var; /* for the possibleVars[] */
     int i, j, k;
     int *valsOptions;
     int bestOptionsCount;
     double bestOptionVal;
+    Bool noErrors;
 
     coor2Var = createCoor2Var(board, false);
     if (coor2Var == NULL) {
-        return FC_INVALID_RECOVERABLE;
+        return false;
     }
 
-    finishCode = fillModel(coor2Var);
-    if (finishCode != FC_SUCCESS) {
-        return finishCode;
-    }
+    noErrors = fillModel(coor2Var);
+    if (noErrors == true) {
+        valsOptions = (int *) smartMalloc(g_gameDim.N * sizeof(int));
 
-    valsOptions = (int *) smartMalloc(g_gameDim.N * sizeof(int));
+        for (i = 0; i < g_gameDim.N; i++) {
+            for (j = 0; j < g_gameDim.N; j++) {
+                bestOptionsCount = 0;
+                bestOptionVal = 0;
 
-    for (i = 0; i < g_gameDim.N; i++) {
-        for (j = 0; j < g_gameDim.N; j++) {
-            bestOptionsCount = 0;
-            bestOptionVal = 0;
+                for (k = 1; k <= g_gameDim.N; k++) {
+                    PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
+                    if (posVar != NULL) {
+                        if (posVar->varIndex >= 0) {
+                            error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
 
-            for (k = 1; k <= g_gameDim.N; k++) {
-                PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
-                if (posVar != NULL) {
-                    if (posVar->varIndex >= 0) {
-                        error = GRBgetdblattrelement(model, GRB_DBL_ATTR_X, posVar->varIndex, &posVar->prob);
-
-                        if (error) {
-                            printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
-                            return FC_INVALID_RECOVERABLE;
-                        }
-                    }
-
-                    if (posVar->prob >= bestOptionVal && isPossibleValue(board, createCoordinate(i, j), k)) {
-                        if (posVar->prob > bestOptionVal) {
-                            bestOptionVal = posVar->prob;
-                            bestOptionsCount = 0;
+                            if (error) {
+                                printf("ERROR %d GRBgetdblattrelement(): %s\n", error, GRBgeterrormsg(env));
+                                noErrors = false;
+                                break;
+                            }
                         }
 
-                        valsOptions[bestOptionsCount] = k;
-                        bestOptionsCount++;
+                        /* if this prob is the highest seen
+                         * AND
+                         * if this value is possible value for the updated board */
+                        if (posVar->prob >= bestOptionVal && isPossibleValue(board, createCoordinate(i, j), k)) {
+
+                            /* if this prob is higher the the highest seen*/
+                            if (posVar->prob > bestOptionVal) {
+                                bestOptionVal = posVar->prob;
+                                bestOptionsCount = 0;
+                            }
+
+                            /* save this value as an option to choose*/
+                            valsOptions[bestOptionsCount] = k;
+                            bestOptionsCount++;
+                        }
                     }
                 }
+                if (noErrors == false) {
+                    break;
+                }
+
+                /* if at least one value of the highest prob has prob is above threshold */
+                if (bestOptionsCount > 0 && bestOptionVal >= threshold) { /* TODO: test with thres=0 */
+                    board[i][j] = valsOptions[randLimit(bestOptionsCount)];
+                }
             }
-            if (bestOptionVal >= threshold) { /* TODO: test with thres=0 */
-                board[i][j] = valsOptions[randLimit(bestOptionsCount)];
+            if (noErrors == false) {
+                break;
             }
         }
+        free(valsOptions);
     }
 
-
-    free(valsOptions);
     destroyCoor2Var(coor2Var);
 
-    return FC_SUCCESS;
+    return noErrors;
 }
 
 /* Public Functions */
 
 Bool fillSolutionMatrix(Board board, Board solutionBoard) {
-    FinishCode finishCode;
-
+    Bool isSuccess;
     copyBoard(solutionBoard, board);
 
 
-    finishCode = initGurobiEnv();
-    if (finishCode == FC_SUCCESS) {
-        finishCode = fillBoard(solutionBoard);
-    }
-
-    if (finishCode != FC_SUCCESS) {
-        printf("Could not fill board\n"); /*TODO: better print*/
-    }
+    isSuccess = (initGurobiEnv() == true) &&
+                (fillBoard(solutionBoard) == true) &&
+                isBoardComplete(solutionBoard) == true;
 
     destroyGurobiEnv();
-
-    if (finishCode == FC_SUCCESS && isBoardComplete(solutionBoard) == true) {
-        return true;
-    } else {
-        return false;
+    if (isSuccess == false) {
+        printf("Could not fill board\n"); /*TODO: better print*/
     }
+    return isSuccess;
 }
 
 void guessHint(Board board, Coordinate coordinate) {
-    FinishCode finishCode;
+    Bool isSuccess;
     Board tempBoard = createBoard();
     copyBoard(tempBoard, board);
 
-    finishCode = initGurobiEnv();
-    if (finishCode == FC_SUCCESS) {
-        finishCode = guessFillBoardAndGuessHint(tempBoard, coordinate);
-    }
+    copyBoard(tempBoard, board);
 
-    if (finishCode != FC_SUCCESS) {
-        printf("Could not guess hint\n"); /*TODO: better print*/
-    }
+
+    isSuccess = (initGurobiEnv() == true) &&
+                (guessFillBoardAndGuessHint(tempBoard, coordinate) == true) &&
+                isBoardComplete(tempBoard) == true;
 
     destroyBoard(tempBoard, g_gameDim);
     destroyGurobiEnv();
+
+    if (isSuccess == false) {
+        printf("Could not guess hint\n"); /*TODO: better print*/
+    }
 }
 
 Bool guessBoard(Board board, Board solutionBoard, double threshold) {
-    FinishCode finishCode;
+    Bool isSuccess;
     copyBoard(solutionBoard, board);
 
-    finishCode = initGurobiEnv();
-    if (finishCode == FC_SUCCESS) {
-        finishCode = guessFillBoard(solutionBoard, threshold);
-    }
 
-    if (finishCode != FC_SUCCESS) {
-        printf("Could not guess fill board\n"); /*TODO: better print*/
-    }
+    isSuccess = (initGurobiEnv() == true) &&
+                (guessFillBoard(solutionBoard, threshold) == true) &&
+                isBoardErroneous(solutionBoard) == false;
 
     destroyGurobiEnv();
-
-    if (finishCode == FC_SUCCESS && isBoardErroneous(solutionBoard) == false) {
-        return true;
-    } else {
-        return false;
+    if (isSuccess == false) {
+        printf("Could not guess fill board\n"); /*TODO: better print*/
     }
+    return isSuccess;
 }
 
