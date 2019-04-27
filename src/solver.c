@@ -237,8 +237,16 @@ Bool isBoardErroneous(Board board) {
 
 /* Error Matrix Functions*/
 
-/* TODO: Allen - document? */
+
 void updateAfterClearErrorMatrix(Game *game, Input input) {
+    /*this function updates the relevant neighbors error matrix:
+*1) we assume we're being called with set to a zero value
+*2) we assume the user board cell is already being updated to 0
+*3) we get the neighbors list
+*3) for each neighbor we clear the error matrix cell
+*4) then, for every non-zero neighbor we simulate a set in order to see if he's erroneous
+*4) after updating all of the neighbors the error matrix is correctly updated after a zero set */
+
     int k;
     Input in;
     Coordinate *neighbours;
@@ -262,6 +270,15 @@ void updateAfterClearErrorMatrix(Game *game, Input input) {
 }
 
 void updateAfterSetErrorMatrix(Game *game, Input input) {
+    /*this function updates the relevant neighbors error matrix:
+ *1) we assume we're being called with a different then zero value
+ *2) we get the neighbors list
+ *3) for each neighbor we check if it has the same value of the set cell
+ *   if it does then we update the neighbor's error matrix cell to 1
+ *4) if we had to update the error matrix for the neighbor that means the
+ *   cell set itself is erroneous, and we mark it as such */
+
+
     int k;
     Bool flag = false;
     Coordinate *neighbours;
@@ -269,10 +286,8 @@ void updateAfterSetErrorMatrix(Game *game, Input input) {
     calculateCoordinateNeighbours(input.coordinate, neighbours);
     for (k = 0; k < g_gameDim.cellNeighboursCount; k++) {
         if (game->user_matrix[neighbours[k].i][neighbours[k].j] == input.value) {
+            game->error_matrix[neighbours[k].i][neighbours[k].j] = 1;
             flag = true;
-            if (game->fixed_matrix[neighbours[k].i][neighbours[k].j] == 0) {
-                game->error_matrix[neighbours[k].i][neighbours[k].j] = 1;
-            }
         }
     }
     if (flag) {
@@ -282,9 +297,19 @@ void updateAfterSetErrorMatrix(Game *game, Input input) {
 }
 
 void updateWholeErrorMatrix(Game *game) {
+    /*this function updates the whole error matrix:
+     *1) first it clears the error matrix
+     *2) then it goes every non-empty cell and simulates a set to that cell
+     *3) the simulation of the set to the current board translated
+     *   to the "updateAfterSetErrorMatrix" function which updates all of
+     *   the erroneous neighbor cells
+     *4) after performing it to all cells, the error matrix correctly updated */
+
     int i, j, val;
     Input input;
     Coordinate cor;
+
+    clearBoolBoard(game->error_matrix);
     for (i = 0; i < g_gameDim.N; ++i) {
         for (j = 0; j < g_gameDim.N; ++j) {
             cor.i = i;

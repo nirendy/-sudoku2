@@ -28,6 +28,12 @@ void clearGame(Game *game) {
 
 /* Set related*/
 void setCoordinate(Game *game, Input input) {
+    /*beyond setting the value to the board, it call the functions responsible for the error matrix
+     * each set is considered as set to zero and then to it's real value (if exists)
+     * in that way we can clear and then fill the error matrix correctly
+     * using the error matrix functions implemented (and further documented) in the solver module*/
+
+
     game->user_matrix[input.coordinate.i][input.coordinate.j] = 0;
     updateAfterClearErrorMatrix(game, input);
     if (input.value != 0) {
