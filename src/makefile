@@ -1,8 +1,7 @@
 CC = gcc
 OBJS = main.o main_aux.o parser.o game_aux.o game.o solver.o file_handler.o linked_list.o lp_solver.o
 EXEC = sudoku-console
-# COMP_FLAG = -ansi -O3 -Wall -Wextra -Werror -pedantic-errors
-COMP_FLAG = -g -ansi -O3 -Wall -Wextra -pedantic-errors
+COMP_FLAG = -ansi -O3 -Wall -Wextra -Werror -pedantic-errors
 GUROBI_COMP = -I/usr/local/lib/gurobi563/include
 GUROBI_LIB = -L/usr/local/lib/gurobi563/lib -lgurobi56
 
