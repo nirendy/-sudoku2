@@ -21,24 +21,22 @@ void setMode(Mode newMode) {
     g_mode = newMode;
 }
 
+void setGlobalNodeNextToNull(){
+    g_curNode->next = NULL;
+}
+
+
 /* Prints */
 
 void printError(Error err) {
 
     switch (err) {
-        case EInvalidNumberOfCells:
-            printf("Error: invalid number of cells to fill (should be between 0 and %d)\n", g_gameDim.cellsCount - 1);
-            break;
         case ECellIsFixed: {
             printf("Error: cell is fixed\n");
             break;
         }
         case ECellIsNotEmpty: {
             printf("Error: cell is not empty\n");
-            break;
-        }
-        case EValueIsInvalid: {
-            printf("Error: value is invalid\n");
             break;
         }
         case EInvalidCommand: {
@@ -77,18 +75,6 @@ void printError(Error err) {
             printf("Error: Undo command is not possible\n");
             break;
         }
-        case ENullNode: {
-            printf("Error: Null node given as a pointer - unreachable code\n");
-            break;
-        }
-        case ENullDataNode: {
-            printf("Error: Null Data node given as a pointer - unreachable code\n");
-            break;
-        }
-        case EInsertionInMiddle: {
-            printf("Error: Insertion in the middle of the list - unreachable code\n");
-            break;
-        }
         case EErroneousBoard: {
             printf("Error: Board is erroneous\n");
             break;
@@ -125,6 +111,18 @@ void printError(Error err) {
             printf("Error: Reached unexpected EOF - terminating program\n");
             break;
         }
+        case ENullNode: {
+            printf("Error: Null node given as a pointer - unreachable code\n");
+            break;
+        }
+        case ENullDataNode: {
+            printf("Error: Null Data node given as a pointer - unreachable code\n");
+            break;
+        }
+        case EInsertionInMiddle: {
+            printf("Error: Insertion in the middle of the list - unreachable code\n");
+            break;
+        }
         default: {
             printf("Unreachable Code Error\n");
         }
@@ -133,8 +131,9 @@ void printError(Error err) {
 
 void printPrompt(Prompt prompt, int num1) {
     switch (prompt) {
-        case PEnterFixedAmount: {
-            printf("Please enter the number of cells to fill [0-%d]:\n", g_gameDim.cellsCount - 1);
+
+        case PTitle: {
+            printf("Sudoku Game\n");
             break;
         }
         case PExit: {
@@ -157,10 +156,6 @@ void printPrompt(Prompt prompt, int num1) {
             printf("Validation passed: board is solvable\n");
             break;
         }
-        case PTitle: {
-            printf("Sudoku Game\n");
-            break;
-        }
         case PNextCommand: {
             printf("Please enter the desired command:\n");
             break;
@@ -175,10 +170,6 @@ void printPrompt(Prompt prompt, int num1) {
         }
         case PWrongSolution: {
             printf("The solution to the board is wrong:\n");
-            break;
-        }
-        case PNoObviousCells: {
-            printf("There were no obvious cells to autofill\n");
             break;
         }
         default: {
@@ -356,14 +347,6 @@ void copyBoard(Board targetBoard, Board copyFromBoard) {
 
 }
 
-void printUserBoard(Board board) {
-    Game game;
-    game.user_matrix = board;
-    game.fixed_matrix = (BoolBoard) board;
-    game.error_matrix = (BoolBoard) board;
-    printBoard(&game);
-}  /*TODO: delete*/
-
 int getBoardValue(Board board, Coordinate coordinate) {
     return board[coordinate.i][coordinate.j];
 }
@@ -386,4 +369,14 @@ Bool isCoordinateFixed(Game *game, Coordinate coordinate) {
 
 Bool isCoordinateEmpty(Game *game, Coordinate coordinate) {
     return game->user_matrix[coordinate.i][coordinate.j] == 0;
+}
+
+/*TODO: delete*/
+
+void printUserBoard(Board board) {
+    Game game;
+    game.user_matrix = board;
+    game.fixed_matrix = (BoolBoard) board;
+    game.error_matrix = (BoolBoard) board;
+    printBoard(&game);
 }

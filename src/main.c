@@ -4,7 +4,7 @@
 #include "linked_list.h"
 #include "SPBufferset.h"
 
-#include "file_handler.h" /* TODO: remove*/
+#include "file_handler.h" /* TODO: remove with mock*/
 
 void mock(int mockI, Game **gameP) {
     Input input;
