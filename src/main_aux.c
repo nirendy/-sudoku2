@@ -181,7 +181,7 @@ void printPrompt(Prompt prompt, int num1) {
             break;
         }
         case PWrongSolution: {
-            printf("The solution to the board is wrong:\n");
+            printf("The solution to the board is wrong\n");
             break;
         }
         case PFileSavedSuccess: {

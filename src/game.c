@@ -223,7 +223,7 @@ void performHint(Game *game, Input input) {
     solutionBoard = createBoard();
 
     if (fillSolutionMatrix(game->user_matrix, solutionBoard)) {
-        printPrompt(PHint, solutionBoard[input.coordinate.i][input.coordinate.i]);
+        printPrompt(PHint, solutionBoard[input.coordinate.i][input.coordinate.j]);
     } else {
         printError(EFUnsolvableBoard);
     }
