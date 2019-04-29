@@ -76,14 +76,6 @@ void performSet(Game *game, Input input) {
     updateRedoUndoInputsAfterSingleSet(game, input, &redoInput, &undoInput);
     insertInputsToList(&redoInput, &undoInput, 1);
     setCoordinate(game, input);
-    if (g_mode == Solve && isBoardFull(game->user_matrix)) {
-        if (!isGameErroneous(game)) {
-            printPrompt(PSuccess, 0);
-            g_mode = Init;
-        } else {
-            printPrompt(PWrongSolution, 0);
-        }
-    }
 }
 
 void performValidate(Game *game) {
@@ -234,6 +226,7 @@ void performHint(Game *game, Input input) {
 
 void performGuessHint(Game *game, Input input) {
     guessHint(game->user_matrix, input.coordinate);
+
 }
 
 void performNumSolutions(Game *game) {
@@ -621,6 +614,18 @@ void executeCommand(Game **gameP, Input input) {
          input.command == COMMAND_GUESS ||
          input.command == COMMAND_RESET)) {
         printBoard(*gameP);
+    }
+
+    if (success == true && g_mode == Solve && //TODO: decide which commands and if toPrintWrong is true/false
+        (input.command == COMMAND_SOLVE ||
+         input.command == COMMAND_SET ||
+         input.command == COMMAND_GUESS ||
+         input.command == COMMAND_UNDO ||
+         input.command == COMMAND_REDO ||
+         input.command == COMMAND_AUTOFILL ||
+         input.command == COMMAND_RESET
+        )) {
+        fullAndValid(*gameP, true);
     }
 
 }
