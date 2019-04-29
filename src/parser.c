@@ -426,9 +426,9 @@ Bool parseCommand(Input *returnedInput) {
 
                 if (!strcmp(command, "hint") || !strcmp(command, "guess_hint") ||
                     !strcmp(command, "set")) {
-                    returnedInput->coordinate.i = getNum(token) - 1;
-                    if (returnedInput->coordinate.i < 0) {
-                        returnedInput->coordinate.i = INVALID_VALUE
+                    returnedInput->coordinate.j = getNum(token) - 1;
+                    if (returnedInput->coordinate.j < 0) {
+                        returnedInput->coordinate.j = INVALID_VALUE
                     }
                 }
 
@@ -439,9 +439,9 @@ Bool parseCommand(Input *returnedInput) {
 
                 if (!strcmp(command, "hint") || !strcmp(command, "guess_hint") ||
                     !strcmp(command, "set")) {
-                    returnedInput->coordinate.j = getNum(token) - 1;
-                    if (returnedInput->coordinate.j < 0) {
-                        returnedInput->coordinate.j = INVALID_VALUE
+                    returnedInput->coordinate.i = getNum(token) - 1;
+                    if (returnedInput->coordinate.i < 0) {
+                        returnedInput->coordinate.i = INVALID_VALUE
                     }
                 }
 
