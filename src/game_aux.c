@@ -56,7 +56,7 @@ void setCoordinate(Game *game, Input input) {
 
 /* Undo, Redo related */
 void printChange(int i, int j, int value) {
-    printf("The value of the cell <%d,%d> set back to %d\n", i + 1, j + 1, value);
+    printf("The value of the cell <%d,%d> set back to %d\n", j + 1, i + 1, value);
 }
 
 /*   Link list History related   */
