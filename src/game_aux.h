@@ -11,7 +11,7 @@
 /*Game Auxiliary module - responsible for aiding the game module with specific game-related functions
  *
  * isGameErroneous                          - Is game erroneous
- * fullAndValid                             - Checks if the the board is full and valid, and acts accordingly
+ * actIfBoardFullAndValid                             - Checks if the the board is full and valid, and acts accordingly
  * clearGame                                - Clear game
  * setCoordinate                            - Set coordinate
  * printChange                              - Print change
@@ -33,7 +33,7 @@ Bool isGameErroneous(Game *game);
 /* Perform Commands Related*/
 
 /*board-changing commands related*/
-void fullAndValid(Game *game , Bool toPrintIfWrong);
+void actIfBoardFullAndValid(Game *game);
 
 /* Edit related*/
 void clearGame(Game *game);

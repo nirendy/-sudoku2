@@ -617,7 +617,9 @@ void executeCommand(Game **gameP, Input input) {
         printBoard(*gameP);
     }
 
-    if (success == true && g_mode == Solve && /*TODO: decide which commands and if toPrintWrong is true/false  */
+    /*if any board-changing command was performed in solve mode we check if she filled the board
+     * and act accordingly whether the solution is valid or not*/
+    if (success == true && g_mode == Solve &&
         (input.command == COMMAND_SOLVE ||
          input.command == COMMAND_SET ||
          input.command == COMMAND_GUESS ||
@@ -626,7 +628,7 @@ void executeCommand(Game **gameP, Input input) {
          input.command == COMMAND_AUTOFILL ||
          input.command == COMMAND_RESET
         )) {
-        fullAndValid(*gameP, true);
+        actIfBoardFullAndValid(*gameP);
     }
 
 }

@@ -20,13 +20,13 @@ Bool isGameErroneous(Game *game) {
 /* Perform Commands Related*/
 /*board-changing commands related*/
 
-void fullAndValid(Game *game, Bool toPrintIfWrong) {
+void actIfBoardFullAndValid(Game *game) {
     if (g_mode == Solve && isBoardFull(game->user_matrix)) {
         if (!isGameErroneous(game)) {
             printPrompt(PSuccess, 0);
             g_mode = Init;
         } else {
-            if (toPrintIfWrong) { printPrompt(PWrongSolution, 0); }
+            printPrompt(PWrongSolution, 0);
         }
     }
 }
