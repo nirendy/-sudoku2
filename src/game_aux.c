@@ -18,6 +18,18 @@ Bool isGameErroneous(Game *game) {
 
 
 /* Perform Commands Related*/
+/*board-changing commands related*/
+
+void fullAndValid(Game *game){
+    if (g_mode == Solve && isBoardFull(game->user_matrix)) {
+        if (!isGameErroneous(game)) {
+            printPrompt(PSuccess, 0);
+            g_mode = Init;
+        } else {
+            printPrompt(PWrongSolution, 0);
+        }
+    }
+}
 
 /* Edit related*/
 void clearGame(Game *game) {
