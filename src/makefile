@@ -3,6 +3,7 @@ OBJS = main.o main_aux.o parser.o game_aux.o game.o solver.o file_handler.o link
 PROJ_FILES = main.c main.h main_aux.c main_aux.h parser.c parser.h game_aux.c game_aux.h game.c game.h solver.c solver.h file_handler.c file_handler.h linked_list.c linked_list.h lp_solver.c lp_solver.h SPBufferset.h
 EXEC = sudoku-console
 LOGS = gur.log gur.lp
+MAKE_FILE = makefile
 ZIP_NAME = 205686397_317624278_finalproject.zip
 COMP_FLAG = -ansi -O3 -Wall -Wextra -Werror -pedantic-errors
 GUROBI_COMP = -I/usr/local/lib/gurobi563/include
@@ -30,6 +31,6 @@ linked_list.o: linked_list.c linked_list.h
 lp_solver.o: lp_solver.c lp_solver.h
 	$(CC) $(COMP_FLAG) -c $*.c
 zip:
-	zip ${ZIP_NAME} ${PROJ_FILES}
+	zip ${ZIP_NAME} ${PROJ_FILES} ${MAKE_FILE}
 clean:
 	rm -f $(OBJS) $(EXEC) ${LOGS} ${ZIP_NAME}
