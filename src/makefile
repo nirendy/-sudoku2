@@ -13,7 +13,7 @@ all: $(EXEC)
 $(EXEC): $(OBJS)
 	$(CC) $(OBJS) $(GUROBI_LIB) -o $@ -lm
 main.o: main.c main_aux.h parser.h game_aux.h game.h solver.h file_handler.h linked_list.h lp_solver.h SPBufferset.h
-	$(CC) $(COMP_FLAG) $(GUROBI_COMP) -c $*.c
+	$(CC) $(COMP_FLAG) -c $*.c
 main_aux.o: main_aux.c main_aux.h
 	$(CC) $(COMP_FLAG) -c $*.c
 parser.o: parser.c parser.h
@@ -29,7 +29,7 @@ file_handler.o: file_handler.c file_handler.h
 linked_list.o: linked_list.c linked_list.h
 	$(CC) $(COMP_FLAG) -c $*.c
 lp_solver.o: lp_solver.c lp_solver.h
-	$(CC) $(COMP_FLAG) -c $*.c
+	$(CC) $(COMP_FLAG) $(GUROBI_COMP) -c $*.c
 zip:
 	zip ${ZIP_NAME} ${PROJ_FILES} ${MAKE_FILE}
 clean:
