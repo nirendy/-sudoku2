@@ -1,9 +1,7 @@
 #include "lp_solver.h"
 #include "main_aux.h"
 #include "solver.h"
-
-#include "gurobi_c2.h" /* TODO: REMOVE */
-/*#include "gurobi_c.h"*/
+#include "gurobi_c.h"
 
 #define MAX_VAR_NAME_LEN 30
 #define MAX_CONST_NAME_LEN 100
@@ -103,7 +101,7 @@ int calculateCoordinateFlatIndex(Coordinate coor) {
 Coordinate coordinateOfTheJCellInTheIBlock(int i, int j) {
     int n = g_gameDim.n;
     int m = g_gameDim.m;
-    /* TODO: test check this*/
+
     return createCoordinate(
             m * ((i * n) / (n * m)) + (j / n),
             ((i * n) % (n * m)) + (j % n)
@@ -147,11 +145,8 @@ PossibleVarSentinel *createCoor2Var(Board board, Bool isBinary) {
     int *possibleValues;
     int i;
 
-    /* TODO: test if 2 cells both has only one conflicting option*/
-
     /* Check the board isn't erroneous and all cells has at least one available option*/
     if (hasEmptyCellWithNoPossibleValues(board) == true || isBoardErroneous(board) == true) {
-        /* TODO: should print something?*/
         return NULL;
     }
 
@@ -441,7 +436,6 @@ Bool optimizeModel() {
         return false;
     }
 
-    /* TODO: remove*/
     /* Write model to 'mip1.lp' - this is not necessary but very helpful */
     error = GRBwrite(model, GUR_LOG_FILE2);
     if (error) {
@@ -460,7 +454,7 @@ Bool optimizeModel() {
     } else if (optimstatus == GRB_INF_OR_UNBD ||
                optimstatus == GRB_INFEASIBLE ||
                optimstatus == GRB_UNBOUNDED) { /* no solution found */
-        /*printf("Model is infeasible or unbounded\n");*/ /*TODO: should print something?*/
+        /*printf("Model is infeasible or unbounded\n");*/
         return false;
     } else { /* error or calculation stopped */
         printf("Optimization was stopped early, status: %d\n", optimstatus);
@@ -627,7 +621,7 @@ Bool guessFillBoard(Board board, double threshold) {
                 }
 
                 /* if at least one value of the highest prob has prob is above threshold */
-                if (bestOptionsCount > 0 && bestOptionVal >= threshold) { /* TODO: test with thres=0 */
+                if (bestOptionsCount > 0 && bestOptionVal >= threshold) {
                     board[i][j] = valsOptions[randLimit(bestOptionsCount)];
                 }
             }
