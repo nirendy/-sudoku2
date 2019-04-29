@@ -29,7 +29,7 @@ linked_list.o: linked_list.c linked_list.h
 	$(CC) $(COMP_FLAG) -c $*.c
 lp_solver.o: lp_solver.c lp_solver.h
 	$(CC) $(COMP_FLAG) -c $*.c
-zip: ${PROJ_FILES}
-	zip ${PROJ_FILES} ${ZIP_NAME}
+zip:
+	zip ${ZIP_NAME} ${PROJ_FILES}
 clean:
-	rm -f $(OBJS) $(EXEC) ${LOGS} {ZIP_NAME}
+	rm -f $(OBJS) $(EXEC) ${LOGS} ${ZIP_NAME}
