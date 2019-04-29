@@ -33,7 +33,7 @@ Bool isGameErroneous(Game *game);
 /* Perform Commands Related*/
 
 /*board-changing commands related*/
-void fullAndValid(Game *game);
+void fullAndValid(Game *game , Bool toPrintIfWrong;
 
 /* Edit related*/
 void clearGame(Game *game);

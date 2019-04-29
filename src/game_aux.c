@@ -20,13 +20,13 @@ Bool isGameErroneous(Game *game) {
 /* Perform Commands Related*/
 /*board-changing commands related*/
 
-void fullAndValid(Game *game){
+void fullAndValid(Game *game, Bool toPrintIfWrong) {
     if (g_mode == Solve && isBoardFull(game->user_matrix)) {
         if (!isGameErroneous(game)) {
             printPrompt(PSuccess, 0);
             g_mode = Init;
         } else {
-            printPrompt(PWrongSolution, 0);
+            if (toPrintIfWrong) { printPrompt(PWrongSolution, 0); }
         }
     }
 }
@@ -249,7 +249,7 @@ void clearRandomCells(Board board, Coordinate *cellsToClear, int numToClear) {
  * @param game
  * @param board
  */
-void fillObviousValues(Game *game , Board board) {
+void fillObviousValues(Game *game, Board board) {
 
     Coordinate *emptyCells = (Coordinate *) smartMalloc(g_gameDim.cellsCount * sizeof(Coordinate));
     int *possibleValues = (int *) smartMalloc(g_gameDim.cellsCount * sizeof(int));
