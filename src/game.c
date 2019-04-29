@@ -616,7 +616,7 @@ void executeCommand(Game **gameP, Input input) {
         printBoard(*gameP);
     }
 
-    if (success == true && g_mode == Solve && //TODO: decide which commands and if toPrintWrong is true/false
+    if (success == true && g_mode == Solve && /*TODO: decide which commands and if toPrintWrong is true/false  */
         (input.command == COMMAND_SOLVE ||
          input.command == COMMAND_SET ||
          input.command == COMMAND_GUESS ||
