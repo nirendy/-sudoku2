@@ -92,7 +92,7 @@ void printError(Error err) {
             break;
         }
         case EFileScanFailure: {
-            printf("Error: Scan failed\n");
+            printf("Error: Game dimensions scan failed\n");
             break;
         }
         case EFUnsolvableBoard : {
