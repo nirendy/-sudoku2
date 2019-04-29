@@ -89,6 +89,7 @@ typedef enum _error {
     EGenerationFailed,
     EInputTooLong,
     EGuessHintFailed,
+    EGuessFailed,
     EMallocFailure,
     EReachUnexpectedEOF,
     EUnreachableCode

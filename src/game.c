@@ -91,6 +91,7 @@ Bool performGuess(Game *game, Input input) {
     Board solutionBoard = createBoard();
     if (!guessBoard(game->user_matrix, solutionBoard, input.threshold)) {
         destroyBoard(solutionBoard, g_gameDim);
+        printError(EGuessHintFailed); /*TODO: nir needs to verify*/
         return false;
     }
 

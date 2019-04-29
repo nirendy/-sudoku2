@@ -108,7 +108,11 @@ void printError(Error err) {
             break;
         }
         case EGuessHintFailed: {
-            printf("Could not guess hint\n");
+            printf("Error: Could not guess hint\n");
+            break;
+        }
+        case EGuessFailed: {
+            printf("Error: Could not guess any cells\n"); /*TODO: nir needs to verify*/
             break;
         }
         case EMallocFailure : {
