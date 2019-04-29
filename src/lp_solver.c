@@ -673,7 +673,7 @@ void guessHint(Board board, Coordinate coordinate) {
 
     isSuccess = (initGurobiEnv() == true) &&
                 (guessFillBoardAndGuessHint(tempBoard, coordinate) == true) &&
-                isBoardComplete(tempBoard) == true;
+                isBoardErroneous(tempBoard) == false;
 
     destroyBoard(tempBoard, g_gameDim);
     destroyGurobiEnv();
