@@ -86,18 +86,60 @@ void performValidate(Game *game) {
     }
 }
 
+void performUndo(Game *game, DataNode *currDataNode, Bool toPrint) {
+    Input input;
+
+    if (toPrint) {
+        printPrompt(PPerformedChanges, 0);
+    }
+
+    currDataNode = getLastDataNode(currDataNode);
+    while (currDataNode->isFirst == false) {
+        input = currDataNode->undoInput;
+        if (toPrint) { printChange(input.coordinate.i, input.coordinate.j, input.value); }
+        setCoordinate(game, input);
+        currDataNode = currDataNode->prev;
+    }
+    g_curNode = g_curNode->prev;
+}
+
+void performRedo(Game *game) {
+    Input input;
+    DataNode *currDataNode;
+
+    printPrompt(PPerformedChanges, 0);
+    g_curNode = g_curNode->next;
+    currDataNode = g_curNode->currDataNode;
+
+    currDataNode = getFirstDataNode(currDataNode)->next;
+    while (currDataNode != NULL) {
+        input = currDataNode->redoInput;
+        printChange(input.coordinate.i, input.coordinate.j, input.value);
+        setCoordinate(game, input);
+        currDataNode = currDataNode->next;
+    }
+}
+
 Bool performGuess(Game *game, Input input) {
 
     Board solutionBoard = createBoard();
     if (!guessBoard(game->user_matrix, solutionBoard, input.threshold)) {
         destroyBoard(solutionBoard, g_gameDim);
-        printError(EGuessHintFailed); /*TODO: nir needs to verify*/
+        printPrompt(PGuessFailure,0);
+        printBoard(game);
         return false;
     }
 
     clearListFromNode(g_curNode->next);
     setGlobalNodeNextToNull();
-    updateHistoryList(game, solutionBoard);  /*destroys newBoard*/
+
+    /*print the performed changes if there are any*/
+    if (updateHistoryList(game, solutionBoard) > 0) { /*destroys newBoard*/
+        performUndo(game, g_curNode->currDataNode, false);
+        performRedo(game);
+    } else {
+        printPrompt(PGuessFailure,0);;
+    }
     return true;
 }
 
@@ -165,40 +207,6 @@ Bool performGenerate(Game *game, Input input) {
 
 }
 
-void performUndo(Game *game, DataNode *currDataNode, Bool toPrint) {
-    Input input;
-
-    if (toPrint) {
-        printPrompt(PPerformedChanges, 0);
-    }
-
-    currDataNode = getLastDataNode(currDataNode);
-    while (currDataNode->isFirst == false) {
-        input = currDataNode->undoInput;
-        if (toPrint) { printChange(input.coordinate.i, input.coordinate.j, input.value); }
-        setCoordinate(game, input);
-        currDataNode = currDataNode->prev;
-    }
-    g_curNode = g_curNode->prev;
-}
-
-void performRedo(Game *game) {
-    Input input;
-    DataNode *currDataNode;
-
-    printPrompt(PPerformedChanges, 0);
-    g_curNode = g_curNode->next;
-    currDataNode = g_curNode->currDataNode;
-
-    currDataNode = getFirstDataNode(currDataNode)->next;
-    while (currDataNode != NULL) {
-        input = currDataNode->redoInput;
-        printChange(input.coordinate.i, input.coordinate.j, input.value);
-        setCoordinate(game, input);
-        currDataNode = currDataNode->next;
-    }
-}
-
 void performSave(Game *game, Input input) {
     Board solutionBoard = createBoard();
 
@@ -244,7 +252,13 @@ void performAutoFill(Game *game) {
     fillObviousValues(game, newBoard);
     clearListFromNode(g_curNode->next);
     setGlobalNodeNextToNull();
-    updateHistoryList(game, newBoard); /*destroys newBoard*/
+    /*print the performed changes if there are any*/
+    if (updateHistoryList(game, newBoard) > 0) { /*destroys newBoard*/
+        performUndo(game, g_curNode->currDataNode, false);
+        performRedo(game);
+    } else {
+        printPrompt(PNoObviousCells, 0);
+    }
 }
 
 void performReset(Game *game) {
@@ -263,6 +277,7 @@ Bool askUserForNextTurn(Input *input) {
     printPrompt(PNextCommand, 0);
     return parseCommand(input);
 }
+
 /**
  *  checking the legality of the input before moving on to the next stage of the command execution
  * @param game

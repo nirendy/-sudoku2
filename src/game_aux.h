@@ -49,7 +49,7 @@ void updateRedoUndoInputsAfterSingleSet(Game *game, Input in, Input *redo, Input
 
 void insertInputsToList(Input *redoInputs, Input *undoInputs, int numOfInputs);
 
-void updateHistoryList(Game *game, Board final);
+int updateHistoryList(Game *game, Board final);
 
 /* Validate related */
 Bool isSolvableBoard(Board board);

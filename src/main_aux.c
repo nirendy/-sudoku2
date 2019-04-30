@@ -111,10 +111,6 @@ void printError(Error err) {
             printf("Error: Could not guess hint\n");
             break;
         }
-        case EGuessFailed: {
-            printf("Error: Could not guess any cells\n"); /*TODO: nir needs to verify*/
-            break;
-        }
         case EMallocFailure : {
             printf("Error: Memory allocation failed - terminating program\n");
             break;
@@ -182,6 +178,14 @@ void printPrompt(Prompt prompt, int num1) {
         }
         case PPerformedChanges: {
             printf("The performed changes are:\n");
+            break;
+        }
+        case PNoObviousCells: {
+            printf("The were no obvious cells to fill:\n");
+            break;
+        }
+        case PGuessFailure: {
+            printf("Couldn't guess any cells:\n");
             break;
         }
         case PWrongSolution: {

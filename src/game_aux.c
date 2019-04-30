@@ -56,7 +56,7 @@ void setCoordinate(Game *game, Input input) {
 
 /* Undo, Redo related */
 void printChange(int i, int j, int value) {
-    printf("The value of the cell <%d,%d> set back to %d\n", j + 1, i + 1, value);
+    printf("The value of the cell <%d,%d> has been set to %d\n", j + 1, i + 1, value);
 }
 
 /*   Link list History related   */
@@ -145,7 +145,7 @@ void insertInputsToList(Input *redoInputs, Input *undoInputs, int numOfInputs) {
 
 }
 
-void updateHistoryList(Game *game, Board final) {
+int updateHistoryList(Game *game, Board final) {
 
     int numOfSets;
     Input *redoInputs;
@@ -155,7 +155,7 @@ void updateHistoryList(Game *game, Board final) {
     numOfSets = numOfDiffs(original, final);
     if (numOfSets == 0) {
         destroyBoard(final, g_gameDim);
-        return;
+        return 0;
     }
     redoInputs = (Input *) smartMalloc(numOfSets * sizeof(Input));
     undoInputs = (Input *) smartMalloc(numOfSets * sizeof(Input));
@@ -167,6 +167,7 @@ void updateHistoryList(Game *game, Board final) {
     destroyBoard(final, g_gameDim);
     free(redoInputs);
     free(undoInputs);
+    return  numOfSets;
 }
 
 /* Validate related */

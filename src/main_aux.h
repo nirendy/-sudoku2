@@ -106,7 +106,9 @@ typedef enum _prompt {
     PNumSolutionsOutput,
     PPerformedChanges,
     PWrongSolution,
-    PFileSavedSuccess
+    PFileSavedSuccess,
+    PNoObviousCells,
+    PGuessFailure
 
 } Prompt;
 
