@@ -622,7 +622,6 @@ Bool guessFillBoard(Board board, double threshold) {
     int i, j, k;
     WeightedValue *weightedValues;
     int overThresholdCount;
-    double bestOptionVal;
     Bool noErrors;
 
     coor2Var = createCoor2Var(board, false);
@@ -637,7 +636,6 @@ Bool guessFillBoard(Board board, double threshold) {
         for (i = 0; i < g_gameDim.N; i++) {
             for (j = 0; j < g_gameDim.N; j++) {
                 overThresholdCount = 0;
-                bestOptionVal = 0;
 
                 for (k = 1; k <= g_gameDim.N; k++) {
                     PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
@@ -670,7 +668,7 @@ Bool guessFillBoard(Board board, double threshold) {
                 }
 
                 /* if at least one value of the highest prob has prob is above threshold */
-                if (overThresholdCount > 0 && bestOptionVal >= threshold) {
+                if (overThresholdCount > 0) {
                     board[i][j] = getRandomWeightedValue(weightedValues, overThresholdCount);
                 }
             }
