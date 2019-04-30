@@ -46,6 +46,11 @@ typedef struct _PossibleVarSentinel {
     int length;
 } PossibleVarSentinel;
 
+typedef struct _WeightedValue {
+    int value;
+    double weight;
+} WeightedValue;
+
 /* Environment Constructor / Destructor */
 Bool initGurobiEnv() {
     int error;
@@ -106,6 +111,54 @@ Coordinate coordinateOfTheJCellInTheIBlock(int i, int j) {
             m * ((i * n) / (n * m)) + (j / n),
             ((i * n) % (n * m)) + (j % n)
     );
+}
+
+int getRandomWeightedValue(WeightedValue *weightedValues, int count) {
+    double sumValues = 0;
+    int i;
+    double randomPoint;
+
+    /* sum weights */
+    for (i = 0; i < count; ++i) {
+        sumValues += weightedValues[i].weight;
+    }
+
+    printf("--------\nsum is: %f, count is: %d\n--------\n", sumValues, count);
+
+    /* normalize weights*/
+    if (sumValues == 0) {
+        for (i = 0; i < count; ++i) {
+            printf("Weight of value %d is: %f", weightedValues[i].value, weightedValues[i].weight);
+            weightedValues[i].weight = (double) 1 / count;
+            printf(" ---> %f\n", weightedValues[i].weight);
+        }
+    } else {
+        for (i = 0; i < count; ++i) {
+            printf("Weight of value %d is: %f", weightedValues[i].value, weightedValues[i].weight);
+            weightedValues[i].weight = weightedValues[i].weight / sumValues;
+            printf(" ---> %f\n", weightedValues[i].weight);
+        }
+    }
+
+    /* choose random weighted value */
+    /* get random point in [0,1] */
+    randomPoint = (double) randLimit(101) / 100;
+    printf("random number is: %f\n", randomPoint);
+
+
+    for (i = 0; i < count; ++i) {
+        randomPoint -= weightedValues[i].weight;
+        printf("after %d iteration: %f\n", i + 1, randomPoint);
+        if (randomPoint <= 0) {
+            printf("return value is: %d\n", weightedValues[i].value);
+            return weightedValues[i].value;
+        }
+    }
+
+
+    /* in case for some reason the floating point at the end didn't sum up to 1 (floating point precision issues) */
+    printf("(last) return value is: %d\n", weightedValues[count - 1].value);
+    return weightedValues[count - 1].value;
 }
 
 /* Supporting data structures Constructor / Destructor */
@@ -567,9 +620,8 @@ Bool guessFillBoard(Board board, double threshold) {
     int error;
     PossibleVarSentinel *coor2Var; /* for the possibleVars[] */
     int i, j, k;
-    int *valsOptions;
-    int bestOptionsCount;
-    double bestOptionVal;
+    WeightedValue *weightedValues;
+    int overThresholdCount;
     Bool noErrors;
 
     coor2Var = createCoor2Var(board, false);
@@ -579,12 +631,11 @@ Bool guessFillBoard(Board board, double threshold) {
 
     noErrors = fillModel(coor2Var);
     if (noErrors == true) {
-        valsOptions = (int *) smartMalloc(g_gameDim.N * sizeof(int));
+        weightedValues = (WeightedValue *) smartMalloc(g_gameDim.N * sizeof(WeightedValue));
 
         for (i = 0; i < g_gameDim.N; i++) {
             for (j = 0; j < g_gameDim.N; j++) {
-                bestOptionsCount = 0;
-                bestOptionVal = 0;
+                overThresholdCount = 0;
 
                 for (k = 1; k <= g_gameDim.N; k++) {
                     PossibleVar *posVar = getPossibleVarFromCoor2Var(coor2Var, createCoordinate(i, j), k);
@@ -599,20 +650,16 @@ Bool guessFillBoard(Board board, double threshold) {
                             }
                         }
 
-                        /* if this prob is the highest seen
+                        /* if this prob is as high as threshold
                          * AND
                          * if this value is possible value for the updated board */
-                        if (posVar->prob >= bestOptionVal && isPossibleValue(board, createCoordinate(i, j), k)) {
-
-                            /* if this prob is higher the the highest seen*/
-                            if (posVar->prob > bestOptionVal) {
-                                bestOptionVal = posVar->prob;
-                                bestOptionsCount = 0;
-                            }
+                        if (posVar->prob >= threshold && isPossibleValue(board, createCoordinate(i, j), k)) {
 
                             /* save this value as an option to choose*/
-                            valsOptions[bestOptionsCount] = k;
-                            bestOptionsCount++;
+                            weightedValues[overThresholdCount].value = k;
+                            weightedValues[overThresholdCount].weight = posVar->prob;
+
+                            overThresholdCount++;
                         }
                     }
                 }
@@ -621,15 +668,15 @@ Bool guessFillBoard(Board board, double threshold) {
                 }
 
                 /* if at least one value of the highest prob has prob is above threshold */
-                if (bestOptionsCount > 0 && bestOptionVal >= threshold) {
-                    board[i][j] = valsOptions[randLimit(bestOptionsCount)];
+                if (overThresholdCount > 0) {
+                    board[i][j] = getRandomWeightedValue(weightedValues, overThresholdCount);
                 }
             }
             if (noErrors == false) {
                 break;
             }
         }
-        free(valsOptions);
+        free(weightedValues);
     }
 
     destroyCoor2Var(coor2Var);
