@@ -5,6 +5,7 @@
 
 #define MAX_VAR_NAME_LEN 30
 #define MAX_CONST_NAME_LEN 100
+#define RANDOM_PRECISION 100
 
 #define GUR_LOG_FILE "./gur.log"
 #define GUR_LOG_FILE2 "./gur.lp"
@@ -113,6 +114,12 @@ Coordinate coordinateOfTheJCellInTheIBlock(int i, int j) {
     );
 }
 
+/**
+ * This function returns a int that is the chosen random value
+ * @param weightedValues array of tuples that we want to make weighted random choose of the value
+ * @param count number of tuples in the array
+ * @return
+ */
 int getRandomWeightedValue(WeightedValue *weightedValues, int count) {
     double sumValues = 0;
     int i;
@@ -123,41 +130,33 @@ int getRandomWeightedValue(WeightedValue *weightedValues, int count) {
         sumValues += weightedValues[i].weight;
     }
 
-    printf("--------\nsum is: %f, count is: %d\n--------\n", sumValues, count);
 
     /* normalize weights*/
     if (sumValues == 0) {
         for (i = 0; i < count; ++i) {
-            printf("Weight of value %d is: %f", weightedValues[i].value, weightedValues[i].weight);
             weightedValues[i].weight = (double) 1 / count;
-            printf(" ---> %f\n", weightedValues[i].weight);
         }
     } else {
         for (i = 0; i < count; ++i) {
-            printf("Weight of value %d is: %f", weightedValues[i].value, weightedValues[i].weight);
             weightedValues[i].weight = weightedValues[i].weight / sumValues;
-            printf(" ---> %f\n", weightedValues[i].weight);
         }
     }
 
     /* choose random weighted value */
     /* get random point in [0,1] */
-    randomPoint = (double) randLimit(101) / 100;
-    printf("random number is: %f\n", randomPoint);
+    randomPoint = (double) randLimit(RANDOM_PRECISION + 1) / RANDOM_PRECISION;
 
 
+    /* decrease the weight of the value, stops when the value is non-positive */
     for (i = 0; i < count; ++i) {
         randomPoint -= weightedValues[i].weight;
-        printf("after %d iteration: %f\n", i + 1, randomPoint);
         if (randomPoint <= 0) {
-            printf("return value is: %d\n", weightedValues[i].value);
             return weightedValues[i].value;
         }
     }
 
 
     /* in case for some reason the floating point at the end didn't sum up to 1 (floating point precision issues) */
-    printf("(last) return value is: %d\n", weightedValues[count - 1].value);
     return weightedValues[count - 1].value;
 }
 
